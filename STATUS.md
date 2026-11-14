@@ -1,13 +1,28 @@
 # STATUS
 
-_Last updated: 2026-11-14 (parallel cycle 3: 1.8 done; 0.4 in progress)_
+_Last updated: 2026-11-14 (parallel cycle 3 finished: 0.4 and 1.8 done)_
 
 ## Snapshot
 
-9 of 20 tasks done (0.1, 0.2, 0.3, 0.5, 1.1, 1.2, 1.3, 1.4, 1.8). 0.4 in progress (parallel cycle 3). Nothing blocked.
+10 of 20 tasks done (0.1–0.5, 1.1–1.4, 1.8). Nothing blocked. **The interpreter misses its 0.4 s budget** (about 1.1–1.3 s median), so the loop's estimated median is about 1.55 s against the 1.0 s target; 0.6 measures it live. Next up: 0.6 and 1.9.
 
 ## Completed
 
+- [x] 0.4 — Interpreter bake-off — done 2026-11-14 — verified by me after the subagent:
+  - Slice re-run (`--model gpt-6-luna --approach prompt --input perfect --lines 01,17,29 --repeats 1`, to the scratchpad):
+    - exit 0, 3 of 3 exact, 1,109–2,029 ms
+    - The tables have median, p95, exact match, per-field accuracy and $/hr, as required.
+  - My own check script: all 33 scored `expected:` rows parse with `parseTerse`, and line 34 is `UNSCORED`.
+  - `git diff` of `script.md` changes 34 `expected:` rows and nothing else.
+  - Thinking was really off, per the raw results:
+    - Haiku samples show `thinking_tokens: 0`, with 128 output tokens.
+    - gpt-6-luna shows `reasoning_tokens: 0`, with its server reporting 1,640 ms of a 1,765 ms request.
+    - Caching works: 5,964 and 3,449 cache-read tokens.
+  - Spike typecheck: exit 0.
+  - The stray directory from the agent's incident is gone.
+  - Key and personal-info scan of the 37 new or changed files: 0 hits.
+  - Spend: $0.4524 total, including my $0.001 slice.
+  - Section merged into `docs/spikes/voice-loop.md` § Interpreter.
 - [x] 1.8 — Route resolution — done 2026-11-14 — verified by me after the subagent, and after my change for Q's way-out decision:
   - `npx vitest run src/sim/route.test.ts`: 32 of 32 passed. `npm run typecheck`: exit 0. `npm test`: 167 of 167 passed across 6 files.
   - Each Acceptance item has a test asserting exact nodes, edges, destination or reason:
@@ -61,8 +76,6 @@ _Last updated: 2026-11-14 (parallel cycle 3: 1.8 done; 0.4 in progress)_
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
-
-- 0.4 — Interpreter bake-off — started 2026-11-14 by an Opus subagent. It owns `spikes/voice-loop/interp-bench.ts`, `interp/**`, `results/interp/**`, `results/0.4-interpreter.md`, and only the `expected:` rows of `test-set/script.md`.
 
 ## Blocked
 
@@ -283,10 +296,42 @@ _Last updated: 2026-11-14 (parallel cycle 3: 1.8 done; 0.4 in progress)_
     - **1.6:** LGA lanes that ground controls must be imported as `taxiway` edges.
     - **1.9:** starting mid-edge (pass the node ahead), and where exactly to stop before a hold node.
 
+- 2026-11-14 — **0.4 findings and choices:**
+  - **Recommendation for 0.6: prompt context, not tool calls, with gpt-6-luna** (strict structured output).
+    - Accuracy, prompt approach: 97.0% exact on perfect text, 93.9% on Universal-3.6 Pro, 97.0% on Nova-3, and 83.3% on 12 perturbed lines.
+    - Every answer had a valid shape.
+    - It fixed 36 of 36 misheard callsigns from context.
+    - Cost: $0.10/hr at peak.
+  - **Tools never helped.** They were no more accurate, and worse on Haiku. They took 2.0–2.25 round trips, for 2.3–2.9 s medians against 1.1–1.3 s. This confirms PRD §6.1's lean.
+  - **Neither model meets the 0.4 s budget: 0 of 1,644 samples did.**
+    - Both have about 0.9 s of fixed time per request; output length adds 0.25–0.4 s.
+    - OpenAI's processing header puts about 1.14 s of gpt-6-luna's 1.24 s on the server.
+    - The loop median estimate is about 1.55 s against 1.0 s.
+    - A terse-answer experiment cut gpt-6-luna to a 762 ms median, at 83.8% accuracy on an untuned prompt.
+  - **Haiku 5.5 can't use structured output for this schema.**
+    - Anthropic returns HTTP 400 "The compiled grammar is too large", although the schema is within the documented limits.
+    - Removing the `taxi` or the `correction` branch makes it compile.
+    - As plain JSON, Haiku is invalid on 4–14% of prompt answers (it writes a sentence first) and 81–90% exact on real transcripts.
+    - Recommended: drop it for 0.6.
+  - **Choices:**
+    - OpenAI uses explicit cache breakpoints. Automatic mode also cached each call's changing part, at 1.25×.
+    - The schema flattens `Destination` and `HoldShortTarget` to `{kind, name}`, with the rest enforced by `interp/shape.ts`. The JSON is identical.
+    - A decoy flight, DAL40 "Delta forty", makes "Delta for" a real test.
+    - The perturbed set is 12 lines, mostly real mishearings from 0.3.
+  - **Caveat:** the agent wrote the prompt after reading the script, and its three examples resemble lines 01, 18 and 26, so live accuracy on new phrasing will likely be lower.
+  - **Incident (contained):** a relative `--out` path created `spikes/voice-loop/spikes/…` with one partial result file. The agent stopped, listed it twice, and removed only that file and its empty directories. I confirmed the directory is gone.
+  - **Q agreed with the recommendations (2026-11-14):**
+    - **Latency budget:** 0.6 measures gpt-6-luna live, and may try a tuned terse-output prompt. PRD §6.3's 0.4 s interpreter budget and 1.0 s total are revised from 0.6's numbers, not before.
+    - **Line 22's "sit tight"** is a pleasantry, with no hold. The expected command already has none.
+    - **Phase 2 adds an "unintelligible" result** to the command format, so the pilot can say "say again" instead of the model inventing a command (PRD §6.1).
+    - **Routes from speech** are checked against the airport graph before the readback (0.6 or Phase 2), because transcript commas can split or merge taxiway names.
+    - Haiku 5.5 is dropped for 0.6.
+
 ## Next Up
 
-- 0.4 — Interpreter bake-off. Needs 0.2, 0.3 and 1.2, all done. Expected commands: start from `spikes/voice-loop/results/terse-forms-from-1.2.txt`.
-- Also eligible now:
-  - 1.8, route resolution (needs 1.2 and 1.4, both done)
-  - 1.5, JFK import (needs 1.3 and 1.4, both done, plus Q's answers on the 31L line, pads and penalty box)
-- 0.6 waits on 0.4 (0.3 and 0.5 are done).
+- 0.6 — Live end-to-end loop and findings; Q tests. Needs 0.3, 0.4 and 0.5, all done.
+  - Picks to test: speech-to-text Nova-3 and Universal-3.6 Pro; interpreter gpt-6-luna with prompt context; voices from ElevenLabs (Daniel, plus library voices now that the account is on Starter) and Cartesia (Sebastian, Derrick and Gary).
+  - Confirm ElevenLabs library voices work before relying on them.
+  - The latency budget question goes with it.
+- 1.9 — Simulation core. Needs 1.8, done. Inherits 1.8's follow-ups: starting mid-edge, and where to stop before a hold node.
+- 1.5 — JFK import. Needs Q's map answers (the 31L line, pads, the penalty box), and now covers hardstands and hangars.

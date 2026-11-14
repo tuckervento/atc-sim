@@ -463,7 +463,284 @@ Findings that move these numbers:
 
 ## Interpreter
 
-_Filled in by task 0.4 (interpreter bake-off)._
+_Task 0.4. Run 2026-11-14 with `spikes/voice-loop/interp-bench.ts`. API details checked against the claude-api skill, platform.claude.com and developers.openai.com the same day. Raw results (every response, its tokens and timing): `spikes/voice-loop/results/interp/`._
+
+### Results
+
+Each model got a transcript plus a fixed fake game context and returned one command object matching `src/sim/commands.ts`. Two approaches:
+- **prompt (A):** the game context (flights on frequency, JFK names, airline names) is in the prompt. One request.
+- **tools (B):** only the transcript. The model looks up the flight (`find_flight`) and checks names (`check_names`) with tool calls, then answers.
+
+Four inputs, the same 34 script lines and expected commands in each:
+- **perfect:** the script's `say` text
+- **Universal-3.6 Pro** and **Nova-3:** 0.3's saved transcripts
+- **perturbed:** 12 lines with mishearings, mostly ones 0.3 actually saw (list under [Method](#method))
+
+Three repeats per line. Line 34 (C11) ran but isn't scored, so each input has 33 scored lines (12 for perturbed), and 99 (36) scored samples.
+
+"Median" and "p95" are the time for the whole transcript: every request plus local tool time, on a warm keep-alive connection. The budget is 400 ms (PRD §6.3). **No sample met it: 0 of 1,368 here, and 0 of 276 in the terse experiment.**
+
+| Model | Approach | Input | Exact match | Valid answers | Lines exact on all 3 repeats | Median | p95 | Round trips (mean) | $/hr at peak |
+|---|---|---|---|---|---|---|---|---|---|
+| Haiku 5.5 | prompt | perfect | 83.8% (83/99) | 96.0% | 27/33 | 1108 ms | 1661 ms | 1.00 | $0.17 |
+| Haiku 5.5 | prompt | Universal-3.6 Pro | 80.8% (80/99) | 96.0% | 26/33 | 1099 ms | 1719 ms | 1.00 | $0.17 |
+| Haiku 5.5 | prompt | Nova-3 | 89.9% (89/99) | 100% | 29/33 | 1093 ms | 1718 ms | 1.00 | $0.17 |
+| Haiku 5.5 | prompt | perturbed | 69.4% (25/36) | 86.1% | 7/12 | 1163 ms | 2357 ms | 1.00 | $0.18 |
+| Haiku 5.5 | tools | perfect | 81.8% (81/99) | 85.9% | 23/33 | 2708 ms | 4282 ms | 1.99 | $0.13 |
+| Haiku 5.5 | tools | Universal-3.6 Pro | 82.8% (82/99) | 89.9% | 24/33 | 2408 ms | 3583 ms | 2.07 | $0.14 |
+| Haiku 5.5 | tools | Nova-3 | 68.7% (68/99) | 76.8% | 19/33 | 2268 ms | 3757 ms | 2.01 | $0.13 |
+| Haiku 5.5 | tools | perturbed | 55.6% (20/36) | 58.3% | 5/12 | 2538 ms | 4820 ms | 2.03 | $0.15 |
+| **gpt-6-luna** | **prompt** | **perfect** | **97.0% (96/99)** | **100%** | **32/33** | 1242 ms | 1765 ms | 1.00 | $0.10 |
+| **gpt-6-luna** | **prompt** | **Universal-3.6 Pro** | **93.9% (93/99)** | **100%** | **31/33** | 1262 ms | 1785 ms | 1.00 | $0.10 |
+| **gpt-6-luna** | **prompt** | **Nova-3** | **97.0% (96/99)** | **100%** | **32/33** | 1243 ms | 1944 ms | 1.00 | $0.10 |
+| **gpt-6-luna** | **prompt** | **perturbed** | **83.3% (30/36)** | **100%** | **9/12** | 1293 ms | 1865 ms | 1.00 | $0.10 |
+| gpt-6-luna | tools | perfect | 96.0% (95/99) | 100% | 31/33 | 2754 ms | 3881 ms | 2.16 | $0.07 |
+| gpt-6-luna | tools | Universal-3.6 Pro | 92.9% (92/99) | 100% | 30/33 | 2783 ms | 4444 ms | 2.25 | $0.07 |
+| gpt-6-luna | tools | Nova-3 | 87.9% (87/99) | 100% | 27/33 | 2888 ms | 3991 ms | 2.24 | $0.07 |
+| gpt-6-luna | tools | perturbed | 80.6% (29/36) | 100% | 9/12 | 2756 ms | 3581 ms | 2.14 | $0.07 |
+
+Haiku 5.5 answers as plain JSON text, because Anthropic rejects this schema for grammar-constrained output (see [What didn't work](#what-didnt-work-as-documented)). gpt-6-luna uses strict structured output. "Valid" is the share that parsed and passed the shape check; an invalid answer is a miss.
+
+**Per field.** Correct / lines where the expected or the model's command has the field, so a missed value and an invented one both count as wrong. An invalid answer is wrong on every expected field.
+
+| Model | Approach | Input | Callsign | Instruction types | Destination | Route taxiways | Turns | Hold-shorts | Crossings | Other values |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Haiku 5.5 | prompt | perfect | 96.0% (95/99) | 92.9% (92/99) | 84.4% (38/45) | 84.4% (38/45) | 95.8% (23/24) | 85.7% (36/42) | 100% (9/9) | 96.3% (26/27) |
+| Haiku 5.5 | prompt | Universal-3.6 Pro | 96.0% (95/99) | 86.9% (86/99) | 86.7% (39/45) | 84.4% (38/45) | 100% (24/24) | 97.4% (38/39) | 100% (9/9) | 88.9% (24/27) |
+| Haiku 5.5 | prompt | Nova-3 | 100% (99/99) | 96.0% (95/99) | 86.7% (39/45) | 86.7% (39/45) | 100% (24/24) | 100% (39/39) | 100% (9/9) | 96.3% (26/27) |
+| Haiku 5.5 | prompt | perturbed | 86.1% (31/36) | 83.3% (30/36) | 61.9% (13/21) | 66.7% (14/21) | 91.7% (11/12) | 77.8% (14/18) | 100% (9/9) | 50.0% (6/12) |
+| Haiku 5.5 | tools | perfect | 85.9% (85/99) | 82.8% (82/99) | 91.1% (41/45) | 91.1% (41/45) | 87.5% (21/24) | 89.7% (35/39) | 77.8% (7/9) | 88.9% (24/27) |
+| Haiku 5.5 | tools | Universal-3.6 Pro | 89.9% (89/99) | 86.9% (86/99) | 88.9% (40/45) | 80.0% (36/45) | 79.2% (19/24) | 87.2% (34/39) | 88.9% (8/9) | 92.6% (25/27) |
+| Haiku 5.5 | tools | Nova-3 | 76.8% (76/99) | 75.8% (75/99) | 80.0% (36/45) | 75.6% (34/45) | 54.2% (13/24) | 82.1% (32/39) | 100% (9/9) | 71.4% (20/28) |
+| Haiku 5.5 | tools | perturbed | 58.3% (21/36) | 55.6% (20/36) | 38.1% (8/21) | 38.1% (8/21) | 41.7% (5/12) | 83.3% (15/18) | 66.7% (6/9) | 33.3% (4/12) |
+| gpt-6-luna | prompt | perfect | 100% (99/99) | 97.0% (96/99) | 100% (45/45) | 100% (45/45) | 100% (24/24) | 100% (39/39) | 100% (9/9) | 100% (27/27) |
+| gpt-6-luna | prompt | Universal-3.6 Pro | 100% (99/99) | 97.0% (96/99) | 100% (45/45) | 93.3% (42/45) | 87.5% (21/24) | 100% (39/39) | 100% (9/9) | 100% (27/27) |
+| gpt-6-luna | prompt | Nova-3 | 100% (99/99) | 100% (99/99) | 100% (45/45) | 100% (45/45) | 87.5% (21/24) | 100% (39/39) | 100% (9/9) | 100% (27/27) |
+| gpt-6-luna | prompt | perturbed | 100% (36/36) | 97.2% (35/36) | 100% (21/21) | 81.0% (17/21) | 83.3% (10/12) | 100% (18/18) | 100% (9/9) | 100% (12/12) |
+| gpt-6-luna | tools | perfect | 100% (99/99) | 96.0% (95/99) | 100% (45/45) | 100% (45/45) | 100% (24/24) | 100% (39/39) | 100% (9/9) | 100% (27/27) |
+| gpt-6-luna | tools | Universal-3.6 Pro | 100% (99/99) | 97.0% (96/99) | 100% (45/45) | 84.4% (38/45) | 96.0% (24/25) | 100% (39/39) | 100% (9/9) | 100% (27/27) |
+| gpt-6-luna | tools | Nova-3 | 100% (99/99) | 99.0% (98/99) | 100% (45/45) | 82.2% (37/45) | 84.0% (21/25) | 100% (39/39) | 100% (9/9) | 100% (27/27) |
+| gpt-6-luna | tools | perturbed | 100% (36/36) | 97.2% (35/36) | 100% (21/21) | 85.7% (18/21) | 75.0% (9/12) | 94.7% (18/19) | 100% (9/9) | 100% (12/12) |
+
+"Other values" is ATIS letter, altimeter, handoff mode and facility, frequency, delay minutes, ground-stop destination and release time. gpt-6-luna got every one of them right in every row. Haiku's misses there come from invalid answers and from dropping the ATIS instruction (below). The full breakdown is printed by the bench.
+
+**Extra experiment: terse answers.** Not part of the planned matrix. To see whether shorter output cuts latency, the model wrote one line of 1.2's terse syntax (about 15 tokens instead of 60–90 of JSON), which `parseTerse` turns into the same command object. Approach A only, perfect and perturbed, 3 repeats. Results in `results/interp/terse-answer/`, spend $0.08.
+
+| Model | Input | Exact match | Valid | Median | p95 | Output tokens (mean) |
+|---|---|---|---|---|---|---|
+| Haiku 5.5 | perfect | 72.7% (72/99) | 87.9% | 1209 ms | 1732 ms | 17 |
+| Haiku 5.5 | perturbed | 58.3% (21/36) | 77.8% | 1214 ms | 2644 ms | 43 |
+| gpt-6-luna | perfect | 83.8% (83/99) | 89.9% | 762 ms | 1203 ms | 14 |
+| gpt-6-luna | perturbed | 63.9% (23/36) | 77.8% | 730 ms | 1322 ms | 17 |
+
+- **gpt-6-luna got about 0.5 s faster** without the strict JSON schema, but less accurate. Most of the loss is syntax: `taxi T4 via …` without `ramp`, and `L: A` with a space. This was a first-pass terse prompt; it hasn't been tuned.
+- **Haiku 5.5 didn't get faster.** Its latency doesn't depend on output length here (see [Latency](#latency-what-the-time-goes-on)).
+
+### Recommendation for 0.6
+
+**Context in the prompt, not tool calls. Take gpt-6-luna with strict structured output into the live loop.**
+- **Prompt beats tools on both models.** Tools never made the answer more accurate, and on Haiku they made it worse. They cost a second (sometimes third) round trip: 2.0–2.25 on average. Each round trip costs the full per-request time, so tools take 2.3–2.9 s at the median against 1.1–1.3 s. This confirms the PRD's lean (§6.1).
+- **gpt-6-luna is the more accurate model:**
+  - 97.0% exact on perfect text, 93.9% on Universal-3.6 Pro, 97.0% on Nova-3, 83.3% on the perturbed set
+  - every answer valid, because the strict schema guarantees the shape
+  - every misheard callsign fixed from context (36/36 on the perturbed set)
+  - $0.10/hr at peak
+  - It's slightly slower than Haiku: median 1.24 s against 1.10 s.
+- **Haiku 5.5 is held back by output format, not only content.** Anthropic can't grammar-constrain the full command schema, so Haiku answers as plain JSON:
+  - Up to 14% of its prompt answers are invalid (on the perturbed set), and up to 42% in tools mode.
+  - With thinking disabled, it often writes a sentence before the JSON.
+  - Its content is also weaker: 81–90% exact on the real transcripts.
+- **Neither model meets the 0.4 s budget.** The fastest answer in the main matrix took 757 ms, and the fastest anywhere 533 ms (gpt-6-luna, terse experiment). Both models have a fixed cost of about 0.9 s per request (below).
+  - With 0.3's speech-to-text (~0.12 s) and 0.5's voice (~0.18 s), a gpt-6-luna median puts the loop at about 1.55 s before scheduling, against the 1.0 s target.
+  - 0.6 should measure it live. Q decides whether PRD §6.3's budget changes.
+
+### What didn't work as documented
+
+1. **Anthropic rejects the command schema for structured output.**
+   - Both `output_config.format` and a strict tool with the same schema return HTTP 400: "The compiled grammar is too large, which would cause performance issues. Simplify your tool schemas or reduce the number of strict tools."
+   - The schema is within every documented explicit limit: 12 union-typed parameters (limit 16), 0 optional parameters (limit 24), one strict schema.
+   - The docs say an internal grammar limit fails with "Schema is too complex for compilation". The message seen was different.
+   - What I tried (each 400 is free):
+     - Removing the `taxi` or the `correction` branch makes it compile. Removing any one of 8 other branches I tried (cross, handoff, atis, hold-short, ground-stop, release-time, expect-delay) doesn't. Each part compiles alone.
+     - No help from removing descriptions, from `$defs`/`$ref` for shared parts, from type arrays instead of `anyOf [X, null]`, or from other encodings of `turn` or the destination name.
+     - An empty schema `{}` for the correction's parts is rejected: "Empty schema ({}) that accepts any JSON value is not supported."
+     - `{"type": ["string", "null"], "enum": ["left", "right", null]}` is rejected: "Enum value 'left' does not match declared type '['string', 'null']'". `{"enum": ["left", "right", null]}` with no `type` works.
+   - gpt-6-luna's strict mode takes the same schema with no problem.
+2. **A non-strict tool as the answer channel drops required fields.** I tried a `submit_command` tool, forced with `tool_choice`. Its input schema was the full command, without strict mode. All 3 probe answers left out the root `"type": "transmission"` field, so this route wasn't used. Plain JSON text with the schema in the prompt passed all 3, so Haiku runs that way.
+3. **Haiku 5.5 with thinking disabled often explains before answering.** "The controller…", "This is an unknown station, so…", then the JSON. Strict parsing counts these as invalid.
+   - It's most common in tools mode: 10–21 answers per input.
+   - If the first JSON object in the text had been taken instead, most would have scored. On perfect text in tools mode, 12 of 14 would have been exact.
+   - That rescue isn't in the main numbers.
+4. **OpenAI's automatic caching did reuse the static prefix.** The prompt-caching guide says that in the default ("implicit") mode, a static developer message followed by a changing user message gets a breakpoint only at the end of the user message, so the prefix isn't reused.
+   - Measured: calls 2 and 3 read 3,449 cached tokens, which is the static prefix.
+   - Each call also wrote its own changing part (~1,607 tokens) to the cache, at 1.25× the input rate.
+   - The bench uses the guide's explicit mode instead (`prompt_cache_options: {mode: "explicit"}` plus a `prompt_cache_breakpoint` on the static block). That caches only the prefix, like Anthropic's single `cache_control` breakpoint. The cost difference is under $0.02/hr.
+5. **OpenAI's `input_tokens` includes cached and written tokens.** For example, 5,049 = 1,604 uncached + 3,445 written. Anthropic's `input_tokens` excludes both. The bench converts both providers to the same split.
+6. **Effort "none" doesn't make gpt-6-luna fast.** OpenAI's own `openai-processing-ms` header has a median of about 1.14 s per request. The client measured about 1.24 s, so network and HTTP add only ~0.1 s. Each answer is about 60 output tokens.
+
+### Latency: what the time goes on
+
+A straight-line fit of warm request time against output tokens:
+
+| Runner | Requests | Median output tokens | Fixed part | Per output token |
+|---|---|---|---|---|
+| Haiku 5.5, prompt | 342 | 87 | 933 ms | 2.8 ms |
+| Haiku 5.5, tools | 692 | 125 | 849 ms | 3.8 ms |
+| gpt-6-luna, prompt (strict JSON) | 342 | 60 | 920 ms | 6.3 ms |
+| gpt-6-luna, tools (strict JSON) | 754 | 57 | 940 ms | 7.3 ms |
+| gpt-6-luna, prompt, terse (no schema) | 138 | 14 | 658 ms | 12.0 ms |
+| Haiku 5.5, prompt, terse | 138 | 17 | 1200 ms | 4.4 ms |
+
+What this says:
+- **About 0.85–0.95 s is fixed cost** on both models, before output length matters. Output adds 0.25–0.4 s at the median.
+- **Input size isn't the cause, as far as this shows.** Haiku's tools requests carry about 110–660 uncached tokens and its prompt requests about 2,680, and both take about 1.1–1.3 s per request. gpt-6-luna is the same: about 30–300 against 1,610 tokens, both about 1.25 s.
+- **For gpt-6-luna, dropping the strict schema cut about 0.26 s of fixed time** (920 to 658 ms). That run also dropped the schema's ~1,500 rendered prompt tokens, so this doesn't separate the grammar from the prompt size. For Haiku, shorter output didn't help.
+- **New connections:** each run opened one, on its warm-up request; no sample was cold. A cold first request cost about +0.44 s on gpt-6-luna and nothing measurable on Haiku. 0.6 should keep a warm connection.
+
+### Error patterns
+
+Across both models:
+- **"and sit tight" (line 22) becomes an extra instruction.** gpt-6-luna adds `hold`, and Haiku adds `hold` or `hold-for-release`, on almost every sample. In the sim, `hold` would stop the aircraft before it reaches the pad. The expected command has no such instruction; that's worth confirming with Q.
+- **"Kilo, Kilo" (line 22) becomes two taxiways, `K K`, not KK.** Universal-3.6 Pro wrote the commas, and both models followed them. The context lists KK, but neither used it. The perturbed set has the same phrasing and failed the same way.
+- **Without commas, turns slide onto the previous taxiway.** Line 10 on both speech-to-text inputs: "kilo delta right on bravo left hotel" came back as `R:KD L:B H` instead of `KD R:B L:H`. gpt-6-luna did this on all 3 repeats of both. Haiku tools mode did the same on Nova-3's line 01 ("alpha right on kilo echo" → `R:A KE`). With the script's commas, every model got it right.
+- **"red on Alpha" (perturbed line 09):** gpt-6-luna dropped the turn (`via KF A`) in 5 of 6 samples. Haiku's prompt mode read it as right. Everyone read "monitor right" as monitor ramp.
+
+gpt-6-luna:
+- In tools mode, "Kilo Delta" was split into two taxiways (`K D`) on Nova-3 line 02 (3 of 3) and on line 06 with both speech-to-text inputs.
+- In tools mode, line 12 ("actually, I need you to hold short of three one right") twice became a correction (`neg hs 31R`). That would replace the hold-short list instead of adding to it.
+- In tools mode, line 29's corrected route came back as corrected turns (`neg turn L:A R:J hs B`), twice.
+
+Haiku 5.5 (prompt mode):
+- **"Alpha, Juliet" (line 04) becomes `A JA` or `A JB`** on every repeat of all three full inputs (tools mode once gave `AJ`). JA and JB are real JFK taxiways (Juliet Alpha, Juliet Bravo) in the names list.
+- **"departure runway is three one left, not right" (line 28) becomes `neg hs 31L`**, a hold-short, on all 3 perfect-text repeats, instead of `neg to 31L`. The speech-to-text inputs got it right.
+- **"into the ramp" (line 09) becomes `ramp T5`**, the arrival's own terminal, on every repeat. The sim reads both the same way (null means the aircraft's own ramp), but the controller didn't name a terminal, and the prompt says to use null. Scored as a miss.
+- **On Universal-3.6 Pro line 06** ("information Papa is current altimeter 2992", with no comma), it dropped the ATIS instruction on all 3 repeats.
+- **Shape slips without a grammar:** a correction's `via` as an object instead of a list, an empty correction, and `minutes` that wasn't a whole number.
+
+Context fixes (perturbed set):
+- gpt-6-luna resolved every misheard callsign in both approaches:
+  - "Delta for" (with DAL40 "Delta forty" also on frequency)
+  - "The tons are four zero five" (Lufthansa)
+  - "Delta thirty twenty-three forty"
+  - "Alaska men are three", "Iberia has six twenty six", "Swiss won seven hui"
+  - "Qatary", "Delta twelver for"
+- "cross one way three one right" and "old short of Bravo" were read correctly everywhere.
+- "stop, stop hold short" (a mishearing of hold position) became `hold` on every prompt-mode sample, from the context "the aircraft ahead has stopped suddenly". gpt-6-luna's tools mode got it 2 of 3 (once `hs K`).
+
+Unscored line 34 (C11, give way, then follow):
+- No model said it couldn't do this. gpt-6-luna answered `JBU1123 continue` every time; Haiku answered `hold`, `hs A` or `hs KE`.
+- The command format has no "not understood" output, so an unsupported instruction becomes a confident, wrong command.
+
+### Method
+
+**Run:** `npm --prefix spikes/voice-loop run interp-bench` runs every model × approach × input. The two models ran as two parallel processes, with requests one at a time within each.
+
+Flags:
+- `--model`, `--approach`, `--input`, `--lines`, `--limit`, `--repeats` (default 3)
+- `--rescore` (no API calls), `--misses` (prints every miss), `--resume`
+- `--opt` (needs `--out`): `answer=text|tool|format|terse`, `cache=explicit|implicit`
+- `--out`, `--max-spend` (default $5)
+
+Code: `interp-bench.ts` and `interp/`. `interp/analyze.ts` prints the latency fit, the tools' lookups and the format-vs-content check.
+
+**Models:**
+- `claude-haiku-5-5`: `@anthropic-ai/sdk` 1.3.0, `thinking: {type: "disabled"}`, effort left at its default (medium), `max_tokens` 1024, `maxRetries: 0`. It answers as JSON text, with the command's JSON Schema written into the cached prompt.
+- `gpt-6-luna`: Responses API through `fetch`, `reasoning: {effort: "none"}`, `store: false`, `max_output_tokens` 1024, `text.format` json_schema with `strict: true`.
+
+**Schema** (`interp/schema.ts`): it mirrors `commands.ts` field for field, with every field required and null for "not given".
+- Two unions are flattened to `{kind, name}` objects that produce the same JSON: destination and hold-short target. That keeps the count under Anthropic's union limit.
+- `interp/shape.ts` checks what the schema can't say: name and runway formats, non-empty lists, the correction rules. It also round-trips each answer through `parseTerse`.
+
+**Game context** (`interp/context.ts`). It's the same for every model and input; only the transcript changes.
+- **Static part, cached:**
+  - the rules
+  - JFK's 87 taxiway names from the FAA diagram plus the script's KC, KF and KK, each with its spoken form
+  - the 8 runway ends and the terminal ramps T1, T4, T5, T7, T8
+  - 25 airline radio names: the script's, with 1.2's codes, plus 8 other JFK operators
+- **Live part, after the cache breakpoint:**
+  - current ATIS Papa, altimeter 2992; runway configuration
+  - 22 flights on frequency: every script flight, plus one decoy, DAL40 "Delta forty"
+  - Each flight shows its role, terminal, runway, position, clearance, last pilot transmission and notes (tower approvals, traffic management).
+  - The addressed flight's state is as of its line. Correction lines show the issued clearance and the pilot's wrong readback.
+  - Line 31 has an "unattributed transmission" instead.
+- Approach B gets only the transcript. `find_flight` matches the spoken callsign fuzzily (airline words within a small edit distance, digits through 0.3's normalizer) and returns the flight's full state. `check_names` maps spoken or written names to airport IDs.
+
+**Prompt** (`interp/prompt.ts`):
+- It restates the command contract: hold-shorts go in the taxi, one transmission per aircraft, a correction replaces only what it names, and so on.
+- It adds Q's lower-bound rule for delay ranges.
+- It lists what to leave out: traffic information, sequence, "when you get there", and repeats for emphasis.
+- It has three invented examples. They share structure with script lines 01, 18 and 26, and the prompt was written after reading the script. **Expect live accuracy on unseen phrasing to be lower than the perfect-text numbers.** The prompt wasn't tuned after the run.
+
+**Perturbed set** (`interp/inputs.ts`): 12 lines, each one line's `say` text with one or two mishearings:
+- 0.3's candidates: "Qatary" (gpt-live-transcribe), "Delta thirty twenty-three forty" (gpt-transcribe), "Alaska men are three", "The tons are", "Iberia has six twenty six", "Swiss won seven hui", "old short", "Delta twelver for" (Flux), "cross one way" (Nova-3 and others), "red on" and "monitor right" (Universal-Streaming English), "Kilo, Kilo" (Universal-3.6 Pro) and "zip type" (Nova-3)
+- "stop, stop hold short" (gpt-live-transcribe)
+- PLAN's "Delta for"
+
+**Latency:**
+- `performance.now()` from just before each request to the parsed response, non-streaming. A tools transcript adds up every request plus local tool time (under 1 ms).
+- Connections are Node's built-in fetch with keep-alive. New connections are counted from undici's `undici:client:connected` diagnostics channel.
+- One unscored warm-up request per runner and input opens the connection, compiles the schema and writes the cache. Samples where any request opened a new connection would be left out; there were none.
+- Order: for each repeat, every line in script order.
+- p95 is nearest-rank.
+
+### Scoring
+
+**Expected commands:** the `expected:` rows of `test-set/script.md`, in terse syntax, parsed with `parseTerse`.
+- 1.2's draft forms still matched the current `say` text, including the five lines edited after recording.
+- Line 32 is `delay 20` (Q: a range scores as its lower bound).
+- Line 34 is `UNSCORED (C11 has no command)`.
+
+**One normalization rule**, on both sides: hold-short instructions right after a taxi are folded into that taxi's hold-short list. Hold-shorts after anything else, such as a crossing, stay separate.
+- It changed the result on 4 samples, all Haiku tools mode and all line 05: 3 on perfect text and 1 on Nova-3. Haiku had given the two hold-shorts as separate instructions.
+- It never changed a gpt-6-luna result.
+- Nothing else is normalized. A `ramp T5` for "the ramp" is a miss.
+
+**Exact match:** deep equality after that rule. An answer that isn't pure JSON, or fails the shape check, counts as a miss, and its reason is saved.
+
+**Self-checks at start:** every expected command must pass the shape check and score as exact against itself.
+
+### Cost
+
+$/hr at peak = 450 transmissions/hr × the measured mean cost per transmission, at the § Shortlist prices. Both models cost the same per token: $0.10/M input, $0.01/M cache read, $0.125/M cache write, $0.50/M output.
+
+| Runner | Cached prefix (tokens per request) | Uncached input per transmission | Output per transmission | $/hr measured | $/hr if nothing were cached |
+|---|---|---|---|---|---|
+| Haiku 5.5, prompt | 5,964 | ~2,680 | ~90 | $0.17 | $0.41 |
+| Haiku 5.5, tools | 5,256 | ~630–800 | ~230–275 | $0.13–0.15 | $0.55–0.58 |
+| gpt-6-luna, prompt | 3,449 | ~1,610 | ~60 | $0.10 | $0.24 |
+| gpt-6-luna, tools | 2,889 | ~330–380 | ~110–120 | $0.07 | $0.32–0.33 |
+
+- **Every prefix is over its provider's minimum** (512 tokens for Haiku 5.5, 1,024 for gpt-6-luna), and every warm request read it from cache.
+- **The same live context costs Haiku about 65% more tokens** (2,680 against 1,610): its tokenizer splits text into more tokens.
+- **Tools mode is cheaper per hour** because its live context is small, but it's slower and no more accurate.
+- **Cache writes** only happened on warm-ups. At 450 transmissions an hour the cache never goes cold (Anthropic's lasts 5 minutes from last use, OpenAI's 30).
+- **Every option is far under the $5/hr soft cap.** The § Shortlist estimate ($0.09 cached, $0.22 uncached) assumed a 1,000-token live context. The measured one is 1.6–2.7K tokens.
+
+**This bake-off's spend:** $0.45, from `results/interp/spend-log.jsonl`, estimated from measured tokens at list prices:
+
+| Run | Spend |
+|---|---|
+| Probes and schema bisect | $0.01 |
+| Haiku, prompt | $0.13 |
+| Haiku, tools | $0.10 |
+| gpt-6-luna, prompt | $0.08 |
+| gpt-6-luna, tools | $0.05 |
+| Terse experiment | $0.08 |
+
+### Notes for 0.6
+
+- **Use gpt-6-luna, prompt approach, strict `text.format` schema, explicit cache breakpoint.** Reuse `interp/schema.ts`, `interp/context.ts`'s layout and `interp/shape.ts`.
+- **Keep one warm keep-alive connection to OpenAI.** A cold first request cost about +0.44 s.
+- **Budget about 1.25 s for interpretation, not 0.4 s.** Ways to claw time back, none tried live yet:
+  - Answer in terse syntax without the schema: 0.76 s median here, but it needs prompt work and accuracy checks first.
+  - Start the readback template from a partial answer.
+  - Revise PRD §6.3.
+- **The command format needs a "not understood" output.** Line 34 shows the model will otherwise invent a command. PRD §6.1 already wants the pilot to say "say again" when the game can't work out an instruction.
+- **Speech-to-text punctuation matters.**
+  - Universal-3.6 Pro's commas split "Kilo Kilo" into two Kilos.
+  - Missing commas let turns slide onto the previous taxiway.
+  - A post-check against the airport graph (an impossible route like A K K, or a turn onto the taxiway you're already on) could catch some of these before the readback. The readback is the player's last chance to catch the rest.
+- **If Haiku is ever reconsidered:** Anthropic's grammar can't take the full schema. It would need a smaller per-instruction schema, or lenient JSON extraction plus the shape check.
 
 ## Voices
 
