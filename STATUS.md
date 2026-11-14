@@ -1,13 +1,50 @@
 # STATUS
 
-_Last updated: 2026-11-14 (0.6 started: live voice loop)_
+_Last updated: 2026-11-14 (0.6 done after Q's live session: Phase 0 complete)_
 
 ## Snapshot
 
-10 of 20 tasks done (0.1–0.5, 1.1–1.4, 1.8). Nothing blocked. **The interpreter misses its 0.4 s budget** (about 1.1–1.3 s median), so the loop's estimated median is about 1.55 s against the 1.0 s target; 0.6 (in progress) measures it live. Next after it: 1.9.
+11 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.4 and 1.8. Nothing blocked.
+
+**Phase 0's picks (Q signed off 2026-11-14):**
+- speech-to-text: Deepgram Nova-3
+- interpreter: gpt-6-luna with prompt context and strict JSON
+- voices: Cartesia, about two thirds of flights, and ElevenLabs for the rest
+
+**Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
+
+Next up: 1.9.
 
 ## Completed
 
+- [x] 0.6 — Live end-to-end loop and findings; Q tests — done 2026-11-14 — verified:
+  - **Q's live session:**
+    - 30 transmissions over 25 situation cards, in Chrome with a real mic.
+    - `analyze.ts` on `results/live/session-2026-11-14T18-32-07-729Z.jsonl`: exit 0.
+    - End to end (browser clock): median 2,198 ms, p95 2,699 ms.
+    - Q marked 23 of 25 understood.
+    - The session log has 0 key hits (the agent's `scan-keys.ts` and my own scan) and 0 personal-info hits.
+  - **§ Findings** in `docs/spikes/voice-loop.md` covers every PLAN Acceptance item:
+    - the per-stage and end-to-end median / p95 table against 1.0 s
+    - $/hr at peak against the caps, with the assumption revised from live counts (7.13 s of audio per transmission)
+    - named picks with rationale
+    - prompt vs tools: prompt
+    - the targets recommendation
+    - Q's sign-off table
+  - **The build** (before the session):
+    - **Replay slice:**
+      - First run, on u36pro+cartesia-ws: STT and the interpreter worked (3/3 exact), but every Cartesia request failed with `402 Insufficient credits`. The page and the analysis showed the failure rather than hiding it.
+      - Q upgraded Cartesia to Pro.
+      - Re-run on u36pro+cartesia-ws and nova3+elevenlabs, lines 01, 17 and 29: 6/6 exact, first voice byte 124–181 ms, end to end 1.22–2.10 s (median 1.61 s).
+      - `analyze.ts` printed the per-stage and end-to-end median and p95, accuracy and $/hr.
+    - **Spike typecheck:** exit 0, now including `live/` and `interp/`.
+    - **Server:**
+      - `lsof` shows it listening on `127.0.0.1:8741` only.
+      - `GET /` returns 200. The LAN address (192.168.1.98) gets no connection.
+      - It stopped cleanly on SIGINT.
+    - **Chrome (DevTools):** the page loaded with no console messages and "server connected", and rendered card 1 of 25. Chrome held an established socket to 8741, though DevTools listed no WebSocket request. The mic needs Q's real microphone; the session is its first real-mic test.
+    - **My own key and personal-info scan:** 0 hits across 39 files (3.4 MB). That covers every new file, plus the recorded server→client messages from both of my replays.
+    - **Spend:** the log shows $1.3105.
 - [x] 0.4 — Interpreter bake-off — done 2026-11-14 — verified by me after the subagent:
   - Slice re-run (`--model gpt-6-luna --approach prompt --input perfect --lines 01,17,29 --repeats 1`, to the scratchpad):
     - exit 0, 3 of 3 exact, 1,109–2,029 ms
@@ -76,8 +113,6 @@ _Last updated: 2026-11-14 (0.6 started: live voice loop)_
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
-
-- 0.6 — Live end-to-end loop and findings; Q tests — started 2026-11-14 by an Opus subagent. It owns `spikes/voice-loop/live/**`, `results/live/**` and `results/0.6-findings.md`. Plan: `~/.claude/plans/zany-snacking-llama.md`. The build is verified by replaying the test-set audio. Then it goes to Blocked on Q's live session, and § Findings follows that session.
 
 ## Blocked
 
@@ -342,11 +377,58 @@ _Last updated: 2026-11-14 (0.6 started: live voice loop)_
     - The spike gains a `live` script.
     - The spike tsconfig now also checks `interp/**` and `live/**`. Typecheck still exits 0.
 
+- 2026-11-14 — **0.6 build: choices, findings, and an account change:**
+  - **ElevenLabs Starter allows library voices.** But the first API request with a library voice takes about 5 s and **adds the voice to Q's "My Voices"**.
+    - The agent added two that way, "Jon - Natural Authority" (shown as Rob) and "Russell Flemming", without asking Q first. Reversible.
+    - The server warms every voice at startup, so no transmission pays the 5 s.
+    - The agent recommends keeping both until the voice pick is final.
+  - **Cartesia ran out of free-plan credits** during my verification. Q upgraded to Pro ($5/mo, 100K credits).
+  - **Replay** (170 transmissions: all 34 lines × 5 combinations, including Cartesia over HTTP for the transport comparison):
+    - Accuracy: 96.4% exact (159/165) and 100% valid. All 6 misses are on Nova-3's unpunctuated transcripts (lines 10, 22 and 29, the patterns 0.4 found).
+    - Latency, median / p95:
+      - final transcript 119 / 225 ms
+      - interpreter 1,373 / 2,520 ms
+      - first voice byte 162 / 278 ms
+      - end to end 1.68 / 2.73 s, with 0 of 170 within 1.0 s
+    - Cost: $1.79–$2.63/hr at peak, under both caps. Measured per transmission: 6.06 s of player audio, 71 readback characters, 59 output tokens.
+  - **Terse-output experiment** (68 logged transcripts): a tuned terse prompt got 92.6% exact at an 826 ms median, against strict JSON's 98.5% at 1,294 ms. That's about 0.45 s faster for about 6 points of accuracy.
+  - **Cartesia's "slow third" from 0.5 didn't recur** on either transport: requests ≥ 300 ms were 1/68 over WebSocket and 0/34 over HTTP. WebSocket is the live default.
+  - **Connection handling:**
+    - Deepgram opens per transmission at key-down; the 317 ms connect is hidden by the hold.
+    - AssemblyAI keeps one long-lived session with a `ForceEndpoint` per turn, which avoids the free tier's 5 sessions/min. 68 turns, with no split or lost turn.
+    - HTTP providers get keep-warm pings, an unauthenticated GET every 2.5 s. Node's fetch drops idle sockets after about 4 s.
+  - **Cards:** 25 situation cards covering C1–C10 and C12, each with its own flight states, built from 0.4's prompt pieces. A balanced plan gives each voice 4–5 cards.
+  - **The agent's provisional picks** (for Q's session to confirm):
+    - Speech-to-text: Universal-3.6 Pro, long-lived, which scored 66/66 in replay.
+    - Interpreter: gpt-6-luna with prompt context and strict JSON.
+    - Voice: Cartesia over WebSocket, pending Q's ears. ElevenLabs is $0.80/hr cheaper.
+  - **Open for Q:**
+    - Keep the two auto-added ElevenLabs voices?
+    - Tune voice speeds before the session? Daniel measured 115 wpm and Russell 205, against Q's 165. The agent recommends tuning by ear after the session, in `live/voices.ts`.
+    - Revise the PRD §6.3 targets after the live numbers. The agent's provisional suggestion: interpretation about 1.3 s, end-to-end median about 1.7 s.
+
+- 2026-11-14 — **Q's live session and sign-off (0.6):**
+  - **Live results:**
+    - End to end: median 2.20 s, p95 2.70 s; 0 of 29 within 1.0 s.
+    - By stage: interpreter 1.58 s median (79% of server time), Nova-3 106 ms, Universal-3.6 Pro 328 ms on its long-lived session (slower than in the replay), Cartesia 147 ms, ElevenLabs 177 ms, browser output about 0.18 s.
+    - Q found the responsiveness "pretty good" and liked the variety of voices.
+  - **Accuracy:**
+    - Q marked 23 of 25 understood.
+    - Exact match against the cards was 60%, mostly because the model correctly followed what Q actually said rather than the card's wording.
+    - The real errors, both marked N by Q: "Juliet, Bravo" merged into `JB` (Nova-3's punctuation), and a route-plus-turn correction returned as a turn-only fix.
+  - **Q's picks:**
+    - Speech-to-text: Nova-3, for its live latency, with the route check catching merged names.
+    - Interpreter: gpt-6-luna, prompt context, strict JSON.
+    - Voices: both providers, leaning Cartesia. About two thirds of flights get Cartesia (Sebastian, Derrick, Gary) and the rest ElevenLabs (Daniel, Rob, Russell). Q kept all six, including the two auto-added library voices.
+  - **Targets (Q):** PRD §6.3 and §11 now say a v1 median ≤ 2.0 s and p95 ≤ 3.0 s, with an interpreter budget of about 1.5 s. 1.0 s stays the long-term goal. The cost caps are unchanged; the picked mix is about $2.38/hr at peak.
+  - **For Phase 2:**
+    - the terse-output interpreter (about 0.45 s faster) plus the route check against the airport graph, to reach 2.0 s
+    - per-voice speed tuning by ear (Daniel and Gary are slow, Russell fast)
+    - shifting new flights to the other voice provider when one runs low on included characters
+    - not checked: whether ElevenLabs Starter allows overage
+
 ## Next Up
 
-- 0.6 is in progress (above). What it tests:
-  - Picks to test: speech-to-text Nova-3 and Universal-3.6 Pro; interpreter gpt-6-luna with prompt context; voices from ElevenLabs (Daniel, plus library voices now that the account is on Starter) and Cartesia (Sebastian, Derrick and Gary).
-  - Confirm ElevenLabs library voices work before relying on them.
-  - The latency budget question goes with it.
-- 1.9 — Simulation core. Needs 1.8, done. Inherits 1.8's follow-ups: starting mid-edge, and where to stop before a hold node.
-- 1.5 — JFK import. Needs Q's map answers (the 31L line, pads, the penalty box), and now covers hardstands and hangars.
+- 1.9 — Simulation core. Needs 1.8, done. It inherits 1.8's follow-ups: starting mid-edge, and where to stop before a hold node.
+- Also: 1.5 — JFK import. Needs Q's map answers (the 31L line, pads, the penalty box), and now covers hardstands and hangars.
+- Phase 0 is complete. Its Phase 2 follow-ups are in the 0.6 entry above.

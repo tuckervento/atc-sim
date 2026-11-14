@@ -1116,4 +1116,377 @@ All read 2026-11-14.
 
 ## Findings
 
-_Filled in by task 0.6 (live end-to-end loop, picks and Q's sign-off)._
+_Task 0.6. Built and replay-verified 2026-11-14 by an agent. Q's live session ran the same day: 30 transmissions over 25 situation cards. Q signed off on the picks (section 7)._
+- Numbers marked **REPLAY** come from streaming Q's 34 test-set recordings through the live server's own pipeline (`npm --prefix spikes/voice-loop run live -- --replay`): 34 lines × 5 combinations = 170 transmissions, at real-time pace.
+- Numbers marked **LIVE** come from Q's session: Q phrased each situation card their own way, into Chrome with a real mic. End to end is on the browser clock, from Space released to the first readback sample played.
+- Raw logs are in `spikes/voice-loop/results/live/`: `replay-full-1.jsonl` (one row per transmission), `replay-full-1.messages.jsonl` (every server→client message) and `terse-replay-*.jsonl`.
+
+**LIVE in one paragraph.**
+- End to end: median **2.20 s**, p95 **2.70 s**. 0 of 29 were within 1.0 s, and 31% within 2.0 s. Q found the responsiveness "pretty good".
+- Speech-to-text: Nova-3 106 ms (17/17 within budget); Universal-3.6 Pro 328 ms on its long-lived session.
+- First voice byte: Cartesia 147 ms, ElevenLabs 177 ms. Chrome's audio output adds about 0.18 s.
+- The interpreter is the gap: 1.58 s median, 79% of the server time.
+- Q marked **23 of 25 cards understood** (92%). Exact match against the cards was 60%, mostly because the interpreter followed what Q actually said rather than the card's wording (section 2).
+- Cost: $1.82–$2.64/hr at peak, under both caps.
+
+**REPLAY in one paragraph.**
+- End to end: median **1.68 s**, p95 **2.73 s**. 0 of 170 transmissions were within 1.0 s, and 79% within 2.0 s.
+- Speech-to-text (median 119 ms) and the first voice byte (162 ms) are within their budgets. The interpreter is not, at 1.37 s median (82% of the server time).
+- Accuracy: **96.4%** exact (159/165). Universal-3.6 Pro transcripts scored 66/66; Nova-3 transcripts scored 93/99.
+- Cost: $1.79–$2.63/hr at peak, under both caps.
+
+### The loop as built
+
+`spikes/voice-loop/live/` is a Chrome page with hold-Space push-to-talk, plus a local server on 127.0.0.1:8741 that holds every key. Per transmission:
+
+1. **Speech-to-text**, one of two, each with 0.3's shared vocabulary hints:
+   - **Deepgram Nova-3**: a new session per transmission, opened at key-down. Audio is buffered until the socket opens. At release, `Finalize`; the final is the `from_finalize` Results message.
+   - **AssemblyAI Universal-3.6 Pro**: one long-lived session, one turn per transmission, with `ForceEndpoint` at release (0.3's end signal for this model). 0.3 left this untested.
+     - It closes after 5 idle minutes and reopens at the next key-down.
+     - `--assembly-session per-turn` is the alternative: a session per transmission, subject to the free tier's 5 new sessions/minute.
+2. **Interpreter**: gpt-6-luna, prompt approach, strict JSON schema, explicit cache breakpoint (0.4's pick).
+   - The request body is byte-identical to 0.4's `openaiRunner` for script lines 01, 12 and 31. `live/check.ts` proves this offline with a stubbed fetch.
+   - An invalid answer gets "Say again for <callsign>", or "Station calling Ground, say again." if there's no usable callsign.
+3. **Readback**: templates only (`live/readback.ts`).
+   - Callsign last; numbers as words, with "niner".
+   - Several variants per instruction type, picked by a seeded generator.
+   - A terse or chatty style, fixed per flight.
+   - Covers every instruction type in `src/sim/commands.ts`.
+4. **Voice**, streamed to the page as it arrives:
+   - **ElevenLabs** `eleven_flash_v2_5`, HTTP streaming: Daniel (premade), plus two Voice Library voices, Rob ("Jon - Natural Authority") and Russell Flemming.
+   - **Cartesia** `sonic-3.6`: Sebastian (accent field `standard-german`), Derrick and Gary.
+     - The transport is an explicit setting, recorded in every row: `cartesia-ws` (one long-lived WebSocket) or `cartesia-http` (`/tts/bytes`).
+     - It never switches by itself.
+   - Each flight keeps one voice for the session. On the cards, all of a flight's cards use one voice provider. Voices are spread so each of the six gets 4–5 cards (`cards.ts` `cardVoicePlan`).
+
+**Clocks:**
+- Server stages use the server's clock, starting when the release message arrives.
+- End to end uses the client's clock:
+  - Browser: Space released → first readback sample output. The output moment is mapped with `AudioContext.getOutputTimestamp()`, so it includes the audio device's latency.
+  - Headless replay: release sent → first audio frame received.
+- No figure mixes clocks.
+
+**Keep-warm:**
+- Node's fetch drops an idle connection after about 4 s. Measured: reused after a 1 s gap, new after 6 s and 20 s gaps. Live transmissions are 10–30 s apart, and 0.4 measured a cold OpenAI request at about +0.44 s.
+- So the server pings each HTTP host every 2.5 s with an unauthenticated GET. No key is sent, and a warm ping takes 50–200 ms.
+- REPLAY result: 0 of 170 interpreter requests and 0 of 170 voice requests opened a new connection.
+
+### 1. Latency (PLAN acceptance: per-stage and end-to-end median / p95 vs 1.0 s)
+
+#### REPLAY
+
+Median / p95 per stage, against PRD §6.3; ✓/✗ marks the median against the budget. End to end is the headless client clock (release sent → first audio frame received). Every other column is the server clock, from release received.
+
+| Combination | n | Final transcript (≤ 300) | Interpreter (≤ 400) | Template | First voice byte (≤ 200) | Server total | End to end (≤ 1000) | E2E ≤ 1.0 s | E2E ≤ 2.0 s |
+|---|---|---|---|---|---|---|---|---|---|
+| nova3+cartesia-http | 34 | 104 ms / 194 ms ✓ | 1432 ms / 2826 ms ✗ | 0 ms / 1 ms | 152 ms / 287 ms ✓ | 1683 ms / 3198 ms | 1683 ms / 3198 ms ✗ | 0.0% (0/34) | 73.5% (25/34) |
+| nova3+cartesia-ws | 34 | 111 ms / 208 ms ✓ | 1285 ms / 1972 ms ✗ | 0 ms / 1 ms | 140 ms / 252 ms ✓ | 1605 ms / 2610 ms | 1606 ms / 2611 ms ✗ | 0.0% (0/34) | 91.2% (31/34) |
+| nova3+elevenlabs | 34 | 111 ms / 303 ms ✓ | 1345 ms / 3397 ms ✗ | 0 ms / 1 ms | 176 ms / 234 ms ✓ | 1714 ms / 3648 ms | 1715 ms / 3648 ms ✗ | 0.0% (0/34) | 73.5% (25/34) |
+| u36pro+cartesia-ws | 34 | 118 ms / 225 ms ✓ | 1315 ms / 2060 ms ✗ | 0 ms / 1 ms | 137 ms / 203 ms ✓ | 1662 ms / 2320 ms | 1662 ms / 2321 ms ✗ | 0.0% (0/34) | 82.4% (28/34) |
+| u36pro+elevenlabs | 34 | 147 ms / 266 ms ✓ | 1373 ms / 2387 ms ✗ | 0 ms / 1 ms | 170 ms / 263 ms ✓ | 1746 ms / 2720 ms | 1746 ms / 2721 ms ✗ | 0.0% (0/34) | 73.5% (25/34) |
+| **all** | **170** | **119 ms / 225 ms ✓** | **1373 ms / 2520 ms ✗** | 0 ms / 1 ms | **162 ms / 278 ms ✓** | 1683 ms / 2731 ms | **1683 ms / 2732 ms ✗** | **0.0% (0/170)** | **78.8% (134/170)** |
+
+Per provider, pooled over the other stage's choice:
+
+| Stage | Provider | n | Median / p95 | Within budget | Notes |
+|---|---|---|---|---|---|
+| Final transcript | Nova-3 | 102 | 109 ms / 197 ms | 98.0% (100/102) | connection setup hidden by the hold 102/102; connect median 317 ms |
+| Final transcript | Universal-3.6 Pro, long-lived | 68 | 131 ms / 251 ms | 98.5% (67/68) | **one session for all 68 turns** over 38.6 min; first turn 109 ms, later turns 134 / 251 ms; no transmission split into several turns |
+| Interpreter | gpt-6-luna, strict JSON | 170 | 1373 ms / 2520 ms | 0.0% (0/170) | OpenAI's `openai-processing-ms` median 1223 ms; new connections 0/170 |
+| First voice byte | ElevenLabs Flash v2.5 | 68 | 174 ms / 234 ms | 79.4% (54/68) | new connections 0/68; ≥ 300 ms: 2/68 |
+| First voice byte | Cartesia sonic-3.6, WebSocket | 68 | 138 ms / 218 ms | 89.7% (61/68) | the socket opened once for the whole run; ≥ 300 ms: 1/68 |
+| First voice byte | Cartesia sonic-3.6, HTTP | 34 | 152 ms / 287 ms | 73.5% (25/34) | new connections 0/34; ≥ 300 ms: 0/34 |
+
+Where the time goes (medians): final transcript 119 ms, interpreter 1,373 ms, template 0 ms, first voice byte 162 ms, sending 0 ms. Server total is 1,683 ms. Headless end to end equals the server total to within 1 ms, so the local WebSocket adds nothing measurable.
+
+Readback speaking rate per voice (words per minute over the speech span; Q's controller cadence is a median of 165 wpm, from 0.5):
+
+| Voice | Readbacks | Median wpm | Range |
+|---|---|---|---|
+| Cartesia Derrick ×1.25 (WS + HTTP) | 39 | 164–170 | 131–209 |
+| Cartesia Sebastian ×1.25 | 39 | 162–163 | 127–191 |
+| Cartesia Gary ×1.25 | 24 | 136–140 | 114–195 |
+| ElevenLabs Rob ×1.0 | 26 | 180 | 123–231 |
+| ElevenLabs Russell ×1.0 | 16 | 205 | 143–254 |
+| ElevenLabs Daniel ×0.9 | 26 | 115 | 91–147 |
+
+#### LIVE (Q's session)
+
+From `node spikes/voice-loop/live/analyze.ts spikes/voice-loop/results/live/session-2026-11-14T18-32-07-729Z.jsonl`. Medians / p95. End to end is the browser clock; every other column is the server clock.
+
+| Combination | n | Final transcript (≤ 300) | Interpreter (≤ 400) | First voice byte (≤ 200) | Server total | End to end (≤ 1000) |
+|---|---|---|---|---|---|---|
+| nova3+cartesia-ws | 9 | 106 / 190 ms ✓ | 1867 / 2268 ms ✗ | 143 / 171 ms ✓ | 2099 / 2508 ms | 2293 / 2699 ms ✗ |
+| nova3+elevenlabs | 8 | 76 / 187 ms ✓ | 1503 / 1916 ms ✗ | 176 / 297 ms ✓ | 1793 / 2163 ms | 2002 / 2357 ms ✗ |
+| u36pro+cartesia-ws | 7 | 328 / 550 ms ✗ | 1501 / 1897 ms ✗ | 148 / 252 ms ✓ | 2049 / 2471 ms | 2244 / 2677 ms ✗ |
+| u36pro+elevenlabs | 6 | 323 / 435 ms ✗ | 1579 / 2270 ms ✗ | 181 / 361 ms ✓ | 2114 / 2873 ms | 2314 / 3071 ms ✗ |
+| **all** | 30 | **144 / 435 ms ✓** | **1579 / 2268 ms ✗** | **166 / 297 ms ✓** | **2002 / 2508 ms** | **2198 / 2699 ms ✗** |
+
+- **End to end:** 0 of 29 within 1.0 s, 9 of 29 (31%) within 2.0 s. One transmission had no speech, so it has no end-to-end time.
+- **Per provider:**
+  - Nova-3: 106 / 190 ms, 17 of 17 within the 0.3 s budget. The 376 ms connect was hidden by the hold every time.
+  - Universal-3.6 Pro: 328 / 550 ms, 5 of 13 within budget, on one long-lived session. That's much slower than in the replay (131 ms). The first turn took 240 ms; later turns 328 / 550 ms.
+  - Interpreter: 1579 / 2268 ms, 0 of 29 within budget. OpenAI's own processing header has a median of 1,394 ms, so the time is on OpenAI's side. That's about 0.2 s slower than in the replay.
+  - ElevenLabs first byte: 177 / 361 ms, 10 of 14 within 0.2 s.
+  - Cartesia over WebSocket: 147 / 252 ms, 14 of 15 within 0.2 s.
+- **Browser audio output latency** (`AudioContext.outputLatency`): median 182 ms. No readback had to queue behind another.
+- **Live speaking rate** (Q's cadence is 165 wpm): Sebastian 170, Rob 170, Derrick 157, Daniel 124, Gary 119, Russell 192 wpm.
+
+### 2. Accuracy
+
+#### REPLAY (Q's test-set recordings: phrasing the 0.4 prompt was written against)
+
+| Combination | Scored | Exact | Valid answers |
+|---|---|---|---|
+| nova3+cartesia-http | 33 | 97.0% (32/33) | 100% |
+| nova3+cartesia-ws | 33 | 93.9% (31/33) | 100% |
+| nova3+elevenlabs | 33 | 90.9% (30/33) | 100% |
+| u36pro+cartesia-ws | 33 | 100.0% (33/33) | 100% |
+| u36pro+elevenlabs | 33 | 100.0% (33/33) | 100% |
+| **all** | **165** | **96.4% (159/165)** | 100% |
+
+All 6 misses repeat error patterns 0.4 already reported, and all 6 are on Nova-3 transcripts, which have no punctuation:
+- **Line 10, 3 times.** "kilo delta right on bravo left hotel" came back as `R:KD L:B H`: each turn slid onto the previous taxiway.
+- **Line 22, 2 times.** "alpha kilo kilo" came back as two taxiways, `A K K`.
+- **Line 29, once.** "you've got them backwards, it's alpha, juliet, hold short bravo" came back as `neg hs B`, dropping the route.
+
+Speech-to-text didn't separate on test-set accuracy in 0.3. Here, Universal-3.6 Pro's punctuated transcripts led to fewer interpreter errors (66/66 against 93/99).
+
+#### LIVE (situation cards; Q's own phrasing)
+
+| Combination | Transmissions | Exact match against the card | Q: understood (Y) | Q: not understood (N) |
+|---|---|---|---|---|
+| nova3+cartesia-ws | 9 | 5 / 9 | 5 | 1 |
+| nova3+elevenlabs | 8 | 5 / 8 | 7 | 0 |
+| u36pro+cartesia-ws | 7 | 5 / 7 | 5 | 1 |
+| u36pro+elevenlabs | 6 | 3 / 6 | 6 | 0 |
+| **all** | 30 | **18 / 30 (60%)** | **23** | **2** |
+
+Q marked 25 transmissions. The other 5 are retakes or skipped marks. Valid answers: 28 of 29 (96.6%).
+
+**Q's marks are the better measure here.** The cards give the intent, and Q phrased it their own way, often saying more or less than the card. Of the 12 inexact transmissions:
+- **2 were real errors, and Q marked both N:**
+  - c02: "Juliet, Bravo" became the single taxiway `JB`. That's Nova-3's missing comma, the pattern 0.4 found. The route check against the airport graph, which Q agreed to for later, would catch it, because there's no `JB` at JFK.
+  - c20: "that's Kilo Echo, then right on Bravo" came back as a turn-only fix (`neg turn R:B`), dropping the route.
+- **6 followed what Q actually said, and Q marked them Y:**
+  - c05: Q added "call your ramp", so the command gained `contact ramp`.
+  - c12: Q didn't say "left", so there's no turn.
+  - c17, c18 and c19: Q restated the whole clearance as a correction, and the model reproduced it in full.
+  - c24: "we're gonna have to find a place for you to stop" gave `hold`.
+- **4 were input problems:**
+  - c02's first take named no runway, and the model guessed the ramp. Q retook it.
+  - c15: "two three niner" isn't a valid frequency, so the pilot asked "say again". That's the intended behavior.
+  - c16: one transmission had no speech (empty final).
+  - c20's first take was unmarked.
+
+Q's Y/N agrees with exact match on 76% (19/25) of the transmissions that have both.
+
+#### Terse-output experiment (REPLAY transcripts; `analyze.ts --terse-replay`)
+
+- The 68 unique logged transcripts were re-run through gpt-6-luna three ways, interleaved, so time-of-day effects hit all three alike.
+- The tuned variant adds a general syntax checklist (`live/interp.ts` `TERSE_CHECKLIST`). It was written from `docs/terse-syntax.md` and 0.4's reported error classes, before this run, and not tuned on cards or script lines.
+
+| Variant | n | Exact | Valid | Median | p95 | Output tokens (mean) | $/hr at peak |
+|---|---|---|---|---|---|---|---|
+| JSON (the live loop) | 68 | 98.5% (67/68) | 100.0% | 1294 ms | 1965 ms | 59 | $0.10 |
+| Terse, 0.4's prompt | 68 | 80.9% (55/68) | 88.2% | 854 ms | 1209 ms | 14 | $0.08 |
+| Terse + checklist | 68 | 92.6% (63/68) | 98.5% | 826 ms | 1334 ms | 14 | $0.09 |
+
+- **Terse output saves about 0.45 s at the median and costs about 6 points of accuracy**, even with the checklist.
+- Of the tuned variant's 5 misses:
+  - 1 is a garbled answer that doesn't parse (it ended in stray characters `K”】【`).
+  - 1 invented a taxiway `ZT` from "zip tie" (a mishearing of "sit tight").
+  - 1 added a `hold` for "sit tight", 0.4's known pleasantry issue.
+  - 2 are route and crossing slips.
+- These transcripts are the test set, not new phrasing. The card session is where this would need re-checking.
+
+### 3. Cost at peak (PLAN acceptance: $/hr vs the caps, assumption revised from live counts)
+
+#### REPLAY
+
+Volumes revised from the 170 replay rows, against the PLAN assumption:
+
+| Volume | Assumed | Measured |
+|---|---|---|
+| Player audio per transmission | 4 s | 6.06 s (Q reading the script) |
+| Readback length | 70 characters | 71 characters |
+| Interpreter input per call | 3,000 cached + 1,030 uncached tokens | 3,449 cached + 1,611 uncached tokens |
+| Interpreter output per call | 150 tokens | 59 tokens |
+
+Kept: **450 transmissions/hr** and one readback per transmission. The logs measure the size of a transmission, not how often a controller transmits at peak, so there's no basis yet to change the rate.
+
+| Combination | Speech-to-text | Interpreter | Voice | Total $/hr | vs $5 soft / $10 hard |
+|---|---|---|---|---|---|
+| nova3+elevenlabs | $0.41 | $0.10 | $1.28 | **$1.79** | under both |
+| u36pro+elevenlabs | $0.45 | $0.10 | $1.28 | **$1.83** | under both |
+| nova3+cartesia (WS or HTTP) | $0.41 | $0.10 | $2.08 | **$2.59** | under both |
+| u36pro+cartesia-ws | $0.45 | $0.10 | $2.08 | **$2.63** | under both |
+
+Prices used:
+- Nova-3 at list price, $0.0090/min including keyterms.
+- Universal-3.6 Pro at $0.45/hr. A long-lived session bills its open time, so that's one session open all hour.
+- gpt-6-luna per `interp/openai.ts`.
+- ElevenLabs at $0.04 per 1K characters (pay-as-you-go).
+- Cartesia at $65 per 1M characters (Pro overage).
+- Plan credits make voice cheaper in practice. Voice is still 70–80% of the bill.
+
+#### LIVE
+
+**Revised volumes** from the session's 30 rows:
+
+| Volume | Measured | Assumed |
+|---|---|---|
+| Player audio per transmission | 7.13 s | 4 s |
+| Readback length | 70 characters | 70 |
+| Interpreter input per call | 3,449 cached + 1,616 uncached tokens | 3,000 + 1,030 |
+| Interpreter output per call | 60 tokens | 150 |
+
+450 transmissions/hr is kept: the session measures the size of a transmission, not how often a controller transmits at peak.
+
+| Combination | Speech-to-text | Interpreter | Voice | Total $/hr | vs $5 soft / $10 hard |
+|---|---|---|---|---|---|
+| nova3+cartesia-ws | $0.48 | $0.10 | $2.06 | $2.64 | under both |
+| nova3+elevenlabs | $0.48 | $0.10 | $1.27 | $1.85 | under both |
+| u36pro+cartesia-ws | $0.45 | $0.10 | $2.06 | $2.61 | under both |
+| u36pro+elevenlabs | $0.45 | $0.10 | $1.27 | $1.82 | under both |
+
+**For the picked mix** (Nova-3, gpt-6-luna, about two thirds of flights on Cartesia): about $2.38/hr at overage rates. That's my weighting of the rows above.
+- Included characters at peak use (31,500/hr): Cartesia Pro's 100K covers about 3 hours a month. ElevenLabs Starter's 150K, read from ElevenLabs' pricing table and not confirmed on Q's account, covers about 4.8 hours.
+- Not checked: whether Starter allows overage at all.
+
+### 4. Picks (PLAN acceptance: a named pick per stage with a one-line rationale)
+
+Signed off by Q on 2026-11-14 (section 7).
+
+- **Speech-to-text: Deepgram Nova-3.**
+  - Live it was the fastest and steadiest: 106 / 190 ms, 17 of 17 within budget. No session limits, and it bills only audio sent.
+  - Its weakness is missing punctuation, which merged "Juliet, Bravo" into `JB` and caused all 6 replay misses. A route check against the airport graph catches those.
+  - Universal-3.6 Pro was more accurate in replay (66/66), but its long-lived session slowed to 328 ms live.
+- **Interpreter: gpt-6-luna, prompt context, strict JSON.**
+  - Q marked 92% of cards understood (23/25), and 96.6% of answers were valid.
+  - It's the latency gap: 1.58 s median live.
+  - The v1 lever is the terse-output interpreter plus the route check. Terse output measured about 0.45 s faster at the interpreter median in the replay experiment.
+- **Voice: both providers, leaning Cartesia** (Q).
+  - About two thirds of flights get Cartesia sonic-3.6 over WebSocket: Sebastian, Derrick and Gary. The rest get ElevenLabs Flash v2.5: Daniel, Rob and Russell. Each flight keeps one voice.
+  - Why Cartesia: Q's ears favoured it in 0.5, and its first audio is faster (147 vs 177 ms live).
+  - Why ElevenLabs too: variety, more included characters, and cheaper overage.
+  - When one provider runs low on included characters, new flights can shift to the other.
+  - Still to do: tune per-voice speeds by ear. Daniel (124 wpm) and Gary (119) are slow; Russell (192) is fast.
+
+### 5. Prompt vs tools (PLAN acceptance)
+
+**Prompt context**, as 0.4 recommended and Q agreed. Tools were never more accurate, and they cost a second round trip (2.3–2.9 s medians in 0.4). The live loop is prompt-only: 96.4% exact in the replay, and 23 of 25 cards understood in Q's session. Confirmed.
+
+### 6. PRD §6.3 / §11 targets (PLAN acceptance: recommendation)
+
+- **§6.3 latency: the 1.0 s median isn't reachable with these providers.**
+  - Live: 2.20 s median, 2.70 s p95, with 0 of 29 within 1.0 s.
+  - The interpreter alone is 1.58 s. The other stages fit their budgets: speech-to-text 0.14 s, voice 0.17 s. Browser output adds about 0.18 s.
+  - Q found 2.2 s "pretty good" in use.
+- **Decided by Q (2026-11-14):**
+  - The **v1 target is a median ≤ 2.0 s and p95 ≤ 3.0 s**, with an interpreter budget of about 1.5 s.
+  - **1.0 s stays the long-term goal.**
+  - Reaching 2.0 s needs about 0.2 s more. The terse-output interpreter (about 0.45 s at the interpreter median) does that, with the route check covering its accuracy loss. A faster model would also do it.
+- **§11 cost: keep the $5 soft and $10 hard caps.** Every combination is $1.82–$2.64/hr at peak live, and about $2.38/hr for the picked mix.
+
+### 7. Q's sign-off (PLAN acceptance)
+
+| Stage | Pick | Q's decision | Date |
+|---|---|---|---|
+| Speech-to-text | Deepgram Nova-3 | Approved | 2026-11-14 |
+| Interpreter | gpt-6-luna, prompt context, strict JSON | Approved (agreed with the 0.4 recommendation and confirmed after the session) | 2026-11-14 |
+| Voice | Both: Cartesia sonic-3.6 over WebSocket (Sebastian, Derrick, Gary) for about two thirds of flights, ElevenLabs Flash v2.5 (Daniel, Rob, Russell) for the rest | Approved. Keep all six voices; lean Cartesia | 2026-11-14 |
+| Targets (§6.3 / §11) | v1 median ≤ 2.0 s, p95 ≤ 3.0 s, interpreter about 1.5 s; 1.0 s long-term; cost caps unchanged | Approved | 2026-11-14 |
+
+### Choices made in 0.6
+
+- **Connection handling, per provider:**
+  - **Deepgram:** a new session per transmission, opened at key-down, with audio buffered until it opens. The connect (median 317 ms) was hidden behind the hold on 102/102 transmissions. Per-transmission sessions bill only the audio sent, and Deepgram's idle billing is unverified.
+  - **AssemblyAI:** one long-lived session, opened at the first key-down. Turns are serialized. A cancelled turn is ended and discarded, so its audio can't leak into the next one. The session closes after 5 idle minutes.
+  - **OpenAI, ElevenLabs and Cartesia HTTP:** Node fetch keep-alive, plus the 2.5 s keep-warm pings.
+  - **Cartesia WebSocket:** one socket for the process, with a ws ping every 15 s. It reconnects on the next line if closed, and records that.
+  - **Warm-ups:** every voice and the interpreter are warmed at server start, because first use of a library voice took about 5 s.
+- **Card context:** built from 0.4's reused pieces, not by mapping cards onto script lines. `staticPrefix`, `TRANSMISSION_SCHEMA`, `describeFlight` and `ATIS` are combined with each card's own flight states, in the same format as `liveContext()`. That lets cards describe situations no script line has, such as new wrong readbacks or a garbled call. Replays use `liveContext(num)` exactly.
+- **Cartesia transport:** WebSocket for the live cards (`--cartesia-transport ws`, the default); HTTP is selectable. The replay ran both: WS was tighter (p95 218 vs 287 ms), but see "surprised" below.
+- **Voice speeds** (`live/voices.ts`, one table):
+  - Daniel ×0.9 and the Cartesia voices ×1.25 are what Q heard and rated in 0.5.
+  - Rob and Russell start at ElevenLabs' ×1.0: they were never calibrated or heard.
+  - Not tuned to wpm, because Q's ratings didn't follow wpm.
+- **Cards:** 25 cards over C1–C10 and C12, all new situations. Voices are balanced across them: Daniel 4, Rob 5, Russell 4, Sebastian 4, Derrick 4, Gary 4.
+  - The one unavoidable overlap is c23's `? say-again`, which has only one possible form and so equals script line 31's command.
+  - The combination plan gives each speech-to-text 13/12 cards, each voice provider 12/13, and each of the 4 combinations 6–7.
+- **Q's audio** is saved as 16 kHz PCM WAV, the exact samples the server received and forwarded, in `live/audio/` (gitignored).
+
+### What didn't work as documented, or surprised
+
+1. **ElevenLabs library voices work on Starter, but the first API use adds the voice to the account.**
+   - Russell was absent from My Voices before the first request and present after. Rob ("Jon - Natural Authority", listed in the account as "Rob - Natural Authority") is also now in the account.
+   - That first request took about 5.1 s (2 of 2 voices); later ones took about 170–240 ms.
+   - Some library voices also carry a credit multiplier (`rate: 2`); both picks are `rate: 1`.
+2. **Node's fetch drops keep-alive sockets after about 4 s idle**, so a live loop needs keep-warm. 0.4's back-to-back bench didn't see it.
+3. **Cartesia's "slow third" (0.5) didn't reproduce on either transport.** Requests at or over 300 ms: WS 1/68, HTTP 0/34, against 0.5's 21/62 on HTTP. So this run can't credit the WebSocket with fixing it: it may have been time of day, or 0.5's back-to-back pattern.
+4. **The interpreter was about 0.13 s slower than in 0.4**: 1,373 ms against 1,242 ms median. OpenAI's processing header says that's server-side (1,223 ms against about 1,140 ms).
+5. **A long-lived AssemblyAI session works, and bills its open time.** It was open for 38.6 min of the replay, including while the Nova-3 combinations ran. The billed seconds come from AssemblyAI's own Termination message.
+6. **Per-turn AssemblyAI sessions also work** (3-line check: connect 350–419 ms, hidden; finals 151/370/196 ms). That's too few samples to rank against long-lived.
+7. **A bug of mine in the replay client, fixed:** messages that arrived before a wait was registered were dropped. The first full attempt failed on the `hello`; no transmissions ran.
+8. **Live (card) mode, smoke-tested headless, not by Q.** A scratch client played the browser's part on 5 cards (c01, c02, c13, c17, c23), streaming controller lines I wrote and synthesized with a premade ElevenLabs voice.
+   - All 5 ran end to end through all 4 combinations: card context, planned voice, Y/N saved, client timing, the wrong-readback playback on c17, and the unknown-station repeat on c23.
+   - 4 of 5 were exact.
+   - The miss is worth watching for in Q's session: "Alpha, Juliet, Bravo, Kilo Delta" became `A JB KD`, merging Juliet and Bravo into the real taxiway JB. That's the pattern 0.4 saw on Haiku, now on gpt-6-luna with unseen phrasing. The readback said "Juliet Bravo", so a player could catch it.
+   - The logs stayed in the agent's scratchpad; no `session-*` file was created.
+
+### Spend
+
+0.6 so far: **$1.25**, estimated at list rates in `results/live/spend-log.jsonl`:
+
+| Item | Spend |
+|---|---|
+| Replay transmissions (smoke, full, per-turn check: 181) | $0.84 |
+| AssemblyAI session time | $0.30 |
+| Terse experiment | $0.04 |
+| Live-mode smoke test: 5 cards, synthesized controller audio, warm-ups | $0.05 |
+| Warm-ups (6 server starts) | $0.02 |
+| Library probe | $0.005 |
+
+That leaves about $3.75 of 0.6's ~$5 for Q's session. A 25–30 transmission session should cost about $0.25–0.40: about $0.006 per transmission plus about $0.15 of AssemblyAI session time. The server's default `--max-spend 5` covers it.
+
+### Hand-off: Q's live session (done 2026-11-14)
+
+Kept as the instructions for re-running the loop.
+
+**What you'll do.** Go through 25 situation cards. Each card describes a situation and what you want the pilot to do. Say it your own way, as on the radio; the pilot reads back. It takes about 15–20 minutes. PLAN asks for at least 20 live transmissions, and the 25 cards cover that.
+
+1. **Start the server.** In a terminal, at the repo root:
+
+   ```
+   npm --prefix spikes/voice-loop run live
+   ```
+
+   Wait about 5 s, until it prints `live: open http://127.0.0.1:8741/ in Chrome. Ctrl+C to stop.` Leave that terminal open.
+2. **Open the page** in Chrome: **http://127.0.0.1:8741/**
+3. **Allow the microphone.**
+   - Click **Enable microphone**. Chrome asks once; click **Allow**.
+   - The level bar should move when you speak.
+   - If you clicked Block: click the microphone icon at the right of the address bar, choose Allow, then click Enable microphone again.
+   - Headphones are best, but speakers are fine: only Space-held audio is sent.
+4. **For each card:**
+   - Read the situation.
+   - **Hold Space**, say the transmission (callsign first, as you would on frequency), then **release**.
+   - The pilot answers in the voice shown on the card.
+   - The page shows what was heard, the command, the expected command, and the timings.
+   - Correction cards show the pilot's wrong readback. Press **P** to hear it first if you like, then correct it.
+5. **Then press Y or N.** This marks your *last* transmission and moves to the next card.
+   - **Y**: the game understood you. The readback is what you meant, even if the wording differs.
+   - **N**: it got something wrong: callsign, runway, route, turn, hold-short, or anything else that matters.
+6. **Retakes and moving around:**
+   - To retry a card, just hold Space again; every try is logged, and Y/N applies to the latest.
+   - **←** and **→** move between cards without marking.
+   - **Esc** cancels while you're talking.
+   - A tap shorter than 0.3 s is ignored.
+7. **Errors show on the page** in red, for example a denied mic, a closed server connection or a provider error. They also show in the server terminal.
+8. **To stop:** press **Ctrl+C** in the server terminal. It prints the log file and the spend so far.
+
+Afterwards (main session), done for the 2026-11-14 session:
+- `node spikes/voice-loop/live/analyze.ts spikes/voice-loop/results/live/session-2026-11-14T18-32-07-729Z.jsonl` produced the LIVE tables above.
+- `node spikes/voice-loop/live/scan-keys.ts` reported 0 hits across 32 files, and a separate scan of the session log also found 0 key or personal-info hits.
+- Your recordings are in `spikes/voice-loop/live/audio/` (gitignored).

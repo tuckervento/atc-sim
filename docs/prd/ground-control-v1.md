@@ -299,14 +299,15 @@ The cheat sheet is generated from the same list of commands the game understands
   - When they're added, voices are probably assigned by airline region. **[Proposal]**
 
 ### 6.3 Latency target
-- **Target: median 1.0 s or less** from the player releasing push-to-talk to the pilot starting to answer. **[Q]**
-- **Slowest 5%: about 2 s or less.** **[Proposal]**
-- **These are goals.** Q notes they may be hard to hit with network services. Phase 0 measures what's achievable, and the targets get adjusted from there. **[Q]**
-- Rough budget for 1.0 s **[Proposal]**:
-  - final transcript ≤ 0.3 s
-  - interpretation ≤ 0.4 s
-  - first voice audio ≤ 0.2 s
-  - scheduling ≤ 0.1 s
+- **v1 target: median 2.0 s or less** from the player releasing push-to-talk to the pilot starting to answer. **[Q]** (revised 2026-11-14 from Phase 0)
+- **Slowest 5%: 3.0 s or less.** **[Q]**
+- **1.0 s stays the long-term goal.** **[Q]**
+- Why: Phase 0's live test measured a 2.2 s median and 2.7 s p95 (`docs/spikes/voice-loop.md` § Findings). The interpreter alone took about 1.6 s. Q found that "pretty good" in use.
+- Budget for 2.0 s **[Proposal]**, from the measured stages:
+  - final transcript ≤ 0.3 s (measured 0.1 s)
+  - interpretation ≤ 1.5 s (measured 1.6 s with strict JSON; a terse-output interpreter measured about 0.45 s faster)
+  - first voice audio ≤ 0.2 s (measured 0.15–0.18 s)
+  - browser audio output and scheduling ≤ 0.2 s (measured about 0.18 s of output latency)
 - When the player transmits back to back, the clock starts at their last release.
 
 ---
@@ -480,9 +481,8 @@ If C11 is cut, the player can get the same result with C3, C4 and re-routing. **
 ## 11. Success criteria for v1
 
 - Q plays a 30+ minute session at peak traffic and wants to play again. **[Proposal]**
-- The pilot starts answering within **1.0 s typically (median)**. **[Q]**
-- The slowest 5% of responses take about 2 s or less. **[Proposal]**
-- Both latency numbers get adjusted based on what Phase 0 shows is achievable. **[Q]**
+- The pilot starts answering within **2.0 s typically (median)**. **[Q]** (revised 2026-11-14 from Phase 0; 1.0 s stays the long-term goal)
+- The slowest 5% of responses take 3.0 s or less. **[Q]**
 - ≥ 90% of instructions in the Phase 0 test set are understood correctly the first time. **[Proposal]**
 - **Running cost at peak traffic:**
   - ideally **$5 per hour of play** or less. That's the soft cap; above it, Q starts getting concerned. **[Q]**
@@ -550,6 +550,8 @@ Resolved:
 | Tug / ground crew radio calls later | Q |
 | Approach A (browser plus cloud); AI services behind interfaces with possible Ollama implementations | Q |
 | Latency target: median 1.0 s, adjusted after Phase 0 | Q |
+| Latency target revised after Phase 0: v1 median ≤ 2.0 s, p95 ≤ 3.0 s; 1.0 s long-term (2026-11-14) | Q |
+| Phase 0 picks: Nova-3, gpt-6-luna with prompt context, Cartesia and ElevenLabs voices leaning Cartesia (2026-11-14) | Q |
 | Running cost: $5/hr soft cap, $10/hr hard cap | Q |
 | Taxi routes spelled out in full; no direction given → toward the next taxiway, both ways → pilot asks (2026-11-14) | Q |
 | Hardstand parking and hangars as taxi destinations (2026-11-14) | Q |
