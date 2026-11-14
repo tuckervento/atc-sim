@@ -439,7 +439,7 @@ If C11 is cut, the player can get the same result with C3, C4 and re-routing. **
   - For the language model, an implementation that speaks the OpenAI-compatible chat format would cover Ollama, LM Studio and similar local servers. **[Proposal]**
   - Local speech-to-text and voices would need other local servers. As far as I know, Ollama only serves language models. **[Unverified]**
 - **The specific providers** for each service (which speech-to-text and voice services, which language model) are picked by the Phase 0 test, not by this PRD. **[Proposal]**
-- **Typed command console:** a developer-only text box that sends a typed instruction straight to the interpreter, skipping speech-to-text. The simulation can then be built and tested without a microphone. **[Proposal]**
+- **Typed command console:** a developer-only text box that takes commands in a terse syntax (e.g. `DAL4 taxi 31L via A R:KE hs B`). Code parses them into the same command objects the interpreter produces, skipping speech-to-text and the language model. The simulation can then be built and tested without a microphone or any AI service. **[Q]** (decided 2026-11-14; syntax documented in `docs/terse-syntax.md`)
 
 ### 9.3 Testing requirements
 **[Q]** for "scoring needs good tests." The approach is **[Proposal]**.

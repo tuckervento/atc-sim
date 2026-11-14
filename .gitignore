@@ -1,1 +1,9 @@
 .superpowers/
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+spikes/voice-loop/test-set/audio/
+spikes/voice-loop/samples/
+.DS_Store
