@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test-Set Recorder</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <h1>JFK Ground test-set recorder</h1>
+    <p id="progress">Loading script…</p>
+  </header>
+
+  <main>
+    <section id="mic">
+      <button id="start" type="button">Enable microphone</button>
+      <span id="mic-label"></span>
+      <div id="meter" title="Input level"><div id="meter-fill"></div></div>
+    </section>
+
+    <section id="card">
+      <div class="line-head">
+        <span id="num">--</span>
+        <span id="count"></span>
+        <span id="tags"></span>
+      </div>
+      <p id="context"></p>
+      <p class="label">Say</p>
+      <p id="say"></p>
+      <p class="label">Pilot readback (not recorded)</p>
+      <p id="readback"></p>
+    </section>
+
+    <p id="status" class="idle">Click "Enable microphone" to start.</p>
+
+    <section id="playback">
+      <audio id="player" controls preload="none"></audio>
+    </section>
+
+    <p id="keys">
+      Hold <kbd>Space</kbd> to record, release to save ·
+      <kbd>P</kbd> play saved take ·
+      <kbd>&larr;</kbd> <kbd>&rarr;</kbd> previous / next line ·
+      <kbd>Esc</kbd> cancel the take in progress
+    </p>
+
+    <nav id="grid" aria-label="Lines"></nav>
+  </main>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  // Type-check only. Scripts run directly with Node's built-in type stripping
+  // (`node file.ts`), so only erasable TypeScript syntax is allowed.
+  "compilerOptions": {
+    "target": "es2024",
+    "lib": ["es2024"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "skipLibCheck": true
+  },
+  // Top-level spike scripts only. recorder/ (a browser page) and test-set/ are
+  // owned by task 0.2 and are not type-checked here.
+  "include": ["*.ts"]
+}
