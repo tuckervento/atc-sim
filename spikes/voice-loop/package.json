@@ -11,6 +11,7 @@
     "check-keys": "node check-keys.ts",
     "stt-bench": "node stt-bench.ts",
     "tts-bench": "node tts-bench.ts",
+    "interp-bench": "node interp-bench.ts",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {

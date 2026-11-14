@@ -333,10 +333,12 @@ Natural phrasing for all of these. **[Q]** for natural phrasing; the list is **[
 If C11 is cut, the player can get the same result with C3, C4 and re-routing. **[Q]**
 
 **What a taxi route means:**
-- A route is an ordered list of taxiways ending at the destination. The aircraft follows those taxiways in order. **[Proposal]**
+- A route is an ordered list of taxiways ending at the destination. The aircraft follows those taxiways in order. **[Q]** (2026-11-14)
+  - The route has to name every taxiway. After the last one, the aircraft only takes the destination's own way in: the departure line to the runway's hold, the entrance stub to the ramp, or the lead-in to a pad or penalty-box spot. **[Q]**
+  - If the named taxiways don't get there, the pilot says "unable" and asks for the route. The aircraft never finds its own way, so it never picks up a runway crossing the player didn't plan. **[Q]**
 - **Turn directions:** a route can say which way to turn onto a taxiway ("right on Bravo", "left Kilo Echo"), and the aircraft turns that way. **[Q]**
-  - If no direction is given, it turns the way that leads toward its destination. **[Proposal]**
-  - If both ways lead there, the pilot asks ("left or right on Bravo?"). **[Proposal]**
+  - If no direction is given, it turns the way that reaches the next taxiway in the route (or the destination's way in). **[Q]**
+  - If both ways do, the pilot asks ("left or right on Bravo?"). **[Q]**
 - It stops at every runway hold-short line on the way unless it has a crossing clearance for that runway (§4.5). **[Proposal]**
 
 ---
@@ -350,6 +352,10 @@ If C11 is cut, the player can get the same result with C3, C4 and re-routing. **
   - The leading candidate source is OpenStreetMap's airport features for JFK. I believe they're detailed but haven't checked. The fallback is tracing the FAA airport diagram by hand. **[Proposal]** **[Unverified]**
 - **JFK is in the middle of a major terminal rebuild (New Terminal One, Terminal 6), so map data may not match today's airport.** Pick one snapshot and accept the drift. **[Unverified]**: confirm current status.
 - **Terminal and gate assignments per airline live in data.** **[Proposal]**
+- **Ground also taxis aircraft to parking off the ramp and to hangars.** **[Q]** (2026-11-14)
+  - Some JFK parking, e.g. the South Hardstand, is controlled by ground, not ramp.
+  - Hangars are taxi destinations too.
+  - Both arrive with the JFK import (PLAN 1.5).
 - **The format can't assume JFK.** JFK first, then LGA, then PIT. **[Q]**
   - To catch JFK-only assumptions early, Phase 1 also imports LGA's map as a check (the map loads and routes work), without making it playable. **[Proposal]**
   - LGA's two runways cross each other in a tight space, which makes it a good stress test of the format. **[Unverified]**
@@ -545,6 +551,8 @@ Resolved:
 | Approach A (browser plus cloud); AI services behind interfaces with possible Ollama implementations | Q |
 | Latency target: median 1.0 s, adjusted after Phase 0 | Q |
 | Running cost: $5/hr soft cap, $10/hr hard cap | Q |
+| Taxi routes spelled out in full; no direction given → toward the next taxiway, both ways → pilot asks (2026-11-14) | Q |
+| Hardstand parking and hangars as taxi destinations (2026-11-14) | Q |
 | Everything else tagged [Proposal] | Claude |
 
 ## 15. Sources

@@ -205,12 +205,16 @@ Phase 1's scoring-path, rule-check and soak tests pass.
   - Scope: `tools/import-airport.ts` (approach per 1.3's decision) produces
     `data/airports/KJFK.json`. `data/airports/KJFK.overrides.json` holds the hand-curated parts:
     missing names, pads, penalty box, departure lines and exits, the 31s configuration (land
-    31L and 31R, depart 31L), and terminal and airline assignments.
-  - Depends on: 1.3, 1.4
+    31L and 31R, depart 31L), and terminal and airline assignments. Also hardstands and hangars
+    (Q, 2026-11-14): ground-controlled parking off the ramp (e.g. the South Hardstand) and
+    hangars become taxi destinations. That extends the airport format (1.4, which today requires
+    every gate on a ramp lane), 1.2's `Destination`, and 1.8's route resolution.
+  - Depends on: 1.3, 1.4 (and 1.8 for the hardstand and hangar routes)
   - Acceptance: `npm run validate-airport -- KJFK` passes. Tests confirm runways 4L/22R, 4R/22L,
     13L/31R and 13R/31L exist with correct hold-shorts. A route "A then right on KE" from a
     known node resolves to a connected path (once 1.8 exists; until then a connectivity
-    check). The 31L departure line has ≥ 2 exits.
+    check). The 31L departure line has ≥ 2 exits. A taxi to the South Hardstand and one to a
+    hangar each resolve to a connected path.
 
 - [ ] **1.6 — Import LGA as a format check**
   - Scope: Run the importer on LGA to produce `data/airports/KLGA.json` (+ overrides as

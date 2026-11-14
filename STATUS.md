@@ -1,10 +1,10 @@
 # STATUS
 
-_Last updated: 2026-11-14 (cycle 2 closed: Q's voice verdict recorded, 0.5 done; Q's answers recorded)_
+_Last updated: 2026-11-14 (parallel cycle 3 started: 0.4 and 1.8)_
 
 ## Snapshot
 
-8 of 20 tasks done (0.1, 0.2, 0.3, 0.5, 1.1, 1.2, 1.3, 1.4). Nothing blocked. Next up: 0.4.
+8 of 20 tasks done (0.1, 0.2, 0.3, 0.5, 1.1, 1.2, 1.3, 1.4). 0.4 and 1.8 in progress (parallel cycle 3). Nothing blocked.
 
 ## Completed
 
@@ -51,6 +51,9 @@ _Last updated: 2026-11-14 (cycle 2 closed: Q's voice verdict recorded, 0.5 done;
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
+
+- 0.4 — Interpreter bake-off — started 2026-11-14 by an Opus subagent. It owns `spikes/voice-loop/interp-bench.ts`, `interp/**`, `results/interp/**`, `results/0.4-interpreter.md`, and only the `expected:` rows of `test-set/script.md`.
+- 1.8 — Route resolution — started 2026-11-14 by an Opus subagent. It owns `src/sim/route.ts`, `src/sim/route.test.ts` and `src/sim/__fixtures__/**`.
 
 ## Blocked
 
@@ -229,6 +232,21 @@ _Last updated: 2026-11-14 (cycle 2 closed: Q's voice verdict recorded, 0.5 done;
     - Each new test failed first: the loader rejected the unknown `set` key, and then no warning was raised.
     - `npm run validate-airport -- TEST`: `OK … (0 error(s), 0 warning(s))`, showing `west (default), east`.
     - `npm run typecheck`: exit 0. `npm test`: 135 of 135 passed.
+
+- 2026-11-14 — **Parallel cycle 3.** Q directed 0.4 and 1.8 to run at once with parallel subagents (Opus). The owned paths are in `~/.claude/plans/zany-snacking-llama.md`. 0.4 imports `src/sim/terse.ts` read-only (spike → src is allowed; src → spike isn't). I added the spike's `interp-bench` script centrally.
+- 2026-11-14 — **Q's decisions before cycle 3:**
+  - **Taxi routes are spelled out in full (1.8).**
+    - The route names every taxiway.
+    - After the last one, the aircraft only takes the destination's own way in: the departure line, the ramp entrance stub, or a pad lead-in.
+    - A gap is "unable".
+    - With no turn given, it turns the way that reaches the next taxiway. If both ways do, the pilot asks.
+    - Recorded as [Q] in PRD §7 and §14. I recommended this over letting the pilot finish the route, because it can't add a runway crossing the player didn't plan.
+  - **Delay ranges: lower bound only.** Line 32's "expect twenty thirty minutes" is scored as `delay 20`. The command format is unchanged.
+  - **Hardstands and hangars fold into 1.5.**
+    - PLAN 1.5's Scope and Acceptance now cover them: the format, 1.2's `Destination` and 1.8's routes.
+    - 1.5 now also depends on 1.8 for those routes.
+    - PRD §8.1 and §14 record them as [Q].
+  - **ElevenLabs upgraded to Starter** (Q). Not yet confirmed: whether library voices now work through the API. 0.6 checks that before relying on them.
 
 ## Next Up
 
