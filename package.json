@@ -9,7 +9,9 @@
     "build": "vite build",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.sim.json && tsc -p tsconfig.web.json && tsc -p tsconfig.node.json",
-    "validate-airport": "node tools/validate-airport.ts"
+    "validate-airport": "node tools/validate-airport.ts",
+    "import-airport": "node tools/import-airport.ts",
+    "render-airport": "node tools/render-airport.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

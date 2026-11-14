@@ -1,6 +1,6 @@
 # STATUS
 
-_Last updated: 2026-11-14 (0.6 done after Q's live session: Phase 0 complete)_
+_Last updated: 2026-11-14 (parallel cycle 5 started: 1.9 and 1.5 stage a)_
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ _Last updated: 2026-11-14 (0.6 done after Q's live session: Phase 0 complete)_
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-Next up: 1.9.
+In progress: 1.9 and 1.5 stage a (parallel cycle 5).
 
 ## Completed
 
@@ -113,6 +113,13 @@ Next up: 1.9.
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
+
+- 1.9 — Simulation core — started 2026-11-14 by an Opus subagent. It owns new files in `src/sim/` (not `route.ts`, `commands.ts` or `terse.ts`) and new fixtures in `src/sim/__fixtures__/`.
+- 1.5 — Import JFK, **stage a** — started 2026-11-14 by an Opus subagent. It owns:
+  - `tools/import-airport.ts`, `tools/airport-import/**` and `tools/render-airport.ts`
+  - `data/airports/KJFK.json`, `KJFK.overrides.json` and `raw/KJFK.overpass.json`
+  - `src/airport/kjfk.test.ts`
+  - `docs/airports/KJFK-notes.md` and `KJFK-questions.md`
 
 ## Blocked
 
@@ -426,6 +433,21 @@ Next up: 1.9.
     - per-voice speed tuning by ear (Daniel and Gary are slow, Russell fast)
     - shifting new flights to the other voice provider when one runs low on included characters
     - not checked: whether ElevenLabs Starter allows overage
+
+- 2026-11-14 — **Parallel cycle 5, and 1.5 split around Q's map answers.**
+  - Q directed 1.9 and 1.5 to run at once (Opus subagents). The owned paths are in `~/.claude/plans/zany-snacking-llama.md`.
+  - Q chose "map sheet first", so 1.5 runs in two stages:
+    - **1.5a (now):**
+      - Import JFK from OpenStreetMap, and fill in everything that has a source.
+      - Render a labelled map of the imported data (`npm run render-airport -- KJFK`).
+      - Write `docs/airports/KJFK-questions.md`, using the data's own names.
+      - 1.5 then goes to Blocked on Q's answers.
+    - **1.5b (after Q answers and 1.9 is done):**
+      - Apply the answers.
+      - Add hardstands and hangars to the format, `Destination` and `resolveRoute`.
+      - Pass 1.5's full Acceptance.
+  - 1.5b waits for 1.9 because it edits `src/sim/` (`commands.ts`, `terse.ts`, `route.ts`), which 1.9 builds on.
+  - The root `package.json` gained `import-airport` and `render-airport` scripts, set up centrally.
 
 ## Next Up
 
