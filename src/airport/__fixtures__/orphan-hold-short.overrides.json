@@ -1,0 +1,8 @@
+{
+  "formatVersion": 1,
+  "airport": "TEST",
+  "description": "Broken fixture, applied on top of data/airports/TEST.json: a runway hold-short on taxiway J that names no runway. Expected: exactly one error, hold-short-no-runway.",
+  "holdShorts": {
+    "add": [{ "id": "hOrphan", "kind": "runway", "runways": [], "node": "aJ", "towardEdge": "aJ-jH" }]
+  }
+}

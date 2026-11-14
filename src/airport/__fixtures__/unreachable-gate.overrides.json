@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "airport": "TEST",
+  "description": "Broken fixture, applied on top of data/airports/TEST.json: gate U1 sits on ramp lane U, which joins taxiway A at node aJ, where no ramp handoff is declared. No ramp entrance or ramp edge reaches the gate over ramp lanes. Expected: exactly one error, gate-unreachable (plus a ramp-boundary-undeclared warning for aJ).",
+  "nodes": {
+    "add": [
+      { "id": "uL", "x": 700, "y": 320 },
+      { "id": "uG", "x": 760, "y": 320 }
+    ]
+  },
+  "edges": {
+    "add": [
+      { "id": "aJ-uL", "kind": "rampLane", "name": "U", "from": "aJ", "to": "uL" },
+      { "id": "uL-uG", "kind": "rampLane", "from": "uL", "to": "uG" }
+    ]
+  },
+  "gates": {
+    "add": [{ "id": "T2-U1", "name": "U1", "terminal": "T2", "node": "uG" }]
+  }
+}

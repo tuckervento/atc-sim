@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.sim.json && tsc -p tsconfig.web.json && tsc -p tsconfig.node.json"
+    "typecheck": "tsc -p tsconfig.sim.json && tsc -p tsconfig.web.json && tsc -p tsconfig.node.json",
+    "validate-airport": "node tools/validate-airport.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

@@ -1,0 +1,283 @@
+{
+  "formatVersion": 1,
+  "id": "TEST",
+  "name": "Test Airport (synthetic)",
+  "reference": { "lat": 0, "lon": 0 },
+  "source": {
+    "description": "Synthetic airport for unit tests (PLAN 1.4), not a real place. It exercises every feature of the format: two intersecting runways (9/27 and 18/36, crossing at node rX), a hold-short on J that protects both, runway, ILS, LAHSO and intermediate holds, a runway crossing on A, ramp lanes (including numeric lane 7) with check-in names, two terminals, two pads and a penalty box (reachable both ways round the E loop, so a turn onto B toward it is ambiguous), two departure lines with ordered exits, two configurations (27 takes arrivals and departures in 'west'), split tower positions, and a closed segment of C. Units: meters, x east, y north."
+  },
+  "nodes": [
+    { "id": "r1W", "x": -1500, "y": 0 },
+    { "id": "r1D", "x": -300, "y": 0 },
+    { "id": "r1C", "x": 300, "y": 0 },
+    { "id": "rX", "x": 900, "y": 0 },
+    { "id": "r1E", "x": 1500, "y": 0 },
+    { "id": "r2N", "x": 900, "y": 500 },
+    { "id": "r2A", "x": 900, "y": 200 },
+    { "id": "r2L", "x": 900, "y": -100 },
+    { "id": "r2F", "x": 900, "y": -200 },
+    { "id": "r2S", "x": 900, "y": -900 },
+
+    { "id": "aW", "x": -1500, "y": 200 },
+    { "id": "aK", "x": -1200, "y": 200 },
+    { "id": "a7", "x": -800, "y": 200 },
+    { "id": "aD", "x": -300, "y": 200 },
+    { "id": "aTB", "x": 100, "y": 200 },
+    { "id": "aC", "x": 300, "y": 200 },
+    { "id": "aTC", "x": 400, "y": 200 },
+    { "id": "aJ", "x": 700, "y": 200 },
+    { "id": "aH1", "x": 810, "y": 200 },
+    { "id": "aH2", "x": 990, "y": 200 },
+    { "id": "aP1", "x": 1100, "y": 200 },
+    { "id": "aP2", "x": 1400, "y": 200 },
+    { "id": "aE", "x": 1500, "y": 200 },
+
+    { "id": "a1H", "x": -1500, "y": 90 },
+    { "id": "a9I", "x": 1500, "y": 150 },
+    { "id": "a9H", "x": 1500, "y": 90 },
+    { "id": "cHN", "x": 300, "y": 90 },
+    { "id": "cHS", "x": 300, "y": -90 },
+    { "id": "dI", "x": -300, "y": 150 },
+    { "id": "dHN", "x": -300, "y": 90 },
+    { "id": "dHS", "x": -300, "y": -90 },
+    { "id": "jH", "x": 780, "y": 120 },
+    { "id": "fH", "x": 810, "y": -200 },
+
+    { "id": "bE1", "x": -1100, "y": -200 },
+    { "id": "bD", "x": -300, "y": -200 },
+    { "id": "bC", "x": 300, "y": -200 },
+    { "id": "bE2", "x": 500, "y": -200 },
+    { "id": "bF", "x": 700, "y": -200 },
+    { "id": "eW", "x": -1100, "y": -400 },
+    { "id": "e1", "x": -600, "y": -400 },
+    { "id": "e2", "x": 0, "y": -400 },
+    { "id": "eE", "x": 500, "y": -400 },
+    { "id": "pbS1", "x": -600, "y": -470 },
+    { "id": "pbS2", "x": 0, "y": -470 },
+
+    { "id": "npW", "x": 1100, "y": 350 },
+    { "id": "np1", "x": 1200, "y": 350 },
+    { "id": "np2", "x": 1300, "y": 350 },
+    { "id": "npE", "x": 1400, "y": 350 },
+    { "id": "npS1", "x": 1200, "y": 420 },
+    { "id": "npS2", "x": 1300, "y": 420 },
+    { "id": "wpS", "x": -1200, "y": 330 },
+
+    { "id": "rb7", "x": -800, "y": 270 },
+    { "id": "l7A", "x": -800, "y": 400 },
+    { "id": "l7B", "x": -800, "y": 520 },
+    { "id": "g1", "x": -870, "y": 400 },
+    { "id": "g2", "x": -730, "y": 400 },
+    { "id": "g3", "x": -870, "y": 520 },
+
+    { "id": "rbTB", "x": 100, "y": 270 },
+    { "id": "tdW", "x": 100, "y": 450 },
+    { "id": "tdA", "x": 175, "y": 450 },
+    { "id": "tdB", "x": 325, "y": 450 },
+    { "id": "tdE", "x": 400, "y": 450 },
+    { "id": "rbTC", "x": 400, "y": 270 },
+    { "id": "gB1", "x": 175, "y": 530 },
+    { "id": "gB2", "x": 325, "y": 530 }
+  ],
+  "edges": [
+    { "id": "r1W-r1D", "kind": "runway", "runway": "9/27", "from": "r1W", "to": "r1D" },
+    { "id": "r1D-r1C", "kind": "runway", "runway": "9/27", "from": "r1D", "to": "r1C" },
+    { "id": "r1C-rX", "kind": "runway", "runway": "9/27", "from": "r1C", "to": "rX" },
+    { "id": "rX-r1E", "kind": "runway", "runway": "9/27", "from": "rX", "to": "r1E" },
+    { "id": "r2N-r2A", "kind": "runway", "runway": "18/36", "from": "r2N", "to": "r2A" },
+    { "id": "r2A-rX", "kind": "runway", "runway": "18/36", "from": "r2A", "to": "rX" },
+    { "id": "rX-r2L", "kind": "runway", "runway": "18/36", "from": "rX", "to": "r2L" },
+    { "id": "r2L-r2F", "kind": "runway", "runway": "18/36", "from": "r2L", "to": "r2F" },
+    { "id": "r2F-r2S", "kind": "runway", "runway": "18/36", "from": "r2F", "to": "r2S" },
+
+    { "id": "aW-aK", "kind": "taxiway", "name": "A", "from": "aW", "to": "aK" },
+    { "id": "aK-a7", "kind": "taxiway", "name": "A", "from": "aK", "to": "a7" },
+    { "id": "a7-aD", "kind": "taxiway", "name": "A", "from": "a7", "to": "aD" },
+    { "id": "aD-aTB", "kind": "taxiway", "name": "A", "from": "aD", "to": "aTB" },
+    { "id": "aTB-aC", "kind": "taxiway", "name": "A", "from": "aTB", "to": "aC" },
+    { "id": "aC-aTC", "kind": "taxiway", "name": "A", "from": "aC", "to": "aTC" },
+    { "id": "aTC-aJ", "kind": "taxiway", "name": "A", "from": "aTC", "to": "aJ" },
+    { "id": "aJ-aH1", "kind": "taxiway", "name": "A", "from": "aJ", "to": "aH1" },
+    { "id": "aH1-r2A", "kind": "taxiway", "name": "A", "from": "aH1", "to": "r2A" },
+    { "id": "r2A-aH2", "kind": "taxiway", "name": "A", "from": "r2A", "to": "aH2" },
+    { "id": "aH2-aP1", "kind": "taxiway", "name": "A", "from": "aH2", "to": "aP1" },
+    { "id": "aP1-aP2", "kind": "taxiway", "name": "A", "from": "aP1", "to": "aP2" },
+    { "id": "aP2-aE", "kind": "taxiway", "name": "A", "from": "aP2", "to": "aE" },
+
+    { "id": "aW-a1H", "kind": "taxiway", "name": "A1", "from": "aW", "to": "a1H" },
+    { "id": "a1H-r1W", "kind": "taxiway", "name": "A1", "from": "a1H", "to": "r1W" },
+    { "id": "aE-a9I", "kind": "taxiway", "name": "A9", "from": "aE", "to": "a9I" },
+    { "id": "a9I-a9H", "kind": "taxiway", "name": "A9", "from": "a9I", "to": "a9H" },
+    { "id": "a9H-r1E", "kind": "taxiway", "name": "A9", "from": "a9H", "to": "r1E" },
+    { "id": "aC-cHN", "kind": "taxiway", "name": "C", "from": "aC", "to": "cHN" },
+    { "id": "cHN-r1C", "kind": "taxiway", "name": "C", "from": "cHN", "to": "r1C" },
+    { "id": "r1C-cHS", "kind": "taxiway", "name": "C", "from": "r1C", "to": "cHS" },
+    { "id": "cHS-bC", "kind": "taxiway", "name": "C", "from": "cHS", "to": "bC", "closed": { "reason": "Construction: Twy C closed between Rwy 9/27 and Twy B (synthetic)" } },
+    { "id": "aD-dI", "kind": "taxiway", "name": "D", "from": "aD", "to": "dI" },
+    { "id": "dI-dHN", "kind": "taxiway", "name": "D", "from": "dI", "to": "dHN" },
+    { "id": "dHN-r1D", "kind": "taxiway", "name": "D", "from": "dHN", "to": "r1D" },
+    { "id": "r1D-dHS", "kind": "taxiway", "name": "D", "from": "r1D", "to": "dHS" },
+    { "id": "dHS-bD", "kind": "taxiway", "name": "D", "from": "dHS", "to": "bD" },
+    { "id": "aJ-jH", "kind": "taxiway", "name": "J", "from": "aJ", "to": "jH" },
+    { "id": "jH-rX", "kind": "taxiway", "name": "J", "from": "jH", "to": "rX" },
+    { "id": "bF-fH", "kind": "taxiway", "name": "F", "from": "bF", "to": "fH" },
+    { "id": "fH-r2F", "kind": "taxiway", "name": "F", "from": "fH", "to": "r2F" },
+
+    { "id": "bE1-bD", "kind": "taxiway", "name": "B", "from": "bE1", "to": "bD" },
+    { "id": "bD-bC", "kind": "taxiway", "name": "B", "from": "bD", "to": "bC" },
+    { "id": "bC-bE2", "kind": "taxiway", "name": "B", "from": "bC", "to": "bE2" },
+    { "id": "bE2-bF", "kind": "taxiway", "name": "B", "from": "bE2", "to": "bF" },
+    { "id": "bE1-eW", "kind": "taxiway", "name": "E1", "from": "bE1", "to": "eW", "points": [[-1140, -260], [-1140, -340]] },
+    { "id": "bE2-eE", "kind": "taxiway", "name": "E2", "from": "bE2", "to": "eE" },
+    { "id": "eW-e1", "kind": "taxiway", "name": "E", "from": "eW", "to": "e1" },
+    { "id": "e1-e2", "kind": "taxiway", "name": "E", "from": "e1", "to": "e2" },
+    { "id": "e2-eE", "kind": "taxiway", "name": "E", "from": "e2", "to": "eE" },
+    { "id": "e1-pbS1", "kind": "taxiway", "from": "e1", "to": "pbS1" },
+    { "id": "e2-pbS2", "kind": "taxiway", "from": "e2", "to": "pbS2" },
+
+    { "id": "aP1-npW", "kind": "taxiway", "name": "P1", "from": "aP1", "to": "npW" },
+    { "id": "npW-np1", "kind": "taxiway", "from": "npW", "to": "np1" },
+    { "id": "np1-np2", "kind": "taxiway", "from": "np1", "to": "np2" },
+    { "id": "np2-npE", "kind": "taxiway", "from": "np2", "to": "npE" },
+    { "id": "np1-npS1", "kind": "taxiway", "from": "np1", "to": "npS1" },
+    { "id": "np2-npS2", "kind": "taxiway", "from": "np2", "to": "npS2" },
+    { "id": "npE-aP2", "kind": "taxiway", "name": "P2", "from": "npE", "to": "aP2" },
+    { "id": "aK-wpS", "kind": "taxiway", "name": "K", "from": "aK", "to": "wpS", "widthM": 23 },
+
+    { "id": "rb7-a7", "kind": "taxiway", "name": "7", "from": "rb7", "to": "a7" },
+    { "id": "rb7-l7A", "kind": "rampLane", "name": "7", "from": "rb7", "to": "l7A" },
+    { "id": "l7A-l7B", "kind": "rampLane", "name": "7", "from": "l7A", "to": "l7B" },
+    { "id": "l7A-g1", "kind": "rampLane", "from": "l7A", "to": "g1" },
+    { "id": "l7A-g2", "kind": "rampLane", "from": "l7A", "to": "g2" },
+    { "id": "l7B-g3", "kind": "rampLane", "from": "l7B", "to": "g3" },
+
+    { "id": "rbTB-aTB", "kind": "taxiway", "name": "TB", "from": "rbTB", "to": "aTB" },
+    { "id": "rbTB-tdW", "kind": "rampLane", "name": "TB", "from": "rbTB", "to": "tdW" },
+    { "id": "tdW-tdA", "kind": "rampLane", "name": "TD", "from": "tdW", "to": "tdA" },
+    { "id": "tdA-tdB", "kind": "rampLane", "name": "TD", "from": "tdA", "to": "tdB" },
+    { "id": "tdB-tdE", "kind": "rampLane", "name": "TD", "from": "tdB", "to": "tdE" },
+    { "id": "tdE-rbTC", "kind": "rampLane", "name": "TC", "from": "tdE", "to": "rbTC" },
+    { "id": "rbTC-aTC", "kind": "taxiway", "name": "TC", "from": "rbTC", "to": "aTC" },
+    { "id": "tdA-gB1", "kind": "rampLane", "from": "tdA", "to": "gB1" },
+    { "id": "tdB-gB2", "kind": "rampLane", "from": "tdB", "to": "gB2" }
+  ],
+  "runways": [
+    {
+      "id": "9/27",
+      "ends": [
+        { "designator": "9", "node": "r1W" },
+        { "designator": "27", "node": "r1E", "displacedThresholdM": 150 }
+      ],
+      "widthM": 45,
+      "towerPosition": "twr1"
+    },
+    {
+      "id": "18/36",
+      "ends": [
+        { "designator": "18", "node": "r2N" },
+        { "designator": "36", "node": "r2S" }
+      ],
+      "widthM": 45,
+      "towerPosition": "twr2"
+    }
+  ],
+  "runwayExits": [
+    { "id": "x27J", "runwayEnd": "27", "taxiway": "J", "node": "rX", "edge": "jH-rX" },
+    { "id": "x27C", "runwayEnd": "27", "taxiway": "C", "node": "r1C", "edge": "cHN-r1C" },
+    { "id": "x27DN", "runwayEnd": "27", "taxiway": "D", "node": "r1D", "edge": "dHN-r1D" },
+    { "id": "x27DS", "runwayEnd": "27", "taxiway": "D", "node": "r1D", "edge": "r1D-dHS" },
+    { "id": "x9DN", "runwayEnd": "9", "taxiway": "D", "node": "r1D", "edge": "dHN-r1D" },
+    { "id": "x9C", "runwayEnd": "9", "taxiway": "C", "node": "r1C", "edge": "cHN-r1C" },
+    { "id": "x36F", "runwayEnd": "36", "taxiway": "F", "node": "r2F", "edge": "fH-r2F" },
+    { "id": "x36AW", "runwayEnd": "36", "taxiway": "A", "node": "r2A", "edge": "aH1-r2A" },
+    { "id": "x36AE", "runwayEnd": "36", "taxiway": "A", "node": "r2A", "edge": "r2A-aH2" },
+    { "id": "x18AW", "runwayEnd": "18", "taxiway": "A", "node": "r2A", "edge": "aH1-r2A" },
+    { "id": "x18AE", "runwayEnd": "18", "taxiway": "A", "node": "r2A", "edge": "r2A-aH2" },
+    { "id": "x18F", "runwayEnd": "18", "taxiway": "F", "node": "r2F", "edge": "fH-r2F" }
+  ],
+  "holdShorts": [
+    { "id": "hA1", "kind": "runway", "runways": ["9/27"], "node": "a1H", "towardEdge": "a1H-r1W" },
+    { "id": "hA9", "kind": "runway", "runways": ["9/27"], "node": "a9H", "towardEdge": "a9H-r1E" },
+    { "id": "hA9ils", "kind": "ils", "runways": ["9/27"], "node": "a9I", "towardEdge": "a9I-a9H" },
+    { "id": "hCN", "kind": "runway", "runways": ["9/27"], "node": "cHN", "towardEdge": "cHN-r1C" },
+    { "id": "hCS", "kind": "runway", "runways": ["9/27"], "node": "cHS", "towardEdge": "r1C-cHS" },
+    { "id": "hDN", "kind": "runway", "runways": ["9/27"], "node": "dHN", "towardEdge": "dHN-r1D" },
+    { "id": "hDS", "kind": "runway", "runways": ["9/27"], "node": "dHS", "towardEdge": "r1D-dHS" },
+    { "id": "hDI", "kind": "intermediate", "runways": [], "node": "dI", "towardEdge": "aD-dI" },
+    { "id": "hJ", "kind": "runway", "runways": ["9/27", "18/36"], "node": "jH", "towardEdge": "jH-rX" },
+    { "id": "hAW", "kind": "runway", "runways": ["18/36"], "node": "aH1", "towardEdge": "aH1-r2A" },
+    { "id": "hAE", "kind": "runway", "runways": ["18/36"], "node": "aH2", "towardEdge": "r2A-aH2" },
+    { "id": "hF", "kind": "runway", "runways": ["18/36"], "node": "fH", "towardEdge": "fH-r2F" },
+    { "id": "hL36", "kind": "lahso", "runways": ["9/27"], "node": "r2L", "towardEdge": "rX-r2L" }
+  ],
+  "rampHandoffs": [
+    { "id": "rh7", "name": "7", "node": "rb7", "use": "both", "terminals": ["T1"] },
+    { "id": "rhTB", "name": "TB", "node": "rbTB", "use": "departures" },
+    { "id": "rhTC", "name": "TC", "node": "rbTC", "use": "arrivals", "terminals": ["T2"] }
+  ],
+  "terminals": [
+    { "id": "T1", "name": "Terminal 1", "airlines": ["DAL", "JBU"] },
+    { "id": "T2", "name": "Terminal 2", "airlines": ["BAW", "AFR", "UAE"] }
+  ],
+  "gates": [
+    { "id": "T1-1", "name": "1", "terminal": "T1", "node": "g1", "headingDeg": 270 },
+    { "id": "T1-2", "name": "2", "terminal": "T1", "node": "g2", "headingDeg": 90 },
+    { "id": "T1-3", "name": "3", "terminal": "T1", "node": "g3" },
+    { "id": "T2-B1", "name": "B1", "terminal": "T2", "node": "gB1", "headingDeg": 0 },
+    { "id": "T2-B2", "name": "B2", "terminal": "T2", "node": "gB2", "airlines": ["UAE"] }
+  ],
+  "holdingAreas": [
+    { "id": "padNorth", "name": "North pad", "kind": "pad", "spots": ["npS1", "npS2"], "outline": [[1080, 330], [1420, 330], [1420, 450], [1080, 450]] },
+    { "id": "padWest", "name": "West pad", "kind": "pad", "spots": ["wpS"], "outline": [[-1260, 300], [-1140, 300], [-1140, 370], [-1260, 370]] },
+    { "id": "penaltyBox", "name": "Penalty box", "kind": "penaltyBox", "spots": ["pbS1", "pbS2"], "outline": [[-1150, -380], [550, -380], [550, -500], [-1150, -500]] }
+  ],
+  "departureLines": [
+    {
+      "id": "line27",
+      "runwayEnd": "27",
+      "holdShort": "hA9",
+      "edges": ["aH2-aP1", "aP1-aP2", "aP2-aE", "aE-a9I", "a9I-a9H"],
+      "exits": [
+        { "taxiway": "P1", "node": "aP1", "edge": "aP1-npW" },
+        { "taxiway": "P2", "node": "aP2", "edge": "npE-aP2" }
+      ]
+    },
+    {
+      "id": "line9",
+      "runwayEnd": "9",
+      "holdShort": "hA1",
+      "edges": ["aK-a7", "aW-aK", "aW-a1H"],
+      "exits": [{ "taxiway": "K", "node": "aK", "edge": "aK-wpS" }]
+    }
+  ],
+  "configurations": [
+    {
+      "id": "west",
+      "name": "West flow: land 27 and 36, depart 27",
+      "runways": [
+        { "end": "27", "roles": ["arrivals", "departures"], "arrivalExits": ["x27C", "x27DN", "x27DS"] },
+        { "end": "36", "roles": ["arrivals"], "arrivalExits": ["x36F"] }
+      ]
+    },
+    {
+      "id": "east",
+      "name": "East flow: land 18, depart 9",
+      "runways": [
+        { "end": "9", "roles": ["departures"] },
+        { "end": "18", "roles": ["arrivals"] }
+      ]
+    }
+  ],
+  "towerPositions": [
+    { "id": "twr1", "name": "Test Tower (9/27)", "frequency": "118.700" },
+    { "id": "twr2", "name": "Test Tower (18/36)", "frequency": "119.100" }
+  ],
+  "areas": [
+    { "id": "apronT1", "kind": "apron", "outline": [[-1000, 250], [-600, 250], [-600, 580], [-1000, 580]] },
+    { "id": "bldgT1W", "kind": "terminalBuilding", "name": "Terminal 1", "terminal": "T1", "outline": [[-1000, 360], [-900, 360], [-900, 560], [-1000, 560]] },
+    { "id": "bldgT1E", "kind": "terminalBuilding", "terminal": "T1", "outline": [[-700, 360], [-600, 360], [-600, 440], [-700, 440]] },
+    { "id": "apronT2", "kind": "apron", "outline": [[50, 250], [450, 250], [450, 560], [50, 560]] },
+    { "id": "bldgT2", "kind": "terminalBuilding", "name": "Terminal 2", "terminal": "T2", "outline": [[100, 560], [400, 560], [400, 660], [100, 660]] },
+    { "id": "tower", "kind": "building", "name": "Tower", "outline": [[-100, 600], [-60, 600], [-60, 640], [-100, 640]] }
+  ]
+}

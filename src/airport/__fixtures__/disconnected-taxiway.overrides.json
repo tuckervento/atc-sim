@@ -1,0 +1,14 @@
+{
+  "formatVersion": 1,
+  "airport": "TEST",
+  "description": "Broken fixture, applied on top of data/airports/TEST.json: taxiway Z (one edge between two new nodes) shares no node with the rest of the airport. Expected: exactly one error, disconnected-network.",
+  "nodes": {
+    "add": [
+      { "id": "zW", "x": -200, "y": -800 },
+      { "id": "zE", "x": 200, "y": -800 }
+    ]
+  },
+  "edges": {
+    "add": [{ "id": "zW-zE", "kind": "taxiway", "name": "Z", "from": "zW", "to": "zE" }]
+  }
+}
