@@ -1,0 +1,43 @@
+# Terse forms for test-set script lines 01–33, drafted by task 1.2 (2026-11-14).
+# Each was checked with src/sim/terse.ts (parseTerse) at the time. Task 0.4 can use these as the
+# expected commands for scoring; re-check with the parser before relying on them.
+# Airline code mapping (1.2's choice): Shamrock=EIN, Speedbird=BAW, Brickyard=RPA, Qatari=QTR,
+# Virgin=VIR, Alaska=ASA.
+# Notes:
+#   09 — `ramp` with no name means the aircraft's own ramp; "when you get there" isn't represented.
+#   31 — `?` is an unknown station (callsign null); say-again is the only instruction allowed.
+#   12, 13, 24 — traffic information and sequence ("number two") are dropped: no effect on behavior.
+#   34 — C11 (follow / give way), out of scope, unscored.
+01 DAL4 taxi 31L via A R:KE hs B
+02 JBU1123 taxi 31L via A KD hs B 31R
+03 AAL100 taxi 31L via A KF hs 31R
+04 EIN104 taxi 31L via A J hs B
+05 DLH405 taxi 31L via L:A R:KE hs 31R K
+06 DAL2340 atis P alt 2992, taxi 31L via A KD hs B
+07 JBU615 atis P alt 2992
+08 UAE202 taxi ramp T4 via KE L:A
+09 JBU387 taxi ramp via KF R:A, monitor ramp
+10 AAL142 taxi ramp T8 via KD R:B L:H hs A
+11 ASA93 hs 4R
+12 DAL4 hs 31R
+13 IBE626 hs B
+14 JBU1123 hold
+15 IBE626 continue
+16 BAW175 hold
+17 DAL4 cross 31R at KE
+18 SWR17 cross 22R at Y, hs B
+19 QTR701 cross 31R at KE, taxi 31L via K
+20 AFR23 taxi pad via L:KD
+21 DAL1204 ground-stop ATL, taxi penalty via R:KC
+22 JBU615 release 1452, taxi pad via A KK
+23 VIR3 taxi penalty via KF B
+24 BAW175 monitor tower 119.1
+25 UAE202 contact ramp
+26 DAL4 neg hs B
+27 DLH405 neg turn R:KE
+28 AAL100 neg to 31L
+29 EIN104 neg via A J hs B
+30 KLM644 say-again
+31 ? say-again
+32 RPA3560 ground-stop BOS, delay 20
+33 UAL1416 hold-for-release, delay 15

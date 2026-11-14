@@ -1,13 +1,37 @@
 # STATUS
 
-_Last updated: 2026-11-14 (parallel cycle 2: 1.2, 1.4, 0.3, 0.5 dispatched)_
+_Last updated: 2026-11-14 (cycle 2 closed: Q's voice verdict recorded, 0.5 done; Q's answers recorded)_
 
 ## Snapshot
 
-4 of 20 tasks done (0.1, 0.2, 1.1, 1.3). 1.2, 1.4, 0.3 and 0.5 in progress in parallel (Q-directed parallel cycle 2).
+8 of 20 tasks done (0.1, 0.2, 0.3, 0.5, 1.1, 1.2, 1.3, 1.4). Nothing blocked. Next up: 0.4.
 
 ## Completed
 
+- [x] 0.5 — Voice bake-off; Q listens — done 2026-11-14 — verified:
+  - Q rated all 15 voices on the samples page. The table is pasted unedited into § Voices → Q's listening verdict, with per-provider means.
+  - § Voices has, per provider: median and p95 time to first audio, usable voices, rate control, accents and $/hr.
+  - Agent work verified by me before Q listened:
+    - A slice re-run (`--provider elevenlabs --limit 2`, to the scratchpad) exited 0 and printed the required table: median 183 ms, rate control and accents columns present.
+    - The samples page references 144 distinct WAVs (162 audio elements), with 0 missing and 0 external. `samples/` is gitignored.
+    - Spike typecheck: exit 0.
+- [x] 1.2 — Command format and terse-syntax parser — done 2026-11-14 — verified by me after the subagent:
+  - `npx vitest run src/sim/terse.test.ts`: 90 of 90 passed. `npx tsc -p tsconfig.sim.json`: exit 0.
+  - Test groups cover C1/C2/C6, C3, C4, C5, C7, C8, C9, C10, C12, the crossing request, runway normalization, and numeric lanes vs runways.
+  - All five PLAN examples appear in the tests.
+  - 44 malformed inputs, each asserting its exact message (e.g. `"expected runway after 'cross', got 'KE'"`).
+- [x] 1.4 — Airport format, loader and validator — done 2026-11-14 — verified by me after the subagent:
+  - `npm run validate-airport -- TEST`: `OK: TEST is valid (0 error(s), 0 warning(s))`, exit 0.
+  - `npx vitest run src/airport`: 42 of 42 passed. That includes the three broken fixtures, each rejected with only its own code (`disconnected-network`, `hold-short-no-runway`, `gate-unreachable`).
+  - No `node:` imports in `src/airport/`. The `package.json` change is only the `validate-airport` script.
+  - Whole repo with 1.2 and 1.4 together: `npm run typecheck` exit 0, `npm test` 133 of 133 passed across 5 files.
+- [x] 0.3 — Speech-to-text bake-off — done 2026-11-14 — verified by me after the subagent:
+  - Re-ran a slice (`--provider deepgram --model nova-3 --limit 3`, to the scratchpad): 3 of 3 lines, median 87 ms, 0.0% WER, 100% critical tokens, table columns as required, exit 0.
+  - Every candidate's `results/stt/*.json` has 34 entries.
+  - Spot-checked lines 02 and 21 for Nova-3 and Universal-3.6 Pro against the script: callsigns, runways, taxiways and hold-short targets were all correct. Nova-3 dropped one word ("take") on line 21.
+  - Confirmed in `stt/deepgram.ts` and the results file: a line only completes on a `from_finalize` Results message, and 34 of 34 Nova-3 lines completed with no error.
+  - Spike typecheck: exit 0.
+  - Section merged into `docs/spikes/voice-loop.md` § Speech-to-text.
 - [x] 0.1 — Shortlist providers and set up access — done 2026-11-14 — verified: after Q added keys to `spikes/voice-loop/.env.local`, `npm --prefix spikes/voice-loop run check-keys` printed `OK` for anthropic, openai, deepgram, assemblyai, elevenlabs and cartesia, and exited 0. `.env.local` is gitignored. § Shortlist of `docs/spikes/voice-loop.md` is complete (checked earlier the same day).
 - [x] 0.2 — Test-set script and recorder; Q records — done 2026-11-14 — verified:
   - `spikes/voice-loop/test-set/script.md` has 34 lines covering C1–C10 and C12 (C11 on line 34, unscored).
@@ -27,11 +51,6 @@ _Last updated: 2026-11-14 (parallel cycle 2: 1.2, 1.4, 0.3, 0.5 dispatched)_
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
-
-- 1.2 — Command format and terse-syntax parser. Plan approved 2026-11-14; dispatched to a subagent.
-- 1.4 — Airport format, loader and validator. Plan approved 2026-11-14; dispatched to a subagent.
-- 0.3 — Speech-to-text bake-off. Plan approved 2026-11-14; dispatched to a subagent.
-- 0.5 — Voice bake-off; Q listens. Plan approved 2026-11-14; dispatched to a subagent. Ends with a hand-off to Q (listening verdict).
 
 ## Blocked
 
@@ -108,8 +127,91 @@ _Last updated: 2026-11-14 (parallel cycle 2: 1.2, 1.4, 0.3, 0.5 dispatched)_
   - Added scripts `stt-bench` → `node stt-bench.ts` and `tts-bench` → `node tts-bench.ts`.
   - Spike typecheck exits 0, and check-keys still shows 6 OK, exit 0.
   - Agents don't edit the spike's `package.json`.
+- 2026-11-14 — **1.2 choices:**
+  - **Shape of a command.** A command is one callsign plus an ordered list of instructions, comma-separated in terse (`SWR17 cross 22R at Y, hs B`). Eight script lines combine instructions, so a single-instruction shape wouldn't do. PRD's "one transmission addresses one aircraft" still holds.
+  - **C1, C2 and C6 are one `taxi` instruction**, whose destination is a runway, `ramp`, `pad` or `penalty`. "Exit the line at KD" is a taxi to a pad, with KD as the first route item. A standalone C3 is an `hs` instruction.
+  - **Added:**
+    - an unknown-station say-again (`? say-again`, callsign null)
+    - `request-crossing [runway]`
+    - `delay N` as its own instruction
+  - **What a correction (`neg`) means:** each named part replaces that part of the aircraft's current clearance, i.e. the pilot's readback including the mistake. The parts are `to`, `via` (whole route), `turn` (one route item's turn), `hs` (the whole hold-short list) and `cross` (the latest crossing).
+  - **Numeric names:** a bare token starting with a digit is never a name. A lane named 13 is `#13`. Runways are stored without a leading zero (`04L` becomes `4L`).
+  - **Errors:** `parseTerse` returns `{ok, command}` or `{ok:false, error:{message, offset}}`, and never throws on bad input.
+  - **0.4:** the terse forms 1.2 drafted for script lines 01–33 are saved in `spikes/voice-loop/results/terse-forms-from-1.2.txt`. `taxi … hs B` and `taxi …, hs B` behave the same but produce different objects, so 0.4 should normalize, or tell the model which is standard (the first).
+  - **Open for Q:**
+    - Does "monitor tower" / "monitor ramp" take effect immediately or at the handoff point? "monitor ramp when you get there" can't be represented yet.
+    - Should a correction's hold-shorts replace the whole list? There's no "no hold-short" form yet.
+- 2026-11-14 — **1.4 choices** (reference: `docs/airport-format.md`):
+  - **Coordinates:** meters in a local frame (x east, y north) around a stored lat/lon reference point (`geo.ts` projects).
+  - **Collections:** 13 strict collections (unknown fields rejected), including:
+    - `rampHandoffs` (`use`: departures, arrivals or both), covering ramp edges and entrances in one collection
+    - `holdShorts` (kind runway, ils, lahso or intermediate; `runways[]`; directional `node` + `towardEdge`). Intermediate holds must have `runways: []`.
+    - `departureLines` (edges and exits, ordered back to front)
+    - `configurations` (per-runway roles)
+  - **Overrides:** `add`, `replace`, `patch` (shallow; `patch` added beyond the brief, so JFK curation doesn't copy whole items) and `remove`, plus `set`. Ids must exist for replace, patch and remove; nothing cascades.
+  - **Designators:** the validator rejects leading zeros (`04L`), matching 1.2. The 1.5 importer must strip OSM's zeros.
+  - **Extra error check:** `runway-entry-unprotected`. Any path from a ramp handoff or holding spot onto a runway must pass that runway's hold.
+  - **Added** `graph.ts` (lookups, adjacency) and `geo.ts`. 1.8 can reuse them.
+  - **Speed:** a 3,601-node grid loads and validates in about 25 ms.
+  - **Open for Q, before or during 1.5:**
+    - Keep `runway-entry-unprotected` as an error? JFK's OpenStreetMap data has 7 untagged holds.
+    - Each runway used in only one direction per configuration: OK?
+    - Add a `default` configuration field?
+    - Gates must sit on ramp lanes. Does that hold for every JFK parking area, e.g. the South Hardstand?
+- 2026-11-14 — **0.3 findings and choices:**
+  - **Recommendation for 0.6:** Deepgram Nova-3 (median 124 ms, p95 357 ms, WER 3.4%, 100% critical tokens, $0.18–$0.27/hr) and AssemblyAI Universal-3.6 Pro (median 120 ms, p95 213 ms, WER 1.4%, 100% critical tokens, $0.23–$0.45/hr). They're the only two within the 0.3 s budget.
+  - **Rejected:**
+    - OpenAI's two models: 565–634 ms medians.
+    - Deepgram Flux: 374 ms, 9.4% WER, weak on callsigns.
+    - AssemblyAI Universal-Streaming English: 616 ms, weaker on runways.
+  - **How each end of turn is signalled:**
+    - Universal-Streaming English needs `Terminate`, not `ForceEndpoint`; ForceEndpoint cut off the last word.
+    - Flux needs 500 ms of trailing silence before `ForceEndTurn`; without it, 9 of 34 lines lost their last words. 0.3's one allowed re-run went on Flux, and the first pass is kept as `.no-padding.json`.
+    - OpenAI's `delay` parameter is unsupported.
+  - **AssemblyAI** was throttled to 5 new sessions per minute (free tier).
+  - **Scoring:** two normalization rules were added after seeing output (split letters glued to digits; "call sign" = "callsign"), applied to every candidate.
+  - **Spend:** about $0.24, plus $0.003 for my verification slice.
+  - **Open for Q:**
+    - On 5 lines (05, 10, 27, 30, 32), Q's actual wording differs from the reference. Should the reference be edited to match what was said?
+    - AssemblyAI's free tier (5 sessions/min) is below the peak need (about 7.5/min). A paid account, or one long-lived session (about $0.45/hr, untested), would be needed if Universal-3.6 Pro is picked.
+- 2026-11-14 — **0.5 findings and choices:**
+  - **ElevenLabs `eleven_flash_v2_5` is the steadiest within the 0.2 s first-audio budget.** Pooled over 62 requests: median 178 ms, p95 249 ms, 84% within 0.2 s. (Corrected 2026-11-14: this first said ElevenLabs was the only service meeting the budget. Cartesia's pooled median, 188 ms, also does; it missed in run B, and only 52% of its requests were within 0.2 s.)
+  - **Cartesia `sonic-3.6`:** median 188 ms, p95 366 ms, with response times in two groups. Its speed setting is ineffective (×1.5 → 1.03×); `sonic-3` does respond.
+  - **OpenAI `gpt-realtime-2.1-mini`:** median 458 ms, never under 0.2 s. It said "niner" as "nine" in 16 of 55 cases at reasoning effort `none`.
+  - **The ElevenLabs account is on the free plan.** Library voices return HTTP 402, so only 9 premade voices were usable and no accented voices were tested. Accents (a PRD requirement for later) need a paid plan.
+  - **Speed:** `eleven_v4_turbo` ignores `speed`. Q's cadence is a median of 165 wpm. The right speed setting varies per voice (ElevenLabs ×0.9 for Eric up to ×1.2), so 0.6 may need per-voice speed.
+  - **Spend:** about $1.63.
+  - **A bench bug was fixed during the task:** calibration clips were overwritten by timing clips. The stats are unaffected.
+- 2026-11-14 — **Q's verdict on the voices (0.5):**
+  - Cartesia rated best: mean naturalness 4.6, with 3 of 5 voices sounding like a pilot (Sebastian 5/5, Derrick and Gary 5/4).
+  - ElevenLabs: mean 3.4, with 2 of 5 pilot voices (Daniel 5/4, Roger 3/4).
+  - OpenAI: mean 2.75. The German-accent instruction did nothing.
+  - So Q's ears favour Cartesia, while the latency measurements and rate control favour ElevenLabs.
+  - Revised recommendation, in § Voices: 0.6 takes both into the live loop and picks on live latency plus Q's ears. Cartesia goes in with its WebSocket API; ElevenLabs with Daniel plus library voices. OpenAI is dropped.
+- 2026-11-14 — **Q's answers to cycle 2's open questions:**
+  - **ElevenLabs paid plan:** Q is open to one.
+    - I recommend Starter ($6/mo, 150K Flash characters). ElevenLabs says library voices are unavailable through the API to free users, which implies any paid plan works. No page names Starter explicitly.
+    - Q upgrades. That doesn't block anything; it unlocks library and accented voices for 0.6.
+  - **AssemblyAI:** stay on the free tier for now. It only matters if 0.6 picks Universal-3.6 Pro.
+  - **Reference text:** edit script lines 05, 10, 27, 30 and 32 to match what Q said, then re-score 0.3. That's done in its own commit; see the entry below.
+  - **Handoffs (1.2):** I gave no recommendation here, only a lean: Line 09's "monitor ramp when you get there" suggests the handoff point. Q's "agreed with recommendations" is recorded as **provisional: a handoff takes effect at the handoff point**. Confirm with Q when the task that implements handoffs is planned.
+  - **Correction hold-shorts (1.2):** a correction's hold-shorts replace the whole list, as built.
+  - **`runway-entry-unprotected` (1.4):** stays an error.
+  - **Runway direction (1.4):** each runway is used in one direction per configuration, as built.
+  - **`default` configuration (1.4):** add the field. That's done in its own commit; see the entry below.
+  - **Parking off the ramp (1.4), new scope:**
+    - Q confirmed JFK has ground-controlled parking that isn't on a ramp lane, e.g. the South Hardstand.
+    - Aircraft also need to taxi to **hangars**.
+    - Neither fits today's format or commands:
+      - The validator requires every gate to sit on a ramp lane.
+      - A `taxi` can only go to a runway, `ramp`, `pad` or `penalty`.
+    - The PRD doesn't mention either yet.
+    - Not built. Where it goes is Q's call. I recommend folding it into 1.5, since the real locations arrive with the JFK data.
 
 ## Next Up
 
-- 1.2 — Command format and terse-syntax parser. It depends only on 1.1, which is done, and 0.4 waits on it.
-- Also eligible now: 1.4 (needs 1.1), 0.3 (needs 0.1 and 0.2) and 0.5 (needs 0.1). All their dependencies are done.
+- 0.4 — Interpreter bake-off. Needs 0.2, 0.3 and 1.2, all done. Expected commands: start from `spikes/voice-loop/results/terse-forms-from-1.2.txt`.
+- Also eligible now:
+  - 1.8, route resolution (needs 1.2 and 1.4, both done)
+  - 1.5, JFK import (needs 1.3 and 1.4, both done, plus Q's answers on the 31L line, pads and penalty box)
+- 0.6 waits on 0.4 (0.3 and 0.5 are done).
