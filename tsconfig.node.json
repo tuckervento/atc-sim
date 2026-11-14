@@ -1,0 +1,9 @@
+// Code that runs only in Node: build/test config files and tools/ (importers, scripts).
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts", "vitest.config.ts", "tools/**/*.ts"]
+}

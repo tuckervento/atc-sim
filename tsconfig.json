@@ -1,0 +1,11 @@
+// Solution-style root config so editors pick the right project for each file.
+// It checks nothing itself; `npm run typecheck` runs each project explicitly.
+// spikes/ is a separate package and is deliberately not part of any project here.
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.sim.json" },
+    { "path": "./tsconfig.web.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}

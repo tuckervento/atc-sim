@@ -1,0 +1,24 @@
+// Shared compiler options. Each project (sim / web / node) extends this and sets its own
+// `lib` and `types`; `types` is empty here so no @types/* package is pulled in by accident.
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "force",
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // Per-file transpilers (Vite, Vitest) and type strippers need these.
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": []
+  }
+}

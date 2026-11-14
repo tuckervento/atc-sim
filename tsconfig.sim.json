@@ -1,0 +1,11 @@
+// Headless simulation and airport code. Must run in both the browser and Node (tests),
+// so it gets ES built-ins only: no DOM lib, and no @types/node (which declares
+// browser-like globals such as fetch, navigator and localStorage).
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": []
+  },
+  "include": ["src/sim/**/*.ts", "src/airport/**/*.ts"]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "atc-sim",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Voice-driven air traffic control ground-control game (v1: JFK Ground).",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.sim.json && tsc -p tsconfig.web.json && tsc -p tsconfig.node.json"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  },
+  "allowScripts": {
+    "fsevents": false
+  }
+}
