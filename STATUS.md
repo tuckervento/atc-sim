@@ -218,6 +218,17 @@ _Last updated: 2026-11-14 (cycle 2 closed: Q's voice verdict recorded, 0.5 done;
   - New WER: Universal-3.6 Pro 0.2%, gpt-transcribe 0.7%, gpt-live-transcribe 1.4%, Nova-3 2.3%, Universal-Streaming English 4.1%, Flux 8.2%.
   - Not re-scored: Flux's no-padding first pass, kept for history.
   - **For 0.4:** line 32 now states a delay range, but 1.2's `delay N` takes one number. 0.4 decides: score the lower bound, or add a range form.
+- 2026-11-14 — **`defaultConfiguration` added to the airport format (1.4)**, as Q agreed:
+  - It's a top-level field naming one of `configurations`, and overrides can `set` it. That matters because an OSM-derived base has no configurations, so the JFK overrides file adds them and sets the default.
+  - I put it at the top level rather than as a `default: true` flag on each configuration, so "two defaults" can't happen.
+  - Validator:
+    - **Error** `unknown-reference` if it names a configuration that doesn't exist.
+    - **Warning** `no-default-configuration` if the airport has configurations but no default. That matches `no-configurations`, which is also a warning.
+  - TEST.json defaults to `west`. `validate-airport` marks the default in its summary.
+  - Verified:
+    - Each new test failed first: the loader rejected the unknown `set` key, and then no warning was raised.
+    - `npm run validate-airport -- TEST`: `OK … (0 error(s), 0 warning(s))`, showing `west (default), east`.
+    - `npm run typecheck`: exit 0. `npm test`: 135 of 135 passed.
 
 ## Next Up
 

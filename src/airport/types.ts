@@ -58,6 +58,8 @@ export interface Airport {
   reference: ReferencePoint;
   /** Where the data came from and under what license (OSM-derived files must say ODbL). */
   source?: SourceInfo;
+  /** The configuration a session starts in unless the player picks another (an id in `configurations`). */
+  defaultConfiguration?: ConfigurationId;
 
   nodes: Node[];
   edges: Edge[];
@@ -442,6 +444,7 @@ export interface AirportOverrides {
     name?: string;
     reference?: ReferencePoint;
     source?: SourceInfo | null;
+    defaultConfiguration?: ConfigurationId | null;
   };
   nodes?: CollectionOverrides<Node>;
   edges?: CollectionOverrides<Edge>;

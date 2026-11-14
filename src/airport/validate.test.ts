@@ -148,6 +148,19 @@ describe('checks (one change to TEST each)', () => {
     expect(codes(unknown.errors)).toEqual(['unknown-reference']);
   });
 
+  it('rejects a default configuration that does not exist', () => {
+    const r = check({ set: { defaultConfiguration: 'north' } });
+    expect(codes(r.errors)).toEqual(['unknown-reference']);
+    expect(r.errors[0]?.message).toContain('defaultConfiguration refers to unknown configuration "north"');
+  });
+
+  it('warns when there are configurations but no default', () => {
+    const r = check({ set: { defaultConfiguration: null } });
+    expect(format(r.errors)).toEqual([]);
+    expect(codes(r.warnings)).toEqual(['no-default-configuration']);
+    expect(r.ok).toBe(true);
+  });
+
   it('rejects duplicate ids in a base file', () => {
     const first = testAirport.nodes[0];
     const r = validateAirport(loadAirport({ ...testAirport, nodes: [...testAirport.nodes, first] }));

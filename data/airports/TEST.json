@@ -6,6 +6,7 @@
   "source": {
     "description": "Synthetic airport for unit tests (PLAN 1.4), not a real place. It exercises every feature of the format: two intersecting runways (9/27 and 18/36, crossing at node rX), a hold-short on J that protects both, runway, ILS, LAHSO and intermediate holds, a runway crossing on A, ramp lanes (including numeric lane 7) with check-in names, two terminals, two pads and a penalty box (reachable both ways round the E loop, so a turn onto B toward it is ambiguous), two departure lines with ordered exits, two configurations (27 takes arrivals and departures in 'west'), split tower positions, and a closed segment of C. Units: meters, x east, y north."
   },
+  "defaultConfiguration": "west",
   "nodes": [
     { "id": "r1W", "x": -1500, "y": 0 },
     { "id": "r1D", "x": -300, "y": 0 },

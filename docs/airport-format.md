@@ -45,7 +45,7 @@ The movement surface is an undirected graph. Everything else points into it.
 | `gates` | a parking position | `name`, `terminal`, `node` (touched only by rampLane edges), `headingDeg?`, `airlines?` (subset of the terminal's). |
 | `holdingAreas` | a pad or the penalty box | `kind`: `pad` or `penaltyBox`. `spots`: nodes where one aircraft each waits. `outline?`. |
 | `departureLines` | the queue for one runway end | `runwayEnd`, `holdShort` (the `runway` hold at the front, where the player hands off to tower), `edges` (back → front, one path ending at that hold's node), `exits` (back → front, each `{ taxiway, node, edge }`; ≥ 1; never a runway or toward one). |
-| `configurations` | a runway configuration | `runways: [{ end, roles: ["arrivals" \| "departures", …], arrivalExits? }]`, one entry per runway. JFK's 31s: `31L` with both roles, `31R` arrivals. |
+| `configurations` | a runway configuration | `runways: [{ end, roles: ["arrivals" \| "departures", …], arrivalExits? }]`, one entry per runway. JFK's 31s: `31L` with both roles, `31R` arrivals. The top-level `defaultConfiguration` names the one a session starts in. |
 | `towerPositions` | a tower position | `name`, `frequency` (`"123.9"`). Runways name their position (JFK splits tower by runway pair; LGA has one). |
 | `areas` | display-only polygon | `kind`: `apron`, `terminalBuilding` (+ `terminal`), `building`. `outline` ≥ 3 points. |
 
@@ -79,7 +79,9 @@ toEdge }]`. It's an additive format change, possible because edges and nodes hav
 ```
 
 - `airport` must equal the base `id`; `formatVersion` must be 1.
-- `set` replaces top-level `name`, `reference` or `source`; `null` removes `source`.
+- `set` replaces top-level `name`, `reference`, `source` or `defaultConfiguration`; `null` removes
+  `source` or `defaultConfiguration`. An OSM-derived base has no configurations, so the overrides
+  file sets the default alongside adding them.
 - Per collection: **`add`** (new ids only, appended in order), **`replace`** (whole item, same
   position), **`patch`** (shallow: listed fields replace the base's, arrays and objects whole;
   `null` removes a field; `id` only selects), **`remove`** (by id).
@@ -115,14 +117,15 @@ toEdge }]`. It's an additive format change, possible because edges and nodes hav
   `runway` hold protecting its runway. Exits are on the line, in order, and leave by an open
   taxiway with a matching name, not by a runway or toward one.
 - **Configurations:** they use known ends, each runway once, with valid roles. Arrival ends
-  have exits; `arrivalExits` belong to that end.
+  have exits; `arrivalExits` belong to that end. `defaultConfiguration`, if set, names one of
+  them.
 - **Display:** tower frequencies look like MHz; outlines have ≥ 3 points.
 
 **Warnings** (allowed, but look):
 - Holds with no node of their runway within 500 m beyond them.
 - Undeclared ramp/ground boundary nodes.
 - Terminals with no gates.
-- No pad, no penalty box or no configuration.
+- No pad, no penalty box or no configuration; configurations but no `defaultConfiguration`.
 - A departure end with no departure line; a configuration with only arrivals or only
   departures.
 - Non-reciprocal designators; zero-length edges; nodes with no edges.

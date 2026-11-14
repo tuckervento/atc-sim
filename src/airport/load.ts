@@ -11,7 +11,8 @@
 //
 // Overrides semantics (see also `AirportOverrides` in types.ts):
 // - `airport` must equal the base's `id`, and `formatVersion` must be 1.
-// - `set` replaces top-level fields (`name`, `reference`, `source`); `null` removes one.
+// - `set` replaces top-level fields (`name`, `reference`, `source`, `defaultConfiguration`);
+//   `null` removes one.
 // - Per collection (`nodes`, `edges`, ...), four operations, each keyed by item id:
 //   - `add`: append new items. The id must not exist in the base.
 //   - `replace`: swap in a whole new item, at the same position. The id must exist.
@@ -97,7 +98,7 @@ export function loadAirport(base: unknown, overrides?: unknown): Airport {
 type Raw = Record<string, unknown>;
 
 const OVERRIDE_KEYS = ['formatVersion', 'airport', 'description', 'set', ...COLLECTION_KEYS] as const;
-const SET_KEYS = ['name', 'reference', 'source'] as const;
+const SET_KEYS = ['name', 'reference', 'source', 'defaultConfiguration'] as const;
 const OPERATIONS = ['add', 'replace', 'patch', 'remove'] as const;
 type Operation = (typeof OPERATIONS)[number];
 
@@ -263,7 +264,7 @@ function opList(value: unknown, path: string, issues: string[]): unknown[] {
 // ---------------------------------------------------------------------------------------------
 // Decoding
 
-const AIRPORT_KEYS = ['formatVersion', 'id', 'name', 'reference', 'source', ...COLLECTION_KEYS] as const;
+const AIRPORT_KEYS = ['formatVersion', 'id', 'name', 'reference', 'source', 'defaultConfiguration', ...COLLECTION_KEYS] as const;
 const EDGE_KINDS: readonly EdgeKind[] = ['runway', 'taxiway', 'rampLane'];
 const HOLD_SHORT_KINDS: readonly HoldShortKind[] = ['runway', 'ils', 'lahso', 'intermediate'];
 const RAMP_HANDOFF_USES: readonly RampHandoffUse[] = ['departures', 'arrivals', 'both'];
@@ -312,6 +313,8 @@ function decodeAirport(raw: Raw, issues: string[]): Airport {
     areas: f.list('areas', decodeArea),
   };
   if (source) airport.source = source;
+  const defaultConfiguration = f.optStr('defaultConfiguration');
+  if (defaultConfiguration !== undefined) airport.defaultConfiguration = defaultConfiguration;
   return airport;
 }
 

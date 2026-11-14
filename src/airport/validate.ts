@@ -76,6 +76,7 @@ export type IssueCode =
   | 'departure-line-exit-closed'
   // configurations, tower, display geometry
   | 'no-configurations'
+  | 'no-default-configuration'
   | 'configuration-empty'
   | 'configuration-roles-invalid'
   | 'configuration-runway-repeated'
@@ -717,6 +718,12 @@ class Validator {
   private checkConfigurations(): void {
     if (this.a.configurations.length === 0) {
       this.warn('no-configurations', 'the airport has no runway configurations; a session needs one', []);
+    }
+    const def = this.a.defaultConfiguration;
+    if (def !== undefined) {
+      this.ref(this.a.configurations.some((c) => c.id === def), 'defaultConfiguration', 'configuration', def, this.a.id);
+    } else if (this.a.configurations.length > 0) {
+      this.warn('no-default-configuration', 'the airport has runway configurations but no defaultConfiguration; set one to the usual flow', []);
     }
     const exits = new Map(this.a.runwayExits.map((x) => [x.id, x]));
     for (const c of this.a.configurations) {
