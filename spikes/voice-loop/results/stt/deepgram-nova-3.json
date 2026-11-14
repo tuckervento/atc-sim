@@ -1,0 +1,4349 @@
+{
+  "candidate": "deepgram-nova-3",
+  "provider": "deepgram",
+  "model": "nova-3",
+  "pricing": {
+    "basis": "audio",
+    "perMin": 0.0060999999999999995,
+    "listPerMin": 0.009000000000000001,
+    "note": "$0.0048/min promo (list $0.0077) + keyterms $0.0013/min"
+  },
+  "config": {
+    "vocabTerms": 87,
+    "endpoint": "/v1/listen",
+    "model": "nova-3",
+    "language": "en",
+    "interim_results": true,
+    "endOfTurn": "Finalize"
+  },
+  "method": {
+    "chunkMs": 80,
+    "pacing": "chunk sent when its last sample would have been spoken (start + audio time of chunk end); tails < 20 ms merged into the previous chunk",
+    "session": "one fresh WebSocket session per clip, opened and configured before audio starts (connect time is not in latency)",
+    "latency": "performance.now() at final-transcript message arrival minus performance.now() just after the last audio chunk was handed to the socket; the end-of-turn signal is sent immediately after the last chunk",
+    "normalization": "stt/normalize.ts (lowercase, punctuation stripped, numbers to single digits, spelling equivalences)",
+    "wer": "corpus-level: total substitutions+deletions+insertions / total reference tokens; a line with no transcript counts as all deleted",
+    "criticalTokens": "results/stt/critical-tokens.json, matched by stt/critical.ts",
+    "p95": "nearest rank (ceil(0.95 n)-th smallest)"
+  },
+  "updatedAt": "2026-11-14T08:01:45.292Z",
+  "summary": {
+    "lines": 34,
+    "withFinal": 34,
+    "errors": [],
+    "lateText": [],
+    "latencyMs": {
+      "median": 124,
+      "p95": 356.6,
+      "min": 39.7,
+      "max": 761.4,
+      "withinBudget": 32
+    },
+    "firstTextMs": {
+      "median": 1145.5
+    },
+    "wer": 0.0341726618705036,
+    "critical": {
+      "overall": 1,
+      "callsign": 1,
+      "runways": 1,
+      "taxiways": 1,
+      "holdShort": 1
+    },
+    "criticalCounts": {
+      "callsign": {
+        "expected": 33,
+        "found": 33
+      },
+      "runways": {
+        "expected": 11,
+        "found": 11
+      },
+      "taxiways": {
+        "expected": 35,
+        "found": 35
+      },
+      "holdShort": {
+        "expected": 16,
+        "found": 16
+      }
+    },
+    "linesAllCriticalCorrect": 34,
+    "audioSec": 206.22,
+    "billedSessionSec": null,
+    "peakCostPerHr": {
+      "low": 0.183,
+      "high": 0.27,
+      "measured": null
+    }
+  },
+  "lines": [
+    {
+      "num": "01",
+      "say": "Delta four, runway three one left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.",
+      "style": "textbook",
+      "audioSec": 6.3,
+      "runAt": "2026-11-14T07:41:19.514Z",
+      "transcript": "delta four runway three one left taxi via alpha right on kilo echo hold short of bravo",
+      "latencyMs": 98.1,
+      "timings": {
+        "connectMs": 331.1,
+        "firstTextMs": 1126.1,
+        "streamMs": 6302,
+        "driftMs": 2,
+        "billedSessionSec": null
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5176,
+          "type": "Results"
+        },
+        {
+          "t": -4136,
+          "type": "Results"
+        },
+        {
+          "t": -3487,
+          "type": "Results"
+        },
+        {
+          "t": -2611,
+          "type": "Results"
+        },
+        {
+          "t": -1390,
+          "type": "Results"
+        },
+        {
+          "t": -521,
+          "type": "Results"
+        },
+        {
+          "t": 98,
+          "type": "Results"
+        },
+        {
+          "t": 1242,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "02",
+      "say": "JetBlue eleven twenty-three, three one left, taxi via Alpha, Kilo Delta, hold short of Bravo and hold short of runway three one right.",
+      "style": "textbook",
+      "audioSec": 8.94,
+      "runAt": "2026-11-14T07:41:30.000Z",
+      "transcript": "jetblue eleven twenty three three one left taxi via alpha kilo delta hold short of bravo and hold short of runway three one right",
+      "latencyMs": 99.9,
+      "timings": {
+        "connectMs": 259.2,
+        "firstTextMs": 1128.6,
+        "streamMs": 8940.3,
+        "driftMs": 0.3,
+        "billedSessionSec": null
+      },
+      "partials": 7,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7812,
+          "type": "Results"
+        },
+        {
+          "t": -6758,
+          "type": "Results"
+        },
+        {
+          "t": -5733,
+          "type": "Results"
+        },
+        {
+          "t": -4692,
+          "type": "Results"
+        },
+        {
+          "t": -3804,
+          "type": "Results"
+        },
+        {
+          "t": -3804,
+          "type": "Results"
+        },
+        {
+          "t": -3013,
+          "type": "Results"
+        },
+        {
+          "t": -1970,
+          "type": "Results"
+        },
+        {
+          "t": -923,
+          "type": "Results"
+        },
+        {
+          "t": 100,
+          "type": "Results"
+        },
+        {
+          "t": 1231,
+          "type": "Results"
+        },
+        {
+          "t": 1231,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "and",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "3",
+          "1",
+          "right"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "and",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "3",
+          "1",
+          "right"
+        ],
+        "wer": {
+          "refWords": 25,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "03",
+      "say": "American one hundred, okay, three one left, go ahead and take Alpha to Kilo Foxtrot, hold short three one right.",
+      "style": "loose",
+      "audioSec": 6.78,
+      "runAt": "2026-11-14T07:41:38.522Z",
+      "transcript": "american one hundred okay three one left go ahead and take alpha to kilo foxtrot hold short three one right",
+      "latencyMs": 99.5,
+      "timings": {
+        "connectMs": 523.6,
+        "firstTextMs": 1361.1,
+        "streamMs": 6781.1,
+        "driftMs": 1.1,
+        "billedSessionSec": null
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6456,
+          "type": "Results"
+        },
+        {
+          "t": -5420,
+          "type": "Results"
+        },
+        {
+          "t": -4531,
+          "type": "Results"
+        },
+        {
+          "t": -3496,
+          "type": "Results"
+        },
+        {
+          "t": -2446,
+          "type": "Results"
+        },
+        {
+          "t": -1385,
+          "type": "Results"
+        },
+        {
+          "t": -360,
+          "type": "Results"
+        },
+        {
+          "t": 100,
+          "type": "Results"
+        },
+        {
+          "t": 1173,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "okay",
+          "3",
+          "1",
+          "left",
+          "go",
+          "ahead",
+          "and",
+          "take",
+          "alpha",
+          "to",
+          "kilo",
+          "foxtrot",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "okay",
+          "3",
+          "1",
+          "left",
+          "go",
+          "ahead",
+          "and",
+          "take",
+          "alpha",
+          "to",
+          "kilo",
+          "foxtrot",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right"
+        ],
+        "wer": {
+          "refWords": 21,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "04",
+      "say": "Shamrock one zero four, three one left, Alpha, Juliet, hold short Bravo.",
+      "style": "loose",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:41:45.093Z",
+      "transcript": "shamrock one zero four three one left alpha juliet hold short bravo",
+      "latencyMs": 127.2,
+      "timings": {
+        "connectMs": 346.5,
+        "firstTextMs": 1152,
+        "streamMs": 4981.4,
+        "driftMs": 1.4,
+        "billedSessionSec": null
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3829,
+          "type": "Results"
+        },
+        {
+          "t": -2786,
+          "type": "Results"
+        },
+        {
+          "t": -2628,
+          "type": "Results"
+        },
+        {
+          "t": -2549,
+          "type": "Results"
+        },
+        {
+          "t": -1504,
+          "type": "Results"
+        },
+        {
+          "t": -431,
+          "type": "Results"
+        },
+        {
+          "t": 127,
+          "type": "Results"
+        },
+        {
+          "t": 1210,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 12,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "05",
+      "say": "Lufthansa four zero five heavy, left on Alpha, right Kilo Echo, three one left, hold short three one right, then hold short Kilo.",
+      "style": "loose",
+      "audioSec": 11.1,
+      "runAt": "2026-11-14T07:41:57.787Z",
+      "transcript": "lufthansa four zero five heavy left on alpha right on at kilo echo three one left hold short three one right then hold short kilo",
+      "latencyMs": 104.3,
+      "timings": {
+        "connectMs": 288.7,
+        "firstTextMs": 1125.2,
+        "streamMs": 11101.2,
+        "driftMs": 1.2,
+        "billedSessionSec": null
+      },
+      "partials": 8,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -9976,
+          "type": "Results"
+        },
+        {
+          "t": -8928,
+          "type": "Results"
+        },
+        {
+          "t": -7872,
+          "type": "Results"
+        },
+        {
+          "t": -6853,
+          "type": "Results"
+        },
+        {
+          "t": -5777,
+          "type": "Results"
+        },
+        {
+          "t": -4712,
+          "type": "Results"
+        },
+        {
+          "t": -3702,
+          "type": "Results"
+        },
+        {
+          "t": -2843,
+          "type": "Results"
+        },
+        {
+          "t": -2429,
+          "type": "Results"
+        },
+        {
+          "t": -1488,
+          "type": "Results"
+        },
+        {
+          "t": -448,
+          "type": "Results"
+        },
+        {
+          "t": 104,
+          "type": "Results"
+        },
+        {
+          "t": 1239,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "left",
+          "on",
+          "alpha",
+          "right",
+          "kilo",
+          "echo",
+          "3",
+          "1",
+          "left",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right",
+          "then",
+          "hold",
+          "short",
+          "kilo"
+        ],
+        "hypTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "left",
+          "on",
+          "alpha",
+          "right",
+          "on",
+          "at",
+          "kilo",
+          "echo",
+          "3",
+          "1",
+          "left",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right",
+          "then",
+          "hold",
+          "short",
+          "kilo"
+        ],
+        "wer": {
+          "refWords": 23,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 2
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "06",
+      "say": "Delta twenty-three forty, information Papa is current, altimeter two niner niner two, runway three one left, Alpha, Kilo Delta, hold short Bravo.",
+      "style": "textbook",
+      "audioSec": 11.34,
+      "runAt": "2026-11-14T07:42:10.849Z",
+      "transcript": "delta twenty three forty information papa is is current altimeter two niner niner two runway three one left alpha kilo delta hold short bravo",
+      "latencyMs": 92.5,
+      "timings": {
+        "connectMs": 484.3,
+        "firstTextMs": 1123.1,
+        "streamMs": 11339.8,
+        "driftMs": -0.2,
+        "billedSessionSec": null
+      },
+      "partials": 10,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -10217,
+          "type": "Results"
+        },
+        {
+          "t": -9178,
+          "type": "Results"
+        },
+        {
+          "t": -8616,
+          "type": "Results"
+        },
+        {
+          "t": -7568,
+          "type": "Results"
+        },
+        {
+          "t": -6529,
+          "type": "Results"
+        },
+        {
+          "t": -5484,
+          "type": "Results"
+        },
+        {
+          "t": -4405,
+          "type": "Results"
+        },
+        {
+          "t": -3511,
+          "type": "Results"
+        },
+        {
+          "t": -3508,
+          "type": "Results"
+        },
+        {
+          "t": -3381,
+          "type": "Results"
+        },
+        {
+          "t": -2364,
+          "type": "Results"
+        },
+        {
+          "t": -1323,
+          "type": "Results"
+        },
+        {
+          "t": -275,
+          "type": "Results"
+        },
+        {
+          "t": 92,
+          "type": "Results"
+        },
+        {
+          "t": 1168,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "2",
+          "3",
+          "4",
+          "0",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "2",
+          "3",
+          "4",
+          "0",
+          "information",
+          "papa",
+          "is",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 24,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "07",
+      "say": "JetBlue six one five, Kennedy Ground, Oscar's old, information Papa is current, altimeter two niner niner two.",
+      "style": "loose",
+      "audioSec": 8.4,
+      "runAt": "2026-11-14T07:42:20.845Z",
+      "transcript": "jetblue six one five kennedy ground oscar's old information papa is current altimeter two niner niner two",
+      "latencyMs": 114,
+      "timings": {
+        "connectMs": 270.8,
+        "firstTextMs": 1367.5,
+        "streamMs": 8402.5,
+        "driftMs": 2.5,
+        "billedSessionSec": null
+      },
+      "partials": 6,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7997,
+          "type": "Results"
+        },
+        {
+          "t": -7035,
+          "type": "Results"
+        },
+        {
+          "t": -5994,
+          "type": "Results"
+        },
+        {
+          "t": -4919,
+          "type": "Results"
+        },
+        {
+          "t": -3901,
+          "type": "Results"
+        },
+        {
+          "t": -3030,
+          "type": "Results"
+        },
+        {
+          "t": -2544,
+          "type": "Results"
+        },
+        {
+          "t": -1585,
+          "type": "Results"
+        },
+        {
+          "t": -1271,
+          "type": "Results"
+        },
+        {
+          "t": -310,
+          "type": "Results"
+        },
+        {
+          "t": 114,
+          "type": "Results"
+        },
+        {
+          "t": 1260,
+          "type": "Results"
+        },
+        {
+          "t": 1260,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "kennedy",
+          "ground",
+          "oscar's",
+          "old",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "kennedy",
+          "ground",
+          "oscar's",
+          "old",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "08",
+      "say": "Emirates two zero two heavy, taxi to the Terminal Four ramp via Kilo Echo, left on Alpha.",
+      "style": "textbook",
+      "audioSec": 6.54,
+      "runAt": "2026-11-14T07:42:29.030Z",
+      "transcript": "emirates two zero two heavy taxi to the terminal four ramp via kilo echo left on alpha",
+      "latencyMs": 90.3,
+      "timings": {
+        "connectMs": 403.2,
+        "firstTextMs": 1134.9,
+        "streamMs": 6541.8,
+        "driftMs": 1.8,
+        "billedSessionSec": null
+      },
+      "partials": 6,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5407,
+          "type": "Results"
+        },
+        {
+          "t": -4374,
+          "type": "Results"
+        },
+        {
+          "t": -4060,
+          "type": "Results"
+        },
+        {
+          "t": -3017,
+          "type": "Results"
+        },
+        {
+          "t": -1974,
+          "type": "Results"
+        },
+        {
+          "t": -910,
+          "type": "Results"
+        },
+        {
+          "t": 90,
+          "type": "Results"
+        },
+        {
+          "t": 90,
+          "type": "Results"
+        },
+        {
+          "t": 1167,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "taxi",
+          "to",
+          "the",
+          "terminal",
+          "4",
+          "ramp",
+          "via",
+          "kilo",
+          "echo",
+          "left",
+          "on",
+          "alpha"
+        ],
+        "hypTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "taxi",
+          "to",
+          "the",
+          "terminal",
+          "4",
+          "ramp",
+          "via",
+          "kilo",
+          "echo",
+          "left",
+          "on",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "09",
+      "say": "JetBlue three eighty-seven, alright, Kilo Foxtrot, right on Alpha into the ramp, and monitor ramp when you get there.",
+      "style": "loose",
+      "audioSec": 7.5,
+      "runAt": "2026-11-14T07:42:38.538Z",
+      "transcript": "jetblue three eighty seven alright kilo foxtrot right on alpha into the ramp and monitor ramp when you get there",
+      "latencyMs": 356.6,
+      "timings": {
+        "connectMs": 425.3,
+        "firstTextMs": 1145.5,
+        "streamMs": 7501.1,
+        "driftMs": 1.1,
+        "billedSessionSec": null
+      },
+      "partials": 6,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6356,
+          "type": "Results"
+        },
+        {
+          "t": -5315,
+          "type": "Results"
+        },
+        {
+          "t": -4601,
+          "type": "Results"
+        },
+        {
+          "t": -4004,
+          "type": "Results"
+        },
+        {
+          "t": -3018,
+          "type": "Results"
+        },
+        {
+          "t": -1991,
+          "type": "Results"
+        },
+        {
+          "t": -885,
+          "type": "Results"
+        },
+        {
+          "t": 347,
+          "type": "Results"
+        },
+        {
+          "t": 357,
+          "type": "Results"
+        },
+        {
+          "t": 1483,
+          "type": "Results"
+        },
+        {
+          "t": 1527,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "3",
+          "8",
+          "7",
+          "alright",
+          "kilo",
+          "foxtrot",
+          "right",
+          "on",
+          "alpha",
+          "into",
+          "the",
+          "ramp",
+          "and",
+          "monitor",
+          "ramp",
+          "when",
+          "you",
+          "get",
+          "there"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "3",
+          "8",
+          "7",
+          "alright",
+          "kilo",
+          "foxtrot",
+          "right",
+          "on",
+          "alpha",
+          "into",
+          "the",
+          "ramp",
+          "and",
+          "monitor",
+          "ramp",
+          "when",
+          "you",
+          "get",
+          "there"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "10",
+      "say": "American one forty-two heavy, gonna be Kilo Delta, right on Bravo, left Hotel into Terminal Eight, hold short Alpha.",
+      "style": "loose",
+      "audioSec": 8.94,
+      "runAt": "2026-11-14T07:42:49.297Z",
+      "transcript": "american one forty two heavy gonna be kilo delta right on bravo left hotel the terminal eight hold short alpha",
+      "latencyMs": 180.8,
+      "timings": {
+        "connectMs": 484.7,
+        "firstTextMs": 1175,
+        "streamMs": 8940.3,
+        "driftMs": 0.3,
+        "billedSessionSec": null
+      },
+      "partials": 8,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7765,
+          "type": "Results"
+        },
+        {
+          "t": -6768,
+          "type": "Results"
+        },
+        {
+          "t": -5656,
+          "type": "Results"
+        },
+        {
+          "t": -5574,
+          "type": "Results"
+        },
+        {
+          "t": -4615,
+          "type": "Results"
+        },
+        {
+          "t": -3536,
+          "type": "Results"
+        },
+        {
+          "t": -2530,
+          "type": "Results"
+        },
+        {
+          "t": -2211,
+          "type": "Results"
+        },
+        {
+          "t": -1161,
+          "type": "Results"
+        },
+        {
+          "t": -126,
+          "type": "Results"
+        },
+        {
+          "t": 181,
+          "type": "Results"
+        },
+        {
+          "t": 1275,
+          "type": "Results"
+        },
+        {
+          "t": 1275,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "4",
+          "2",
+          "heavy",
+          "gonna",
+          "be",
+          "kilo",
+          "delta",
+          "right",
+          "on",
+          "bravo",
+          "left",
+          "hotel",
+          "into",
+          "terminal",
+          "8",
+          "hold",
+          "short",
+          "alpha"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "4",
+          "2",
+          "heavy",
+          "gonna",
+          "be",
+          "kilo",
+          "delta",
+          "right",
+          "on",
+          "bravo",
+          "left",
+          "hotel",
+          "the",
+          "terminal",
+          "8",
+          "hold",
+          "short",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 3,
+            "found": 3,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "11",
+      "say": "Alaska niner three, hold short of runway four right.",
+      "style": "textbook",
+      "audioSec": 3.06,
+      "runAt": "2026-11-14T07:42:53.832Z",
+      "transcript": "alaska niner three hold short of runway four right",
+      "latencyMs": 88.8,
+      "timings": {
+        "connectMs": 253.8,
+        "firstTextMs": 1124.4,
+        "streamMs": 3061.8,
+        "driftMs": 1.8,
+        "billedSessionSec": null
+      },
+      "partials": 2,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -1937,
+          "type": "Results"
+        },
+        {
+          "t": -874,
+          "type": "Results"
+        },
+        {
+          "t": 89,
+          "type": "Results"
+        },
+        {
+          "t": 1170,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "alaska",
+          "9",
+          "3",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "4",
+          "right"
+        ],
+        "hypTokens": [
+          "alaska",
+          "9",
+          "3",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "4",
+          "right"
+        ],
+        "wer": {
+          "refWords": 9,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "12",
+      "say": "Delta four, actually, I need you to hold short of three one right, traffic on short final.",
+      "style": "loose",
+      "audioSec": 4.92,
+      "runAt": "2026-11-14T07:43:00.579Z",
+      "transcript": "delta four actually i need you to hold short of three one right traffic on short final",
+      "latencyMs": 105.3,
+      "timings": {
+        "connectMs": 549.1,
+        "firstTextMs": 1136.3,
+        "streamMs": 4922.3,
+        "driftMs": 2.3,
+        "billedSessionSec": null
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3786,
+          "type": "Results"
+        },
+        {
+          "t": -2739,
+          "type": "Results"
+        },
+        {
+          "t": -1670,
+          "type": "Results"
+        },
+        {
+          "t": -1526,
+          "type": "Results"
+        },
+        {
+          "t": -491,
+          "type": "Results"
+        },
+        {
+          "t": 105,
+          "type": "Results"
+        },
+        {
+          "t": 1209,
+          "type": "Results"
+        },
+        {
+          "t": 1210,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "actually",
+          "i",
+          "need",
+          "you",
+          "to",
+          "hold",
+          "short",
+          "of",
+          "3",
+          "1",
+          "right",
+          "traffic",
+          "on",
+          "short",
+          "final"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "actually",
+          "i",
+          "need",
+          "you",
+          "to",
+          "hold",
+          "short",
+          "of",
+          "3",
+          "1",
+          "right",
+          "traffic",
+          "on",
+          "short",
+          "final"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "13",
+      "say": "Iberia six two six heavy, hold short of Bravo, you'll have a Delta seven sixty-seven passing left to right.",
+      "style": "loose",
+      "audioSec": 6.48,
+      "runAt": "2026-11-14T07:43:08.649Z",
+      "transcript": "iberia six two six heavy hold short of bravo you'll have a delta seven six seven passing left to right",
+      "latencyMs": 141.3,
+      "timings": {
+        "connectMs": 314.7,
+        "firstTextMs": 1153.8,
+        "streamMs": 6479.8,
+        "driftMs": -0.2,
+        "billedSessionSec": null
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5326,
+          "type": "Results"
+        },
+        {
+          "t": -4306,
+          "type": "Results"
+        },
+        {
+          "t": -3262,
+          "type": "Results"
+        },
+        {
+          "t": -2215,
+          "type": "Results"
+        },
+        {
+          "t": -1323,
+          "type": "Results"
+        },
+        {
+          "t": -327,
+          "type": "Results"
+        },
+        {
+          "t": 141,
+          "type": "Results"
+        },
+        {
+          "t": 1226,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "you'll",
+          "have",
+          "a",
+          "delta",
+          "7",
+          "6",
+          "7",
+          "passing",
+          "left",
+          "to",
+          "right"
+        ],
+        "hypTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "you'll",
+          "have",
+          "a",
+          "delta",
+          "7",
+          "6",
+          "7",
+          "passing",
+          "left",
+          "to",
+          "right"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "14",
+      "say": "JetBlue eleven twenty-three, hold position.",
+      "style": "textbook",
+      "audioSec": 3.42,
+      "runAt": "2026-11-14T07:43:13.608Z",
+      "transcript": "jetblue eleven twenty three hold position",
+      "latencyMs": 153.6,
+      "timings": {
+        "connectMs": 246.2,
+        "firstTextMs": 1176.3,
+        "streamMs": 3421.8,
+        "driftMs": 1.8,
+        "billedSessionSec": null
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -2245,
+          "type": "Results"
+        },
+        {
+          "t": -1169,
+          "type": "Results"
+        },
+        {
+          "t": -151,
+          "type": "Results"
+        },
+        {
+          "t": 32,
+          "type": "Results"
+        },
+        {
+          "t": 154,
+          "type": "Results"
+        },
+        {
+          "t": 1229,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "hold",
+          "position"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "hold",
+          "position"
+        ],
+        "wer": {
+          "refWords": 7,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "15",
+      "say": "Iberia six two six heavy, traffic's by, go ahead and continue, thanks for waiting.",
+      "style": "loose",
+      "audioSec": 4.44,
+      "runAt": "2026-11-14T07:43:19.855Z",
+      "transcript": "iberia six two six heavy traffic's by go ahead and continue thanks for waiting",
+      "latencyMs": 195.5,
+      "timings": {
+        "connectMs": 399.1,
+        "firstTextMs": 1119.6,
+        "streamMs": 4440.7,
+        "driftMs": 0.7,
+        "billedSessionSec": null
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3321,
+          "type": "Results"
+        },
+        {
+          "t": -2281,
+          "type": "Results"
+        },
+        {
+          "t": -1240,
+          "type": "Results"
+        },
+        {
+          "t": -193,
+          "type": "Results"
+        },
+        {
+          "t": 196,
+          "type": "Results"
+        },
+        {
+          "t": 1345,
+          "type": "Results"
+        },
+        {
+          "t": 1345,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "traffic's",
+          "by",
+          "go",
+          "ahead",
+          "and",
+          "continue",
+          "thanks",
+          "for",
+          "waiting"
+        ],
+        "hypTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "traffic's",
+          "by",
+          "go",
+          "ahead",
+          "and",
+          "continue",
+          "thanks",
+          "for",
+          "waiting"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "16",
+      "say": "Speedbird one seven five heavy, stop, stop, hold your position.",
+      "style": "loose",
+      "audioSec": 4.5,
+      "runAt": "2026-11-14T07:43:25.927Z",
+      "transcript": "speedbird one seven five heavy stop stop hold your position",
+      "latencyMs": 135.6,
+      "timings": {
+        "connectMs": 259.6,
+        "firstTextMs": 1124.1,
+        "streamMs": 4500.7,
+        "driftMs": 0.7,
+        "billedSessionSec": null
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3377,
+          "type": "Results"
+        },
+        {
+          "t": -2331,
+          "type": "Results"
+        },
+        {
+          "t": -1288,
+          "type": "Results"
+        },
+        {
+          "t": -234,
+          "type": "Results"
+        },
+        {
+          "t": 135,
+          "type": "Results"
+        },
+        {
+          "t": 136,
+          "type": "Results"
+        },
+        {
+          "t": 1246,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "stop",
+          "stop",
+          "hold",
+          "your",
+          "position"
+        ],
+        "hypTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "stop",
+          "stop",
+          "hold",
+          "your",
+          "position"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "17",
+      "say": "Delta four, cross runway three one right at Kilo Echo.",
+      "style": "textbook",
+      "audioSec": 3.78,
+      "runAt": "2026-11-14T07:43:31.290Z",
+      "transcript": "delta four cross one way three one right at kilo echo",
+      "latencyMs": 131.9,
+      "timings": {
+        "connectMs": 259.3,
+        "firstTextMs": 1124.1,
+        "streamMs": 3780.2,
+        "driftMs": 0.2,
+        "billedSessionSec": null
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -2656,
+          "type": "Results"
+        },
+        {
+          "t": -1597,
+          "type": "Results"
+        },
+        {
+          "t": -575,
+          "type": "Results"
+        },
+        {
+          "t": 132,
+          "type": "Results"
+        },
+        {
+          "t": 1274,
+          "type": "Results"
+        },
+        {
+          "t": 1283,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "cross",
+          "runway",
+          "3",
+          "1",
+          "right",
+          "at",
+          "kilo",
+          "echo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "cross",
+          "1",
+          "way",
+          "3",
+          "1",
+          "right",
+          "at",
+          "kilo",
+          "echo"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "18",
+      "say": "Swiss one seven heavy, go ahead and cross two two right at Yankee, then hold short of Bravo.",
+      "style": "loose",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:43:39.176Z",
+      "transcript": "swiss one seven heavy go ahead and cross two two right at yankee then hold short of bravo",
+      "latencyMs": 94.8,
+      "timings": {
+        "connectMs": 1665.7,
+        "firstTextMs": 1121.7,
+        "streamMs": 4981.1,
+        "driftMs": 1.1,
+        "billedSessionSec": null
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3859,
+          "type": "Results"
+        },
+        {
+          "t": -2814,
+          "type": "Results"
+        },
+        {
+          "t": -1742,
+          "type": "Results"
+        },
+        {
+          "t": -731,
+          "type": "Results"
+        },
+        {
+          "t": 95,
+          "type": "Results"
+        },
+        {
+          "t": 1191,
+          "type": "Results"
+        },
+        {
+          "t": 1191,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "swiss",
+          "1",
+          "7",
+          "heavy",
+          "go",
+          "ahead",
+          "and",
+          "cross",
+          "2",
+          "2",
+          "right",
+          "at",
+          "yankee",
+          "then",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "hypTokens": [
+          "swiss",
+          "1",
+          "7",
+          "heavy",
+          "go",
+          "ahead",
+          "and",
+          "cross",
+          "2",
+          "2",
+          "right",
+          "at",
+          "yankee",
+          "then",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 18,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "19",
+      "say": "Qatari seven zero one heavy, at Kilo Echo, cross three one right, then Kilo to three one left.",
+      "style": "loose",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:43:46.421Z",
+      "transcript": "qatari seven zero one heavy at kilo echo cross three one right then kilo to three one left",
+      "latencyMs": 90,
+      "timings": {
+        "connectMs": 273.1,
+        "firstTextMs": 1309.5,
+        "streamMs": 5761.2,
+        "driftMs": 1.2,
+        "billedSessionSec": null
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5355,
+          "type": "Results"
+        },
+        {
+          "t": -4452,
+          "type": "Results"
+        },
+        {
+          "t": -3435,
+          "type": "Results"
+        },
+        {
+          "t": -2384,
+          "type": "Results"
+        },
+        {
+          "t": -1287,
+          "type": "Results"
+        },
+        {
+          "t": -417,
+          "type": "Results"
+        },
+        {
+          "t": 90,
+          "type": "Results"
+        },
+        {
+          "t": 1168,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "qatari",
+          "7",
+          "0",
+          "1",
+          "heavy",
+          "at",
+          "kilo",
+          "echo",
+          "cross",
+          "3",
+          "1",
+          "right",
+          "then",
+          "kilo",
+          "to",
+          "3",
+          "1",
+          "left"
+        ],
+        "hypTokens": [
+          "qatari",
+          "7",
+          "0",
+          "1",
+          "heavy",
+          "at",
+          "kilo",
+          "echo",
+          "cross",
+          "3",
+          "1",
+          "right",
+          "then",
+          "kilo",
+          "to",
+          "3",
+          "1",
+          "left"
+        ],
+        "wer": {
+          "refWords": 18,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "20",
+      "say": "Air France two three heavy, exit the line at the next left, Kilo Delta, and hold on the pad.",
+      "style": "textbook",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:43:53.117Z",
+      "transcript": "air france two three heavy exit the line with the next left kilo delta and hold on the pad",
+      "latencyMs": 209.4,
+      "timings": {
+        "connectMs": 238.3,
+        "firstTextMs": 1544.8,
+        "streamMs": 4980.3,
+        "driftMs": 0.3,
+        "billedSessionSec": null
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4418,
+          "type": "Results"
+        },
+        {
+          "t": -3435,
+          "type": "Results"
+        },
+        {
+          "t": -2414,
+          "type": "Results"
+        },
+        {
+          "t": -1366,
+          "type": "Results"
+        },
+        {
+          "t": -326,
+          "type": "Results"
+        },
+        {
+          "t": -3,
+          "type": "Results"
+        },
+        {
+          "t": 209,
+          "type": "Results"
+        },
+        {
+          "t": 1410,
+          "type": "Results"
+        },
+        {
+          "t": 1413,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "air",
+          "france",
+          "2",
+          "3",
+          "heavy",
+          "exit",
+          "the",
+          "line",
+          "at",
+          "the",
+          "next",
+          "left",
+          "kilo",
+          "delta",
+          "and",
+          "hold",
+          "on",
+          "the",
+          "pad"
+        ],
+        "hypTokens": [
+          "air",
+          "france",
+          "2",
+          "3",
+          "heavy",
+          "exit",
+          "the",
+          "line",
+          "with",
+          "the",
+          "next",
+          "left",
+          "kilo",
+          "delta",
+          "and",
+          "hold",
+          "on",
+          "the",
+          "pad"
+        ],
+        "wer": {
+          "refWords": 19,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "21",
+      "say": "Delta twelve oh four, bad news, ground stop for Atlanta, take the next right at Kilo Charlie and head over to the penalty box.",
+      "style": "loose",
+      "audioSec": 7.26,
+      "runAt": "2026-11-14T07:44:01.972Z",
+      "transcript": "delta twelve o four bad news ground stop for atlanta the next right at kilo charlie and head over to the penalty box",
+      "latencyMs": 124,
+      "timings": {
+        "connectMs": 335.3,
+        "firstTextMs": 1133.7,
+        "streamMs": 7261.5,
+        "driftMs": 1.5,
+        "billedSessionSec": null
+      },
+      "partials": 6,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6128,
+          "type": "Results"
+        },
+        {
+          "t": -5096,
+          "type": "Results"
+        },
+        {
+          "t": -4054,
+          "type": "Results"
+        },
+        {
+          "t": -3012,
+          "type": "Results"
+        },
+        {
+          "t": -2128,
+          "type": "Results"
+        },
+        {
+          "t": -1805,
+          "type": "Results"
+        },
+        {
+          "t": -711,
+          "type": "Results"
+        },
+        {
+          "t": 124,
+          "type": "Results"
+        },
+        {
+          "t": 1220,
+          "type": "Results"
+        },
+        {
+          "t": 1220,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "1",
+          "2",
+          "0",
+          "4",
+          "bad",
+          "news",
+          "ground",
+          "stop",
+          "for",
+          "atlanta",
+          "take",
+          "the",
+          "next",
+          "right",
+          "at",
+          "kilo",
+          "charlie",
+          "and",
+          "head",
+          "over",
+          "to",
+          "the",
+          "penalty",
+          "box"
+        ],
+        "hypTokens": [
+          "delta",
+          "1",
+          "2",
+          "0",
+          "4",
+          "bad",
+          "news",
+          "ground",
+          "stop",
+          "for",
+          "atlanta",
+          "the",
+          "next",
+          "right",
+          "at",
+          "kilo",
+          "charlie",
+          "and",
+          "head",
+          "over",
+          "to",
+          "the",
+          "penalty",
+          "box"
+        ],
+        "wer": {
+          "refWords": 25,
+          "substitutions": 0,
+          "deletions": 1,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "22",
+      "say": "JetBlue six one five, release time one four five two for you, taxi to the pad via Alpha, Kilo Kilo, and sit tight.",
+      "style": "loose",
+      "audioSec": 8.04,
+      "runAt": "2026-11-14T07:44:11.560Z",
+      "transcript": "jetblue six one five release time one four five two for you taxi to the pad via alpha kilo kilo and zip type",
+      "latencyMs": 125.4,
+      "timings": {
+        "connectMs": 256.9,
+        "firstTextMs": 1144.2,
+        "streamMs": 8041.2,
+        "driftMs": 1.2,
+        "billedSessionSec": null
+      },
+      "partials": 7,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6897,
+          "type": "Results"
+        },
+        {
+          "t": -5870,
+          "type": "Results"
+        },
+        {
+          "t": -4810,
+          "type": "Results"
+        },
+        {
+          "t": -3718,
+          "type": "Results"
+        },
+        {
+          "t": -2886,
+          "type": "Results"
+        },
+        {
+          "t": -2523,
+          "type": "Results"
+        },
+        {
+          "t": -1487,
+          "type": "Results"
+        },
+        {
+          "t": -436,
+          "type": "Results"
+        },
+        {
+          "t": 125,
+          "type": "Results"
+        },
+        {
+          "t": 1228,
+          "type": "Results"
+        },
+        {
+          "t": 1228,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "release",
+          "time",
+          "1",
+          "4",
+          "5",
+          "2",
+          "for",
+          "you",
+          "taxi",
+          "to",
+          "the",
+          "pad",
+          "via",
+          "alpha",
+          "kilo",
+          "kilo",
+          "and",
+          "sit",
+          "tight"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "release",
+          "time",
+          "1",
+          "4",
+          "5",
+          "2",
+          "for",
+          "you",
+          "taxi",
+          "to",
+          "the",
+          "pad",
+          "via",
+          "alpha",
+          "kilo",
+          "kilo",
+          "and",
+          "zip",
+          "type"
+        ],
+        "wer": {
+          "refWords": 23,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "23",
+      "say": "Virgin three, roger, taxi to the penalty box via Kilo Foxtrot, Bravo, and let me know when your gate opens up.",
+      "style": "loose",
+      "audioSec": 7.62,
+      "runAt": "2026-11-14T07:44:21.252Z",
+      "transcript": "virgin three roger taxi to the penalty box via kilo foxtrot bravo me know when your gate opens up",
+      "latencyMs": 761.4,
+      "timings": {
+        "connectMs": 137.1,
+        "firstTextMs": 1325.2,
+        "streamMs": 7621.5,
+        "driftMs": 1.5,
+        "billedSessionSec": null
+      },
+      "partials": 6,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7187,
+          "type": "Results"
+        },
+        {
+          "t": -6296,
+          "type": "Results"
+        },
+        {
+          "t": -5195,
+          "type": "Results"
+        },
+        {
+          "t": -4179,
+          "type": "Results"
+        },
+        {
+          "t": -3146,
+          "type": "Results"
+        },
+        {
+          "t": -2299,
+          "type": "Results"
+        },
+        {
+          "t": -1349,
+          "type": "Results"
+        },
+        {
+          "t": -1061,
+          "type": "Results"
+        },
+        {
+          "t": -224,
+          "type": "Results"
+        },
+        {
+          "t": 761,
+          "type": "Results"
+        },
+        {
+          "t": 1889,
+          "type": "Results"
+        },
+        {
+          "t": 1889,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "virgin",
+          "3",
+          "roger",
+          "taxi",
+          "to",
+          "the",
+          "penalty",
+          "box",
+          "via",
+          "kilo",
+          "foxtrot",
+          "bravo",
+          "and",
+          "let",
+          "me",
+          "know",
+          "when",
+          "your",
+          "gate",
+          "opens",
+          "up"
+        ],
+        "hypTokens": [
+          "virgin",
+          "3",
+          "roger",
+          "taxi",
+          "to",
+          "the",
+          "penalty",
+          "box",
+          "via",
+          "kilo",
+          "foxtrot",
+          "bravo",
+          "me",
+          "know",
+          "when",
+          "your",
+          "gate",
+          "opens",
+          "up"
+        ],
+        "wer": {
+          "refWords": 21,
+          "substitutions": 0,
+          "deletions": 2,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "24",
+      "say": "Speedbird one seven five heavy, number two for departure, monitor tower one one niner point one.",
+      "style": "textbook",
+      "audioSec": 6.24,
+      "runAt": "2026-11-14T07:44:28.804Z",
+      "transcript": "speedbird one seven five heavy number two for departure monitor tower one one niner point one",
+      "latencyMs": 39.7,
+      "timings": {
+        "connectMs": 175.4,
+        "firstTextMs": 1067.6,
+        "streamMs": 6240.8,
+        "driftMs": 0.8,
+        "billedSessionSec": null
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5173,
+          "type": "Results"
+        },
+        {
+          "t": -4134,
+          "type": "Results"
+        },
+        {
+          "t": -3058,
+          "type": "Results"
+        },
+        {
+          "t": -2035,
+          "type": "Results"
+        },
+        {
+          "t": -1147,
+          "type": "Results"
+        },
+        {
+          "t": -1147,
+          "type": "Results"
+        },
+        {
+          "t": -206,
+          "type": "Results"
+        },
+        {
+          "t": 40,
+          "type": "Results"
+        },
+        {
+          "t": 1096,
+          "type": "Results"
+        },
+        {
+          "t": 1096,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "number",
+          "2",
+          "for",
+          "departure",
+          "monitor",
+          "tower",
+          "1",
+          "1",
+          "9",
+          "1"
+        ],
+        "hypTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "number",
+          "2",
+          "for",
+          "departure",
+          "monitor",
+          "tower",
+          "1",
+          "1",
+          "9",
+          "1"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "25",
+      "say": "Emirates two zero two heavy, contact ramp, so long.",
+      "style": "loose",
+      "audioSec": 4.02,
+      "runAt": "2026-11-14T07:44:34.207Z",
+      "transcript": "emirates two zero two heavy contact ramp so long",
+      "latencyMs": 65.2,
+      "timings": {
+        "connectMs": 197.7,
+        "firstTextMs": 1321.3,
+        "streamMs": 4021.3,
+        "driftMs": 1.3,
+        "billedSessionSec": null
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3634,
+          "type": "Results"
+        },
+        {
+          "t": -2700,
+          "type": "Results"
+        },
+        {
+          "t": -1650,
+          "type": "Results"
+        },
+        {
+          "t": -617,
+          "type": "Results"
+        },
+        {
+          "t": -51,
+          "type": "Results"
+        },
+        {
+          "t": 65,
+          "type": "Results"
+        },
+        {
+          "t": 1112,
+          "type": "Results"
+        },
+        {
+          "t": 1112,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "contact",
+          "ramp",
+          "so",
+          "long"
+        ],
+        "hypTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "contact",
+          "ramp",
+          "so",
+          "long"
+        ],
+        "wer": {
+          "refWords": 9,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "26",
+      "say": "Delta four, negative, hold short of Bravo, hold short Bravo.",
+      "style": "textbook",
+      "audioSec": 3.9,
+      "runAt": "2026-11-14T07:44:39.508Z",
+      "transcript": "delta four negative hold short of bravo hold short bravo",
+      "latencyMs": 108.7,
+      "timings": {
+        "connectMs": 198.1,
+        "firstTextMs": 1340.7,
+        "streamMs": 3902.1,
+        "driftMs": 2.1,
+        "billedSessionSec": null
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3521,
+          "type": "Results"
+        },
+        {
+          "t": -2561,
+          "type": "Results"
+        },
+        {
+          "t": -1510,
+          "type": "Results"
+        },
+        {
+          "t": -470,
+          "type": "Results"
+        },
+        {
+          "t": 109,
+          "type": "Results"
+        },
+        {
+          "t": 1151,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "negative",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "negative",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "27",
+      "say": "Lufthansa four zero five heavy, negative, that's a right turn on Kilo Echo, right Kilo Echo.",
+      "style": "loose",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:44:46.667Z",
+      "transcript": "lufthansa four zero five heavy negative that's a right turn on kilo echo right on kilo echo",
+      "latencyMs": 114.6,
+      "timings": {
+        "connectMs": 112.1,
+        "firstTextMs": 1340.4,
+        "streamMs": 5761.8,
+        "driftMs": 1.8,
+        "billedSessionSec": null
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5382,
+          "type": "Results"
+        },
+        {
+          "t": -4421,
+          "type": "Results"
+        },
+        {
+          "t": -3350,
+          "type": "Results"
+        },
+        {
+          "t": -2330,
+          "type": "Results"
+        },
+        {
+          "t": -1293,
+          "type": "Results"
+        },
+        {
+          "t": -404,
+          "type": "Results"
+        },
+        {
+          "t": 115,
+          "type": "Results"
+        },
+        {
+          "t": 1217,
+          "type": "Results"
+        },
+        {
+          "t": 1218,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "negative",
+          "that's",
+          "a",
+          "right",
+          "turn",
+          "on",
+          "kilo",
+          "echo",
+          "right",
+          "kilo",
+          "echo"
+        ],
+        "hypTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "negative",
+          "that's",
+          "a",
+          "right",
+          "turn",
+          "on",
+          "kilo",
+          "echo",
+          "right",
+          "on",
+          "kilo",
+          "echo"
+        ],
+        "wer": {
+          "refWords": 16,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "28",
+      "say": "American one hundred, nope, departure runway is three one left, not right.",
+      "style": "loose",
+      "audioSec": 4.86,
+      "runAt": "2026-11-14T07:44:53.223Z",
+      "transcript": "american one hundred nope departure runway is three one left not right",
+      "latencyMs": 139.2,
+      "timings": {
+        "connectMs": 441.6,
+        "firstTextMs": 1138.6,
+        "streamMs": 4862.4,
+        "driftMs": 2.4,
+        "billedSessionSec": null
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3724,
+          "type": "Results"
+        },
+        {
+          "t": -2681,
+          "type": "Results"
+        },
+        {
+          "t": -1620,
+          "type": "Results"
+        },
+        {
+          "t": -594,
+          "type": "Results"
+        },
+        {
+          "t": 139,
+          "type": "Results"
+        },
+        {
+          "t": 1213,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "nope",
+          "departure",
+          "runway",
+          "is",
+          "3",
+          "1",
+          "left",
+          "not",
+          "right"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "nope",
+          "departure",
+          "runway",
+          "is",
+          "3",
+          "1",
+          "left",
+          "not",
+          "right"
+        ],
+        "wer": {
+          "refWords": 13,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "29",
+      "say": "Shamrock one zero four, negative, you've got them backwards, it's Alpha, Juliet, hold short Bravo.",
+      "style": "loose",
+      "audioSec": 6.54,
+      "runAt": "2026-11-14T07:45:01.347Z",
+      "transcript": "shamrock one zero four negative you've got them backwards it's alpha juliet hold short bravo",
+      "latencyMs": 184.1,
+      "timings": {
+        "connectMs": 237.6,
+        "firstTextMs": 1463.7,
+        "streamMs": 6542.1,
+        "driftMs": 2.1,
+        "billedSessionSec": null
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6029,
+          "type": "Results"
+        },
+        {
+          "t": -5078,
+          "type": "Results"
+        },
+        {
+          "t": -4027,
+          "type": "Results"
+        },
+        {
+          "t": -2982,
+          "type": "Results"
+        },
+        {
+          "t": -1929,
+          "type": "Results"
+        },
+        {
+          "t": -1114,
+          "type": "Results"
+        },
+        {
+          "t": -736,
+          "type": "Results"
+        },
+        {
+          "t": 184,
+          "type": "Results"
+        },
+        {
+          "t": 1280,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "negative",
+          "you've",
+          "got",
+          "them",
+          "backwards",
+          "it's",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "negative",
+          "you've",
+          "got",
+          "them",
+          "backwards",
+          "it's",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "30",
+      "say": "KLM six four four heavy, sorry, you got stepped on, go ahead and say again.",
+      "style": "loose",
+      "audioSec": 4.44,
+      "runAt": "2026-11-14T07:45:07.301Z",
+      "transcript": "klm six four four heavy sorry you got stepped on go ahead and say it again",
+      "latencyMs": 111.7,
+      "timings": {
+        "connectMs": 291.1,
+        "firstTextMs": 1702.3,
+        "streamMs": 4442.6,
+        "driftMs": 2.6,
+        "billedSessionSec": null
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3531,
+          "type": "Results"
+        },
+        {
+          "t": -3531,
+          "type": "Results"
+        },
+        {
+          "t": -2740,
+          "type": "Results"
+        },
+        {
+          "t": -1695,
+          "type": "Results"
+        },
+        {
+          "t": -737,
+          "type": "Results"
+        },
+        {
+          "t": 112,
+          "type": "Results"
+        },
+        {
+          "t": 1187,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "klm",
+          "6",
+          "4",
+          "4",
+          "heavy",
+          "sorry",
+          "you",
+          "got",
+          "stepped",
+          "on",
+          "go",
+          "ahead",
+          "and",
+          "say",
+          "again"
+        ],
+        "hypTokens": [
+          "klm",
+          "6",
+          "4",
+          "4",
+          "heavy",
+          "sorry",
+          "you",
+          "got",
+          "stepped",
+          "on",
+          "go",
+          "ahead",
+          "and",
+          "say",
+          "it",
+          "again"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "31",
+      "say": "Aircraft calling Kennedy Ground, say again your callsign.",
+      "style": "textbook",
+      "audioSec": 3.6,
+      "runAt": "2026-11-14T07:45:12.645Z",
+      "transcript": "aircraft calling kennedy ground say again your comm sign",
+      "latencyMs": 130.6,
+      "timings": {
+        "connectMs": 492,
+        "firstTextMs": 1361.4,
+        "streamMs": 3601.6,
+        "driftMs": 1.6,
+        "billedSessionSec": null
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3191,
+          "type": "Results"
+        },
+        {
+          "t": -2240,
+          "type": "Results"
+        },
+        {
+          "t": -1196,
+          "type": "Results"
+        },
+        {
+          "t": -151,
+          "type": "Results"
+        },
+        {
+          "t": 12,
+          "type": "Results"
+        },
+        {
+          "t": 131,
+          "type": "Results"
+        },
+        {
+          "t": 1206,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "aircraft",
+          "calling",
+          "kennedy",
+          "ground",
+          "say",
+          "again",
+          "your",
+          "callsign"
+        ],
+        "hypTokens": [
+          "aircraft",
+          "calling",
+          "kennedy",
+          "ground",
+          "say",
+          "again",
+          "your",
+          "comm",
+          "sign"
+        ],
+        "wer": {
+          "refWords": 8,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "32",
+      "say": "Brickyard thirty-five sixty, ground stop for Boston, expect about twenty minutes.",
+      "style": "textbook",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:45:20.018Z",
+      "transcript": "brickyard thirty five sixty ground stop for boston expect twenty thirty minutes",
+      "latencyMs": 153.2,
+      "timings": {
+        "connectMs": 269.3,
+        "firstTextMs": 1306.8,
+        "streamMs": 5762.4,
+        "driftMs": 2.4,
+        "billedSessionSec": null
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5431,
+          "type": "Results"
+        },
+        {
+          "t": -4456,
+          "type": "Results"
+        },
+        {
+          "t": -3419,
+          "type": "Results"
+        },
+        {
+          "t": -2380,
+          "type": "Results"
+        },
+        {
+          "t": -1326,
+          "type": "Results"
+        },
+        {
+          "t": -448,
+          "type": "Results"
+        },
+        {
+          "t": -448,
+          "type": "Results"
+        },
+        {
+          "t": 153,
+          "type": "Results"
+        },
+        {
+          "t": 1253,
+          "type": "Results"
+        },
+        {
+          "t": 1253,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "brickyard",
+          "3",
+          "5",
+          "6",
+          "0",
+          "ground",
+          "stop",
+          "for",
+          "boston",
+          "expect",
+          "about",
+          "2",
+          "0",
+          "minutes"
+        ],
+        "hypTokens": [
+          "brickyard",
+          "3",
+          "5",
+          "6",
+          "0",
+          "ground",
+          "stop",
+          "for",
+          "boston",
+          "expect",
+          "2",
+          "0",
+          "3",
+          "0",
+          "minutes"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "33",
+      "say": "United fourteen sixteen, hold for release, expect one five minutes departure delay.",
+      "style": "textbook",
+      "audioSec": 5.1,
+      "runAt": "2026-11-14T07:45:26.728Z",
+      "transcript": "united fourteen sixteen hold for release expect one five minutes departure delay",
+      "latencyMs": 147.4,
+      "timings": {
+        "connectMs": 312.6,
+        "firstTextMs": 1122.6,
+        "streamMs": 5102,
+        "driftMs": 2,
+        "billedSessionSec": null
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3979,
+          "type": "Results"
+        },
+        {
+          "t": -2938,
+          "type": "Results"
+        },
+        {
+          "t": -1884,
+          "type": "Results"
+        },
+        {
+          "t": -860,
+          "type": "Results"
+        },
+        {
+          "t": 21,
+          "type": "Results"
+        },
+        {
+          "t": 147,
+          "type": "Results"
+        },
+        {
+          "t": 1220,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "united",
+          "1",
+          "4",
+          "1",
+          "6",
+          "hold",
+          "for",
+          "release",
+          "expect",
+          "1",
+          "5",
+          "minutes",
+          "departure",
+          "delay"
+        ],
+        "hypTokens": [
+          "united",
+          "1",
+          "4",
+          "1",
+          "6",
+          "hold",
+          "for",
+          "release",
+          "expect",
+          "1",
+          "5",
+          "minutes",
+          "departure",
+          "delay"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "34",
+      "say": "JetBlue eleven twenty-three, give way to the Emirates heavy coming off Kilo Echo, then follow him on Alpha.",
+      "style": "loose",
+      "audioSec": 5.94,
+      "runAt": "2026-11-14T07:45:34.455Z",
+      "transcript": "jetblue eleven twenty three give way to the emirates heavy coming off kilo echo then follow him on alpha",
+      "latencyMs": 229.6,
+      "timings": {
+        "connectMs": 369.6,
+        "firstTextMs": 1463.4,
+        "streamMs": 5942.2,
+        "driftMs": 2.2,
+        "billedSessionSec": null
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5495,
+          "type": "Results"
+        },
+        {
+          "t": -4479,
+          "type": "Results"
+        },
+        {
+          "t": -3520,
+          "type": "Results"
+        },
+        {
+          "t": -2468,
+          "type": "Results"
+        },
+        {
+          "t": -1419,
+          "type": "Results"
+        },
+        {
+          "t": -553,
+          "type": "Results"
+        },
+        {
+          "t": -548,
+          "type": "Results"
+        },
+        {
+          "t": 230,
+          "type": "Results"
+        },
+        {
+          "t": 1346,
+          "type": "Results"
+        },
+        {
+          "t": 1346,
+          "type": "Metadata"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "give",
+          "way",
+          "to",
+          "the",
+          "emirates",
+          "heavy",
+          "coming",
+          "off",
+          "kilo",
+          "echo",
+          "then",
+          "follow",
+          "him",
+          "on",
+          "alpha"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "give",
+          "way",
+          "to",
+          "the",
+          "emirates",
+          "heavy",
+          "coming",
+          "off",
+          "kilo",
+          "echo",
+          "then",
+          "follow",
+          "him",
+          "on",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    }
+  ]
+}

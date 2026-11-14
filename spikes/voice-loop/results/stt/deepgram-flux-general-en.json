@@ -1,0 +1,7087 @@
+{
+  "candidate": "deepgram-flux-general-en",
+  "provider": "deepgram",
+  "model": "flux-general-en",
+  "pricing": {
+    "basis": "audio",
+    "perMin": 0.0078,
+    "listPerMin": 0.009000000000000001,
+    "note": "$0.0065/min promo (list $0.0077) + keyterms $0.0013/min (assumed to apply)"
+  },
+  "config": {
+    "vocabTerms": 87,
+    "endpoint": "/v2/listen",
+    "model": "flux-general-en",
+    "eot_threshold": 1,
+    "endOfTurn": "ForceEndTurn",
+    "silencePadMs": 500
+  },
+  "method": {
+    "chunkMs": 80,
+    "pacing": "chunk sent when its last sample would have been spoken (start + audio time of chunk end); tails < 20 ms merged into the previous chunk",
+    "session": "one fresh WebSocket session per clip, opened and configured before audio starts (connect time is not in latency)",
+    "latency": "performance.now() at final-transcript message arrival minus performance.now() just after the last audio chunk was handed to the socket; the end-of-turn signal is sent immediately after the last chunk",
+    "normalization": "stt/normalize.ts (lowercase, punctuation stripped, numbers to single digits, spelling equivalences)",
+    "wer": "corpus-level: total substitutions+deletions+insertions / total reference tokens; a line with no transcript counts as all deleted",
+    "criticalTokens": "results/stt/critical-tokens.json, matched by stt/critical.ts",
+    "p95": "nearest rank (ceil(0.95 n)-th smallest)"
+  },
+  "updatedAt": "2026-11-14T08:01:45.294Z",
+  "summary": {
+    "lines": 34,
+    "withFinal": 34,
+    "errors": [],
+    "lateText": [],
+    "latencyMs": {
+      "median": 374,
+      "p95": 540.1,
+      "min": 311.1,
+      "max": 553.6,
+      "withinBudget": 0
+    },
+    "firstTextMs": {
+      "median": 589
+    },
+    "wer": 0.09352517985611511,
+    "critical": {
+      "overall": 0.8842105263157894,
+      "callsign": 0.7878787878787878,
+      "runways": 1,
+      "taxiways": 0.9714285714285714,
+      "holdShort": 0.8125
+    },
+    "criticalCounts": {
+      "callsign": {
+        "expected": 33,
+        "found": 26
+      },
+      "runways": {
+        "expected": 11,
+        "found": 11
+      },
+      "taxiways": {
+        "expected": 35,
+        "found": 34
+      },
+      "holdShort": {
+        "expected": 16,
+        "found": 13
+      }
+    },
+    "linesAllCriticalCorrect": 26,
+    "audioSec": 206.22,
+    "billedSessionSec": null,
+    "peakCostPerHr": {
+      "low": 0.23399999999999999,
+      "high": 0.27,
+      "measured": null
+    }
+  },
+  "lines": [
+    {
+      "num": "01",
+      "say": "Delta four, runway three one left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.",
+      "style": "textbook",
+      "audioSec": 6.3,
+      "runAt": "2026-11-14T07:53:53.050Z",
+      "transcript": "Delta four, runway three one left, taxi via alpha, right on Kilo Echo, hold short of Bravo.",
+      "latencyMs": 420,
+      "timings": {
+        "connectMs": 425.5,
+        "firstTextMs": 572.9,
+        "streamMs": 6302.2,
+        "driftMs": 2.2,
+        "billedSessionSec": null
+      },
+      "partials": 27,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6302,
+          "type": "Connected"
+        },
+        {
+          "t": -5891,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5729,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5487,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -5249,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4918,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4770,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4504,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4290,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4050,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3770,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3527,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3329,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3048,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2823,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2570,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2369,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2131,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1889,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1610,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1409,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1171,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -913,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -569,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -450,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -196,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 32,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 319,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 352,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 420,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "02",
+      "say": "JetBlue eleven twenty-three, three one left, taxi via Alpha, Kilo Delta, hold short of Bravo and hold short of runway three one right.",
+      "style": "textbook",
+      "audioSec": 8.94,
+      "runAt": "2026-11-14T07:54:03.883Z",
+      "transcript": "JetBlue eleven twenty three, three one left, taxi via Alpha, Kilo Delta, hold short of Bravo and hold short of runway three one right.",
+      "latencyMs": 473.1,
+      "timings": {
+        "connectMs": 249.5,
+        "firstTextMs": 652.2,
+        "streamMs": 8939.4,
+        "driftMs": -0.6,
+        "billedSessionSec": null
+      },
+      "partials": 38,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8939,
+          "type": "Connected"
+        },
+        {
+          "t": -8604,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8287,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8127,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7886,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -7626,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7324,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7114,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6905,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6687,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6445,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6167,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5967,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5726,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5483,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5227,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5007,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4765,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4527,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4178,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4026,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3803,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3567,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3127,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3047,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2846,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2600,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2366,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2078,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1887,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1640,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1404,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1006,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -886,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -687,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -282,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -167,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 114,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 275,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 394,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 473,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "and",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "3",
+          "1",
+          "right"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "and",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "3",
+          "1",
+          "right"
+        ],
+        "wer": {
+          "refWords": 25,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "03",
+      "say": "American one hundred, okay, three one left, go ahead and take Alpha to Kilo Foxtrot, hold short three one right.",
+      "style": "loose",
+      "audioSec": 6.78,
+      "runAt": "2026-11-14T07:54:12.900Z",
+      "transcript": "American one hundred okay. Three one left. Go ahead and take alpha to Kilo Foxtrot. Hold short. Three one right.",
+      "latencyMs": 540.1,
+      "timings": {
+        "connectMs": 487.4,
+        "firstTextMs": 832.3,
+        "streamMs": 6781.1,
+        "driftMs": 1.1,
+        "billedSessionSec": null
+      },
+      "partials": 28,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6781,
+          "type": "Connected"
+        },
+        {
+          "t": -6428,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6148,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5949,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -5665,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5468,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5220,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4967,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4699,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4506,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4228,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4028,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3788,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3506,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3307,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2977,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2813,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2588,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2348,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2029,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1866,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1532,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1349,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1149,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -908,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -659,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -388,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -188,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 56,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 277,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 375,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 540,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "okay",
+          "3",
+          "1",
+          "left",
+          "go",
+          "ahead",
+          "and",
+          "take",
+          "alpha",
+          "to",
+          "kilo",
+          "foxtrot",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "okay",
+          "3",
+          "1",
+          "left",
+          "go",
+          "ahead",
+          "and",
+          "take",
+          "alpha",
+          "to",
+          "kilo",
+          "foxtrot",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right"
+        ],
+        "wer": {
+          "refWords": 21,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "04",
+      "say": "Shamrock one zero four, three one left, Alpha, Juliet, hold short Bravo.",
+      "style": "loose",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:54:19.942Z",
+      "transcript": "Shamrock one zero four three one left alpha Juliet hold short bravo",
+      "latencyMs": 553.6,
+      "timings": {
+        "connectMs": 311.6,
+        "firstTextMs": 590.5,
+        "streamMs": 4981.8,
+        "driftMs": 1.8,
+        "billedSessionSec": null
+      },
+      "partials": 21,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4982,
+          "type": "Connected"
+        },
+        {
+          "t": -4602,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4391,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4166,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3862,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -3684,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3442,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3167,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2967,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2727,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2487,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2208,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1887,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1647,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1427,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1214,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1006,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -648,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -527,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -304,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 194,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 314,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 432,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 554,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 12,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "05",
+      "say": "Lufthansa four zero five heavy, left on Alpha, right Kilo Echo, three one left, hold short three one right, then hold short Kilo.",
+      "style": "loose",
+      "audioSec": 11.1,
+      "runAt": "2026-11-14T07:54:32.777Z",
+      "transcript": "Lufthansa four zero five heavy, left on alpha, right on Kilo Echo three one left, hold short three one right, then hold short Kilo.",
+      "latencyMs": 355.8,
+      "timings": {
+        "connectMs": 257.2,
+        "firstTextMs": 555.8,
+        "streamMs": 11101.7,
+        "driftMs": 1.7,
+        "billedSessionSec": null
+      },
+      "partials": 47,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -11102,
+          "type": "Connected"
+        },
+        {
+          "t": -10785,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -10546,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -10307,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -10037,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -9827,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -9586,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -9336,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8981,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8848,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8589,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8387,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8074,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7906,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7665,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7425,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7184,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6905,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6702,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6465,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6224,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5906,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5739,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5505,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5244,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4828,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4718,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4545,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4305,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3985,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3790,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3583,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3345,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3071,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2824,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2624,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2383,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2142,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1905,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1655,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1425,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1157,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -942,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -671,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -465,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -223,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 15,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 181,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 316,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 356,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "left",
+          "on",
+          "alpha",
+          "right",
+          "kilo",
+          "echo",
+          "3",
+          "1",
+          "left",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right",
+          "then",
+          "hold",
+          "short",
+          "kilo"
+        ],
+        "hypTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "left",
+          "on",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "3",
+          "1",
+          "left",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right",
+          "then",
+          "hold",
+          "short",
+          "kilo"
+        ],
+        "wer": {
+          "refWords": 23,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "06",
+      "say": "Delta twenty-three forty, information Papa is current, altimeter two niner niner two, runway three one left, Alpha, Kilo Delta, hold short Bravo.",
+      "style": "textbook",
+      "audioSec": 11.34,
+      "runAt": "2026-11-14T07:54:45.839Z",
+      "transcript": "Delta Earth twenty three forty Information Papa is current altimeter two niner niner two, runway three one left, alpha, kilo, delta, ultra, bravo.",
+      "latencyMs": 394.4,
+      "timings": {
+        "connectMs": 155.8,
+        "firstTextMs": 746.3,
+        "streamMs": 11342.2,
+        "driftMs": 2.2,
+        "billedSessionSec": null
+      },
+      "partials": 48,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -11342,
+          "type": "Connected"
+        },
+        {
+          "t": -10969,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -10596,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -10529,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -10329,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -10010,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -9845,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -9550,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -9369,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -9127,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8888,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8649,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8406,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8167,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7918,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7689,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7403,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7199,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6969,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6728,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6401,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6207,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6009,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5770,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5529,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5250,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5009,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4808,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4569,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4249,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4089,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3808,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3609,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3251,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3098,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2848,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2648,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2377,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2088,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1929,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1665,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1448,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1159,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -928,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -728,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -488,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -220,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 77,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 192,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 311,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 394,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "2",
+          "3",
+          "4",
+          "0",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "earth",
+          "2",
+          "3",
+          "4",
+          "0",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "kilo",
+          "delta",
+          "ultra",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 24,
+          "substitutions": 1,
+          "deletions": 1,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Delta twenty-three forty"
+            ]
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Bravo"
+            ]
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "07",
+      "say": "JetBlue six one five, Kennedy Ground, Oscar's old, information Papa is current, altimeter two niner niner two.",
+      "style": "loose",
+      "audioSec": 8.4,
+      "runAt": "2026-11-14T07:54:56.650Z",
+      "transcript": "JetBlue six one five Kennedy Ground, Oscar's old information papa is current altimeter two niner niner two.",
+      "latencyMs": 371.1,
+      "timings": {
+        "connectMs": 743.6,
+        "firstTextMs": 572,
+        "streamMs": 8402,
+        "driftMs": 2,
+        "billedSessionSec": null
+      },
+      "partials": 36,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8402,
+          "type": "Connected"
+        },
+        {
+          "t": -8070,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7830,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7548,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7349,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -7070,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6822,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6597,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6389,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6147,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5901,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5552,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5389,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5184,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4910,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4667,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4349,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4189,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3947,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3747,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3454,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3269,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3029,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2789,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2401,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2262,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2067,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1830,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1589,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1270,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1107,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -867,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -628,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -269,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -109,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 94,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 226,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 330,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 371,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "kennedy",
+          "ground",
+          "oscar's",
+          "old",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "kennedy",
+          "ground",
+          "oscar's",
+          "old",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "08",
+      "say": "Emirates two zero two heavy, taxi to the Terminal Four ramp via Kilo Echo, left on Alpha.",
+      "style": "textbook",
+      "audioSec": 6.54,
+      "runAt": "2026-11-14T07:55:05.118Z",
+      "transcript": "Emirates two zero two heavy taxi to the Terminal Four ramp via Kilo Echo left on Alpha.",
+      "latencyMs": 432.1,
+      "timings": {
+        "connectMs": 327.4,
+        "firstTextMs": 654.9,
+        "streamMs": 6542.6,
+        "driftMs": 2.6,
+        "billedSessionSec": null
+      },
+      "partials": 28,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6543,
+          "type": "Connected"
+        },
+        {
+          "t": -6212,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5888,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5692,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5493,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -5252,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4908,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4646,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4491,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4290,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4012,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3771,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3492,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3333,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3092,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2851,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2411,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2292,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2132,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1892,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1611,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1370,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1172,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -892,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -680,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -332,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -198,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 117,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 230,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 348,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 432,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "taxi",
+          "to",
+          "the",
+          "terminal",
+          "4",
+          "ramp",
+          "via",
+          "kilo",
+          "echo",
+          "left",
+          "on",
+          "alpha"
+        ],
+        "hypTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "taxi",
+          "to",
+          "the",
+          "terminal",
+          "4",
+          "ramp",
+          "via",
+          "kilo",
+          "echo",
+          "left",
+          "on",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "09",
+      "say": "JetBlue three eighty-seven, alright, Kilo Foxtrot, right on Alpha into the ramp, and monitor ramp when you get there.",
+      "style": "loose",
+      "audioSec": 7.5,
+      "runAt": "2026-11-14T07:55:14.807Z",
+      "transcript": "JetBlue three eighty seven alright kilo foxtrot right on alpha into the ramp and monitor it when you get there.",
+      "latencyMs": 468.9,
+      "timings": {
+        "connectMs": 464.4,
+        "firstTextMs": 631,
+        "streamMs": 7501.2,
+        "driftMs": 1.2,
+        "billedSessionSec": null
+      },
+      "partials": 32,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7501,
+          "type": "Connected"
+        },
+        {
+          "t": -7151,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6870,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6688,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6408,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -6208,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5928,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5687,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5446,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5247,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5009,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4689,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4517,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4286,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4008,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3714,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3568,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3256,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3089,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2849,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2569,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2369,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2128,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1888,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1614,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1363,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1167,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -924,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -688,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -399,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -206,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 72,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 192,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 312,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 469,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "3",
+          "8",
+          "7",
+          "alright",
+          "kilo",
+          "foxtrot",
+          "right",
+          "on",
+          "alpha",
+          "into",
+          "the",
+          "ramp",
+          "and",
+          "monitor",
+          "ramp",
+          "when",
+          "you",
+          "get",
+          "there"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "3",
+          "8",
+          "7",
+          "alright",
+          "kilo",
+          "foxtrot",
+          "right",
+          "on",
+          "alpha",
+          "into",
+          "the",
+          "ramp",
+          "and",
+          "monitor",
+          "it",
+          "when",
+          "you",
+          "get",
+          "there"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "10",
+      "say": "American one forty-two heavy, gonna be Kilo Delta, right on Bravo, left Hotel into Terminal Eight, hold short Alpha.",
+      "style": "loose",
+      "audioSec": 8.94,
+      "runAt": "2026-11-14T07:55:25.624Z",
+      "transcript": "American one forty two heavy gonna be Kilo Delta right on Bravo left hotel terminal eight old short alpha",
+      "latencyMs": 431.1,
+      "timings": {
+        "connectMs": 271.4,
+        "firstTextMs": 650.9,
+        "streamMs": 8941.2,
+        "driftMs": 1.2,
+        "billedSessionSec": null
+      },
+      "partials": 38,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8941,
+          "type": "Connected"
+        },
+        {
+          "t": -8610,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8290,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -8117,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7890,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7650,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7210,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -7072,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6872,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6675,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6385,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6128,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5953,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5730,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5489,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5207,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5008,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4725,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4517,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4290,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4049,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3809,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3529,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3329,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3006,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2849,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2596,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2367,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2082,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1890,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1650,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1410,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1127,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -887,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -690,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -450,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -209,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 110,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 231,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 353,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 431,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "4",
+          "2",
+          "heavy",
+          "gonna",
+          "be",
+          "kilo",
+          "delta",
+          "right",
+          "on",
+          "bravo",
+          "left",
+          "hotel",
+          "into",
+          "terminal",
+          "8",
+          "hold",
+          "short",
+          "alpha"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "4",
+          "2",
+          "heavy",
+          "gonna",
+          "be",
+          "kilo",
+          "delta",
+          "right",
+          "on",
+          "bravo",
+          "left",
+          "hotel",
+          "terminal",
+          "8",
+          "old",
+          "short",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 1,
+          "deletions": 1,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 3,
+            "found": 3,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Alpha"
+            ]
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "11",
+      "say": "Alaska niner three, hold short of runway four right.",
+      "style": "textbook",
+      "audioSec": 3.06,
+      "runAt": "2026-11-14T07:55:30.463Z",
+      "transcript": "Alaska men are three whole short of runway four right.",
+      "latencyMs": 337.5,
+      "timings": {
+        "connectMs": 265.4,
+        "firstTextMs": 535.6,
+        "streamMs": 3061.5,
+        "driftMs": 1.5,
+        "billedSessionSec": null
+      },
+      "partials": 13,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3062,
+          "type": "Connected"
+        },
+        {
+          "t": -2733,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2526,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -2071,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1932,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1759,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1572,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1332,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1091,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -850,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -613,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -372,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -92,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 68,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 188,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 337,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "alaska",
+          "9",
+          "3",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "4",
+          "right"
+        ],
+        "hypTokens": [
+          "alaska",
+          "men",
+          "are",
+          "3",
+          "whole",
+          "short",
+          "of",
+          "runway",
+          "4",
+          "right"
+        ],
+        "wer": {
+          "refWords": 9,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Alaska niner three"
+            ]
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "four right"
+            ]
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "12",
+      "say": "Delta four, actually, I need you to hold short of three one right, traffic on short final.",
+      "style": "loose",
+      "audioSec": 4.92,
+      "runAt": "2026-11-14T07:55:37.010Z",
+      "transcript": "Delta four, actually I need you to hold short of three one right traffic on short final.",
+      "latencyMs": 419.3,
+      "timings": {
+        "connectMs": 91.5,
+        "firstTextMs": 531.4,
+        "streamMs": 4919.9,
+        "driftMs": -0.1,
+        "billedSessionSec": null
+      },
+      "partials": 21,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4920,
+          "type": "Connected"
+        },
+        {
+          "t": -4629,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4388,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4082,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -3909,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3588,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3428,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3188,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2949,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2709,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2466,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2187,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1910,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1748,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1508,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1266,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -940,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -788,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -484,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -309,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -68,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 227,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 332,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 419,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "actually",
+          "i",
+          "need",
+          "you",
+          "to",
+          "hold",
+          "short",
+          "of",
+          "3",
+          "1",
+          "right",
+          "traffic",
+          "on",
+          "short",
+          "final"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "actually",
+          "i",
+          "need",
+          "you",
+          "to",
+          "hold",
+          "short",
+          "of",
+          "3",
+          "1",
+          "right",
+          "traffic",
+          "on",
+          "short",
+          "final"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "13",
+      "say": "Iberia six two six heavy, hold short of Bravo, you'll have a Delta seven sixty-seven passing left to right.",
+      "style": "loose",
+      "audioSec": 6.48,
+      "runAt": "2026-11-14T07:55:45.146Z",
+      "transcript": "Iberia six two six heavy, hold short of bravo, you'll have a Delta seven sixty seven passing left to right.",
+      "latencyMs": 400.5,
+      "timings": {
+        "connectMs": 73,
+        "firstTextMs": 590.3,
+        "streamMs": 6480.7,
+        "driftMs": 0.7,
+        "billedSessionSec": null
+      },
+      "partials": 28,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6481,
+          "type": "Connected"
+        },
+        {
+          "t": -6190,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5890,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5668,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -5468,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5201,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4986,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4750,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4503,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4270,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4029,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3748,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3548,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3310,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3064,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2677,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2547,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2348,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2110,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1867,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1533,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1390,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1142,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -909,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -590,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -399,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -189,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 51,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 171,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 292,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 400,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "you'll",
+          "have",
+          "a",
+          "delta",
+          "7",
+          "6",
+          "7",
+          "passing",
+          "left",
+          "to",
+          "right"
+        ],
+        "hypTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "you'll",
+          "have",
+          "a",
+          "delta",
+          "7",
+          "6",
+          "7",
+          "passing",
+          "left",
+          "to",
+          "right"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "14",
+      "say": "JetBlue eleven twenty-three, hold position.",
+      "style": "textbook",
+      "audioSec": 3.42,
+      "runAt": "2026-11-14T07:55:50.552Z",
+      "transcript": "JetBlue eleven twenty three, hold position.",
+      "latencyMs": 432.2,
+      "timings": {
+        "connectMs": 390.6,
+        "firstTextMs": 612.6,
+        "streamMs": 3421.2,
+        "driftMs": 1.2,
+        "billedSessionSec": null
+      },
+      "partials": 15,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3421,
+          "type": "Connected"
+        },
+        {
+          "t": -3088,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2809,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2608,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2354,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2128,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -1841,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1648,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1407,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1168,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -773,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -639,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -447,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -208,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 113,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 255,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 352,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 432,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "hold",
+          "position"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "hold",
+          "position"
+        ],
+        "wer": {
+          "refWords": 7,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "15",
+      "say": "Iberia six two six heavy, traffic's by, go ahead and continue, thanks for waiting.",
+      "style": "loose",
+      "audioSec": 4.44,
+      "runAt": "2026-11-14T07:55:56.793Z",
+      "transcript": "Iberia has six twenty six heavy, traffic's by, go ahead and continue, thanks for waiting.",
+      "latencyMs": 331.8,
+      "timings": {
+        "connectMs": 264.5,
+        "firstTextMs": 658.2,
+        "streamMs": 4440.4,
+        "driftMs": 0.4,
+        "billedSessionSec": null
+      },
+      "partials": 19,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4440,
+          "type": "Connected"
+        },
+        {
+          "t": -4106,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3782,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3627,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -3386,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3147,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2897,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2660,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2427,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2144,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1849,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1665,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1427,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1067,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -947,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -708,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -506,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -265,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -27,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 133,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 277,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 332,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "traffic's",
+          "by",
+          "go",
+          "ahead",
+          "and",
+          "continue",
+          "thanks",
+          "for",
+          "waiting"
+        ],
+        "hypTokens": [
+          "iberia",
+          "has",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "traffic's",
+          "by",
+          "go",
+          "ahead",
+          "and",
+          "continue",
+          "thanks",
+          "for",
+          "waiting"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Iberia six two six"
+            ]
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "16",
+      "say": "Speedbird one seven five heavy, stop, stop, hold your position.",
+      "style": "loose",
+      "audioSec": 4.5,
+      "runAt": "2026-11-14T07:56:03.126Z",
+      "transcript": "Speedbird one seven five heavy stop stopholder vision.",
+      "latencyMs": 350.7,
+      "timings": {
+        "connectMs": 284.1,
+        "firstTextMs": 650.9,
+        "streamMs": 4501.6,
+        "driftMs": 1.6,
+        "billedSessionSec": null
+      },
+      "partials": 19,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4502,
+          "type": "Connected"
+        },
+        {
+          "t": -4170,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3851,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3650,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -3371,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3210,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2921,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2730,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2450,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2129,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2008,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1718,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1367,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1251,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1050,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -731,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -570,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -330,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -48,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 124,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 231,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 351,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "stop",
+          "stop",
+          "hold",
+          "your",
+          "position"
+        ],
+        "hypTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "stop",
+          "stopholder",
+          "vision"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 2,
+          "deletions": 2,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "17",
+      "say": "Delta four, cross runway three one right at Kilo Echo.",
+      "style": "textbook",
+      "audioSec": 3.78,
+      "runAt": "2026-11-14T07:56:08.592Z",
+      "transcript": "Delta four cross one way three one right at Kilo Echo",
+      "latencyMs": 345.4,
+      "timings": {
+        "connectMs": 214.4,
+        "firstTextMs": 609.7,
+        "streamMs": 3781.5,
+        "driftMs": 1.5,
+        "billedSessionSec": null
+      },
+      "partials": 16,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3782,
+          "type": "Connected"
+        },
+        {
+          "t": -3495,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3172,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2888,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -2774,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2529,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2295,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2039,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1815,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1575,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1335,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1056,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -855,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -611,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -371,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -16,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 107,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 226,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 345,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "cross",
+          "runway",
+          "3",
+          "1",
+          "right",
+          "at",
+          "kilo",
+          "echo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "cross",
+          "1",
+          "way",
+          "3",
+          "1",
+          "right",
+          "at",
+          "kilo",
+          "echo"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "18",
+      "say": "Swiss one seven heavy, go ahead and cross two two right at Yankee, then hold short of Bravo.",
+      "style": "loose",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:56:15.151Z",
+      "transcript": "Swiss won seven hui go ahead and crossed two two right at Yankee, then hold short of Bravo.",
+      "latencyMs": 313.2,
+      "timings": {
+        "connectMs": 98.3,
+        "firstTextMs": 573.1,
+        "streamMs": 4981.9,
+        "driftMs": 1.9,
+        "billedSessionSec": null
+      },
+      "partials": 21,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4982,
+          "type": "Connected"
+        },
+        {
+          "t": -4689,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4409,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4209,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3969,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -3726,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3442,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3249,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3009,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2758,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2443,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2289,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2047,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1808,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1569,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1325,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1089,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -849,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -608,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -289,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -129,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 71,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 191,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 313,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "swiss",
+          "1",
+          "7",
+          "heavy",
+          "go",
+          "ahead",
+          "and",
+          "cross",
+          "2",
+          "2",
+          "right",
+          "at",
+          "yankee",
+          "then",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "hypTokens": [
+          "swiss",
+          "won",
+          "7",
+          "hui",
+          "go",
+          "ahead",
+          "and",
+          "crossed",
+          "2",
+          "2",
+          "right",
+          "at",
+          "yankee",
+          "then",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 18,
+          "substitutions": 3,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Swiss one seven"
+            ]
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "19",
+      "say": "Qatari seven zero one heavy, at Kilo Echo, cross three one right, then Kilo to three one left.",
+      "style": "loose",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:56:22.540Z",
+      "transcript": "Guitar is seven zero one heavy at Kilo Echo cross three one right then Kilo to three one left.",
+      "latencyMs": 330.7,
+      "timings": {
+        "connectMs": 141.2,
+        "firstTextMs": 530.6,
+        "streamMs": 5760.9,
+        "driftMs": 0.9,
+        "billedSessionSec": null
+      },
+      "partials": 25,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5761,
+          "type": "Connected"
+        },
+        {
+          "t": -5470,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5230,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4989,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4709,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -4428,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4192,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4030,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3745,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3510,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3307,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3071,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2789,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2589,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2349,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2108,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1829,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1589,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1337,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1149,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -909,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -627,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -349,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -189,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 52,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 170,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 294,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 331,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "qatari",
+          "7",
+          "0",
+          "1",
+          "heavy",
+          "at",
+          "kilo",
+          "echo",
+          "cross",
+          "3",
+          "1",
+          "right",
+          "then",
+          "kilo",
+          "to",
+          "3",
+          "1",
+          "left"
+        ],
+        "hypTokens": [
+          "guitar",
+          "is",
+          "7",
+          "0",
+          "1",
+          "heavy",
+          "at",
+          "kilo",
+          "echo",
+          "cross",
+          "3",
+          "1",
+          "right",
+          "then",
+          "kilo",
+          "to",
+          "3",
+          "1",
+          "left"
+        ],
+        "wer": {
+          "refWords": 18,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Qatari seven zero one"
+            ]
+          },
+          "runways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "20",
+      "say": "Air France two three heavy, exit the line at the next left, Kilo Delta, and hold on the pad.",
+      "style": "textbook",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:56:29.593Z",
+      "transcript": "Air France, two three heavy, exit the line at the next left, Kilo Delta and hold on the pod.",
+      "latencyMs": 392.4,
+      "timings": {
+        "connectMs": 478.1,
+        "firstTextMs": 936.8,
+        "streamMs": 4982.1,
+        "driftMs": 2.1,
+        "billedSessionSec": null
+      },
+      "partials": 20,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4982,
+          "type": "Connected"
+        },
+        {
+          "t": -4527,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4384,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4045,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3890,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3688,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -3447,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3134,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2927,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2724,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2487,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2245,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1927,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1767,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1487,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1287,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -926,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -804,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -567,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -328,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -82,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 152,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 274,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 392,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "air",
+          "france",
+          "2",
+          "3",
+          "heavy",
+          "exit",
+          "the",
+          "line",
+          "at",
+          "the",
+          "next",
+          "left",
+          "kilo",
+          "delta",
+          "and",
+          "hold",
+          "on",
+          "the",
+          "pad"
+        ],
+        "hypTokens": [
+          "air",
+          "france",
+          "2",
+          "3",
+          "heavy",
+          "exit",
+          "the",
+          "line",
+          "at",
+          "the",
+          "next",
+          "left",
+          "kilo",
+          "delta",
+          "and",
+          "hold",
+          "on",
+          "the",
+          "pod"
+        ],
+        "wer": {
+          "refWords": 19,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "21",
+      "say": "Delta twelve oh four, bad news, ground stop for Atlanta, take the next right at Kilo Charlie and head over to the penalty box.",
+      "style": "loose",
+      "audioSec": 7.26,
+      "runAt": "2026-11-14T07:56:38.728Z",
+      "transcript": "Delta Twelver for a bad news ground stop for Atlanta take the next ridicule of Charlie and head over to the penalty box.",
+      "latencyMs": 421.6,
+      "timings": {
+        "connectMs": 318.3,
+        "firstTextMs": 614.4,
+        "streamMs": 7261.5,
+        "driftMs": 1.5,
+        "billedSessionSec": null
+      },
+      "partials": 31,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7262,
+          "type": "Connected"
+        },
+        {
+          "t": -6930,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6647,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6449,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -6209,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5931,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5569,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5450,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5249,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4968,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4770,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4529,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4289,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4042,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3510,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3449,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3330,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3090,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2771,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2610,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2367,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2129,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1805,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1583,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1370,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1168,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -928,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -570,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -449,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -209,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 74,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 273,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 356,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 422,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "1",
+          "2",
+          "0",
+          "4",
+          "bad",
+          "news",
+          "ground",
+          "stop",
+          "for",
+          "atlanta",
+          "take",
+          "the",
+          "next",
+          "right",
+          "at",
+          "kilo",
+          "charlie",
+          "and",
+          "head",
+          "over",
+          "to",
+          "the",
+          "penalty",
+          "box"
+        ],
+        "hypTokens": [
+          "delta",
+          "twelver",
+          "for",
+          "a",
+          "bad",
+          "news",
+          "ground",
+          "stop",
+          "for",
+          "atlanta",
+          "take",
+          "the",
+          "next",
+          "ridicule",
+          "of",
+          "charlie",
+          "and",
+          "head",
+          "over",
+          "to",
+          "the",
+          "penalty",
+          "box"
+        ],
+        "wer": {
+          "refWords": 25,
+          "substitutions": 5,
+          "deletions": 2,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Delta twelve oh four"
+            ]
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Kilo Charlie"
+            ]
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "22",
+      "say": "JetBlue six one five, release time one four five two for you, taxi to the pad via Alpha, Kilo Kilo, and sit tight.",
+      "style": "loose",
+      "audioSec": 8.04,
+      "runAt": "2026-11-14T07:56:48.763Z",
+      "transcript": "JetBlue six one five release time one four five two for you taxi to the pad via Alpha Kilo Kilo and SIP type",
+      "latencyMs": 333.6,
+      "timings": {
+        "connectMs": 367.5,
+        "firstTextMs": 614.6,
+        "streamMs": 8041.3,
+        "driftMs": 1.3,
+        "billedSessionSec": null
+      },
+      "partials": 34,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8041,
+          "type": "Connected"
+        },
+        {
+          "t": -7706,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7427,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7227,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -6944,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6743,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6384,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6226,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6026,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5787,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5459,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5306,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5066,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4826,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4460,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4306,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4074,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3867,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3586,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3307,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3146,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2871,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2626,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2332,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2183,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1946,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1706,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1411,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1187,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -986,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -747,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -465,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -263,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -26,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 152,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 254,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 334,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "release",
+          "time",
+          "1",
+          "4",
+          "5",
+          "2",
+          "for",
+          "you",
+          "taxi",
+          "to",
+          "the",
+          "pad",
+          "via",
+          "alpha",
+          "kilo",
+          "kilo",
+          "and",
+          "sit",
+          "tight"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "release",
+          "time",
+          "1",
+          "4",
+          "5",
+          "2",
+          "for",
+          "you",
+          "taxi",
+          "to",
+          "the",
+          "pad",
+          "via",
+          "alpha",
+          "kilo",
+          "kilo",
+          "and",
+          "sip",
+          "type"
+        ],
+        "wer": {
+          "refWords": 23,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "23",
+      "say": "Virgin three, roger, taxi to the penalty box via Kilo Foxtrot, Bravo, and let me know when your gate opens up.",
+      "style": "loose",
+      "audioSec": 7.62,
+      "runAt": "2026-11-14T07:56:58.252Z",
+      "transcript": "Virgin three, Roger, a taxi to the penalty box via Kilo Foxtrot bravo, Millennium Airgate opens up.",
+      "latencyMs": 356.3,
+      "timings": {
+        "connectMs": 300.4,
+        "firstTextMs": 574.6,
+        "streamMs": 7620.2,
+        "driftMs": 0.2,
+        "billedSessionSec": null
+      },
+      "partials": 32,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7620,
+          "type": "Connected"
+        },
+        {
+          "t": -7285,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -7046,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6764,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6525,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -6324,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6086,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5841,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5526,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5325,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5124,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4879,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4532,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4359,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4165,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3902,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3644,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3388,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3163,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2925,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2720,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2470,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2245,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1926,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1751,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1524,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1285,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1045,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -803,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -564,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -283,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -86,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 115,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 235,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 356,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "virgin",
+          "3",
+          "roger",
+          "taxi",
+          "to",
+          "the",
+          "penalty",
+          "box",
+          "via",
+          "kilo",
+          "foxtrot",
+          "bravo",
+          "and",
+          "let",
+          "me",
+          "know",
+          "when",
+          "your",
+          "gate",
+          "opens",
+          "up"
+        ],
+        "hypTokens": [
+          "virgin",
+          "3",
+          "roger",
+          "a",
+          "taxi",
+          "to",
+          "the",
+          "penalty",
+          "box",
+          "via",
+          "kilo",
+          "foxtrot",
+          "bravo",
+          "millennium",
+          "airgate",
+          "opens",
+          "up"
+        ],
+        "wer": {
+          "refWords": 21,
+          "substitutions": 2,
+          "deletions": 5,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "24",
+      "say": "Speedbird one seven five heavy, number two for departure, monitor tower one one niner point one.",
+      "style": "textbook",
+      "audioSec": 6.24,
+      "runAt": "2026-11-14T07:57:06.185Z",
+      "transcript": "Speedbird one seven five heavy, number two for departure, moderate tower one one niner point one.",
+      "latencyMs": 331.7,
+      "timings": {
+        "connectMs": 230.5,
+        "firstTextMs": 772.7,
+        "streamMs": 6239.3,
+        "driftMs": -0.7,
+        "billedSessionSec": null
+      },
+      "partials": 26,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6239,
+          "type": "Connected"
+        },
+        {
+          "t": -5947,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5706,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5467,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5189,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -4988,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4747,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4506,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4214,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4028,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3788,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3455,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3307,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2988,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2820,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2585,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2347,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2068,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1869,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1629,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1388,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1000,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -869,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -665,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -429,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -184,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 52,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 172,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 292,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 332,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "number",
+          "2",
+          "for",
+          "departure",
+          "monitor",
+          "tower",
+          "1",
+          "1",
+          "9",
+          "1"
+        ],
+        "hypTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "number",
+          "2",
+          "for",
+          "departure",
+          "moderate",
+          "tower",
+          "1",
+          "1",
+          "9",
+          "1"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "25",
+      "say": "Emirates two zero two heavy, contact ramp, so long.",
+      "style": "loose",
+      "audioSec": 4.02,
+      "runAt": "2026-11-14T07:57:11.785Z",
+      "transcript": "Emirates two zero two heavy contact ramp, so long.",
+      "latencyMs": 311.1,
+      "timings": {
+        "connectMs": 142.6,
+        "firstTextMs": 568.7,
+        "streamMs": 4019.4,
+        "driftMs": -0.6,
+        "billedSessionSec": null
+      },
+      "partials": 17,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4019,
+          "type": "Connected"
+        },
+        {
+          "t": -3730,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3451,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3249,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3009,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -2769,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2447,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2290,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2050,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1809,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1569,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1330,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1087,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -850,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -530,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -347,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -116,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 71,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 189,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 311,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "contact",
+          "ramp",
+          "so",
+          "long"
+        ],
+        "hypTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "contact",
+          "ramp",
+          "so",
+          "long"
+        ],
+        "wer": {
+          "refWords": 9,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "26",
+      "say": "Delta four, negative, hold short of Bravo, hold short Bravo.",
+      "style": "textbook",
+      "audioSec": 3.9,
+      "runAt": "2026-11-14T07:57:17.364Z",
+      "transcript": "Delta four negative hold short of bravo hold short bravo.",
+      "latencyMs": 453.9,
+      "timings": {
+        "connectMs": 123.8,
+        "firstTextMs": 532.8,
+        "streamMs": 3902.5,
+        "driftMs": 2.5,
+        "billedSessionSec": null
+      },
+      "partials": 17,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3903,
+          "type": "Connected"
+        },
+        {
+          "t": -3611,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3370,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3131,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -2889,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2611,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2411,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2171,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1892,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1583,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1451,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1205,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -891,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -731,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -490,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -252,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 69,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 190,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 334,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 454,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "negative",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "negative",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "27",
+      "say": "Lufthansa four zero five heavy, negative, that's a right turn on Kilo Echo, right Kilo Echo.",
+      "style": "loose",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:57:24.871Z",
+      "transcript": "The tons are four zero five heavy negative, that's a right turn on Kilo Echo, right on Kilo Echo.",
+      "latencyMs": 329,
+      "timings": {
+        "connectMs": 286.7,
+        "firstTextMs": 536.2,
+        "streamMs": 5762,
+        "driftMs": 2,
+        "billedSessionSec": null
+      },
+      "partials": 25,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5762,
+          "type": "Connected"
+        },
+        {
+          "t": -5431,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5226,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4992,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4749,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4511,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -4231,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3991,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3690,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3543,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3311,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3070,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2831,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2592,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2352,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2107,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1815,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1631,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1390,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1130,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -830,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -667,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -388,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -190,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 53,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 170,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 290,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 329,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "negative",
+          "that's",
+          "a",
+          "right",
+          "turn",
+          "on",
+          "kilo",
+          "echo",
+          "right",
+          "kilo",
+          "echo"
+        ],
+        "hypTokens": [
+          "the",
+          "tons",
+          "are",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "negative",
+          "that's",
+          "a",
+          "right",
+          "turn",
+          "on",
+          "kilo",
+          "echo",
+          "right",
+          "on",
+          "kilo",
+          "echo"
+        ],
+        "wer": {
+          "refWords": 16,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 3
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Lufthansa four zero five"
+            ]
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "28",
+      "say": "American one hundred, nope, departure runway is three one left, not right.",
+      "style": "loose",
+      "audioSec": 4.86,
+      "runAt": "2026-11-14T07:57:31.439Z",
+      "transcript": "American one hundred Nope departure runway is three one left, not right.",
+      "latencyMs": 472.3,
+      "timings": {
+        "connectMs": 147.6,
+        "firstTextMs": 532.4,
+        "streamMs": 4860.2,
+        "driftMs": 0.2,
+        "billedSessionSec": null
+      },
+      "partials": 21,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4860,
+          "type": "Connected"
+        },
+        {
+          "t": -4569,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4328,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4090,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3849,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3605,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3370,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -3088,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2849,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2647,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2409,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2106,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1928,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1688,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1448,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1209,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -970,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -729,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -489,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -250,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 126,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 271,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 391,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 472,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "nope",
+          "departure",
+          "runway",
+          "is",
+          "3",
+          "1",
+          "left",
+          "not",
+          "right"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "nope",
+          "departure",
+          "runway",
+          "is",
+          "3",
+          "1",
+          "left",
+          "not",
+          "right"
+        ],
+        "wer": {
+          "refWords": 13,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "29",
+      "say": "Shamrock one zero four, negative, you've got them backwards, it's Alpha, Juliet, hold short Bravo.",
+      "style": "loose",
+      "audioSec": 6.54,
+      "runAt": "2026-11-14T07:57:39.526Z",
+      "transcript": "Shamrock one zero four negative, you've got them backwards, it's Alpha Juliet hold short bravo.",
+      "latencyMs": 349.6,
+      "timings": {
+        "connectMs": 120.1,
+        "firstTextMs": 528,
+        "streamMs": 6541.6,
+        "driftMs": 1.6,
+        "billedSessionSec": null
+      },
+      "partials": 28,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6542,
+          "type": "Connected"
+        },
+        {
+          "t": -6230,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -6014,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5770,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5534,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -5293,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4973,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4733,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4166,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4028,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3973,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3853,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3612,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3373,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3132,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2852,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2651,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2412,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2173,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1872,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1692,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1390,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1212,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -883,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -732,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -493,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -247,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -12,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 170,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 267,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 350,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "negative",
+          "you've",
+          "got",
+          "them",
+          "backwards",
+          "it's",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "negative",
+          "you've",
+          "got",
+          "them",
+          "backwards",
+          "it's",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "30",
+      "say": "KLM six four four heavy, sorry, you got stepped on, go ahead and say again.",
+      "style": "loose",
+      "audioSec": 4.44,
+      "runAt": "2026-11-14T07:57:45.544Z",
+      "transcript": "KLM six four four heavy sorry you got stepped on go ahead and say it again",
+      "latencyMs": 334.7,
+      "timings": {
+        "connectMs": 144.7,
+        "firstTextMs": 531.2,
+        "streamMs": 4440.1,
+        "driftMs": 0.1,
+        "billedSessionSec": null
+      },
+      "partials": 19,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4440,
+          "type": "Connected"
+        },
+        {
+          "t": -4149,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3909,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3623,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3429,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -3188,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2948,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2629,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2468,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2229,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1869,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1730,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1507,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1267,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1029,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -788,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -549,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -308,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -68,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 132,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 252,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 335,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "klm",
+          "6",
+          "4",
+          "4",
+          "heavy",
+          "sorry",
+          "you",
+          "got",
+          "stepped",
+          "on",
+          "go",
+          "ahead",
+          "and",
+          "say",
+          "again"
+        ],
+        "hypTokens": [
+          "klm",
+          "6",
+          "4",
+          "4",
+          "heavy",
+          "sorry",
+          "you",
+          "got",
+          "stepped",
+          "on",
+          "go",
+          "ahead",
+          "and",
+          "say",
+          "it",
+          "again"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "31",
+      "say": "Aircraft calling Kennedy Ground, say again your callsign.",
+      "style": "textbook",
+      "audioSec": 3.6,
+      "runAt": "2026-11-14T07:57:50.769Z",
+      "transcript": "Aircraft calling Kennedy Ground save in your comsign.",
+      "latencyMs": 374,
+      "timings": {
+        "connectMs": 156.4,
+        "firstTextMs": 532.1,
+        "streamMs": 3600.3,
+        "driftMs": 0.3,
+        "billedSessionSec": null
+      },
+      "partials": 16,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3600,
+          "type": "Connected"
+        },
+        {
+          "t": -3308,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3068,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2819,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2588,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -2348,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2068,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1869,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1569,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1387,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1068,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -906,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -668,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -429,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -188,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 91,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 213,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 359,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 374,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "aircraft",
+          "calling",
+          "kennedy",
+          "ground",
+          "say",
+          "again",
+          "your",
+          "callsign"
+        ],
+        "hypTokens": [
+          "aircraft",
+          "calling",
+          "kennedy",
+          "ground",
+          "save",
+          "in",
+          "your",
+          "comsign"
+        ],
+        "wer": {
+          "refWords": 8,
+          "substitutions": 3,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "32",
+      "say": "Brickyard thirty-five sixty, ground stop for Boston, expect about twenty minutes.",
+      "style": "textbook",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:57:58.271Z",
+      "transcript": "Brickyard thirty five sixty, ground stop for Boston, expect twenty, thirty minutes.",
+      "latencyMs": 322.1,
+      "timings": {
+        "connectMs": 155.3,
+        "firstTextMs": 529.8,
+        "streamMs": 5761.9,
+        "driftMs": 1.9,
+        "billedSessionSec": null
+      },
+      "partials": 25,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5762,
+          "type": "Connected"
+        },
+        {
+          "t": -5471,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5232,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4951,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -4710,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4431,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4271,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4032,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3738,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3552,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3302,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3048,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2829,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2592,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2351,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2111,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1871,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1592,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1390,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1150,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -911,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -601,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -405,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -190,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 49,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 170,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 290,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 322,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "brickyard",
+          "3",
+          "5",
+          "6",
+          "0",
+          "ground",
+          "stop",
+          "for",
+          "boston",
+          "expect",
+          "about",
+          "2",
+          "0",
+          "minutes"
+        ],
+        "hypTokens": [
+          "brickyard",
+          "3",
+          "5",
+          "6",
+          "0",
+          "ground",
+          "stop",
+          "for",
+          "boston",
+          "expect",
+          "2",
+          "0",
+          "3",
+          "0",
+          "minutes"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "33",
+      "say": "United fourteen sixteen, hold for release, expect one five minutes departure delay.",
+      "style": "textbook",
+      "audioSec": 5.1,
+      "runAt": "2026-11-14T07:58:05.340Z",
+      "transcript": "United fourteen sixteen hold for release, expect one five minutes departure delay.",
+      "latencyMs": 422,
+      "timings": {
+        "connectMs": 384.8,
+        "firstTextMs": 589,
+        "streamMs": 5100.7,
+        "driftMs": 0.7,
+        "billedSessionSec": null
+      },
+      "partials": 22,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5101,
+          "type": "Connected"
+        },
+        {
+          "t": -4769,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4512,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4284,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -4009,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3769,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3565,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3329,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3049,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2809,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2568,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2232,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2040,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1889,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1626,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1307,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1156,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -889,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -686,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -440,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -169,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 31,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 231,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 360,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 422,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "united",
+          "1",
+          "4",
+          "1",
+          "6",
+          "hold",
+          "for",
+          "release",
+          "expect",
+          "1",
+          "5",
+          "minutes",
+          "departure",
+          "delay"
+        ],
+        "hypTokens": [
+          "united",
+          "1",
+          "4",
+          "1",
+          "6",
+          "hold",
+          "for",
+          "release",
+          "expect",
+          "1",
+          "5",
+          "minutes",
+          "departure",
+          "delay"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "34",
+      "say": "JetBlue eleven twenty-three, give way to the Emirates heavy coming off Kilo Echo, then follow him on Alpha.",
+      "style": "loose",
+      "audioSec": 5.94,
+      "runAt": "2026-11-14T07:58:13.156Z",
+      "transcript": "JetBlue eleven twenty three, give way to the Emirates heavy coming off Kilo Echo, then follow him on Alpha.",
+      "latencyMs": 390.7,
+      "timings": {
+        "connectMs": 278.2,
+        "firstTextMs": 608.6,
+        "streamMs": 5939.7,
+        "driftMs": -0.3,
+        "billedSessionSec": null
+      },
+      "partials": 25,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5940,
+          "type": "Connected"
+        },
+        {
+          "t": -5611,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5331,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -5092,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4851,
+          "type": "TurnInfo:StartOfTurn"
+        },
+        {
+          "t": -4610,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4411,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -4116,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3852,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3651,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3448,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -3169,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2888,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2664,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2477,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -2251,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1966,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1732,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1531,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1291,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -1041,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -790,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -531,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -291,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": -11,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 149,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 270,
+          "type": "TurnInfo:Update"
+        },
+        {
+          "t": 391,
+          "type": "TurnInfo:EndOfTurn"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "give",
+          "way",
+          "to",
+          "the",
+          "emirates",
+          "heavy",
+          "coming",
+          "off",
+          "kilo",
+          "echo",
+          "then",
+          "follow",
+          "him",
+          "on",
+          "alpha"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "give",
+          "way",
+          "to",
+          "the",
+          "emirates",
+          "heavy",
+          "coming",
+          "off",
+          "kilo",
+          "echo",
+          "then",
+          "follow",
+          "him",
+          "on",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    }
+  ]
+}

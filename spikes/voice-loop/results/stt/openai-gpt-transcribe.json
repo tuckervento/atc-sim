@@ -1,0 +1,6947 @@
+{
+  "candidate": "openai-gpt-transcribe",
+  "provider": "openai",
+  "model": "gpt-transcribe",
+  "pricing": {
+    "basis": "audio",
+    "perMin": 0.0045,
+    "note": "$0.0045/min"
+  },
+  "config": {
+    "vocabTerms": 87,
+    "transcription": {
+      "model": "gpt-transcribe",
+      "languages": [
+        "en"
+      ],
+      "keywords": "[87 terms]",
+      "prompt": "Air traffic control ground frequency at New York JFK (Kennedy Ground). A controller gives taxi instructions to airline pilots: ICAO phonetic alphabet taxiway names (Alpha, Bravo, Kilo Echo), runways spoken digit by digit (three one left, two two right), niner for nine, and airline radio callsigns (JetBlue, Speedbird, Shamrock, Brickyard)."
+    }
+  },
+  "method": {
+    "chunkMs": 80,
+    "pacing": "chunk sent when its last sample would have been spoken (start + audio time of chunk end); tails < 20 ms merged into the previous chunk",
+    "session": "one fresh WebSocket session per clip, opened and configured before audio starts (connect time is not in latency)",
+    "latency": "performance.now() at final-transcript message arrival minus performance.now() just after the last audio chunk was handed to the socket; the end-of-turn signal is sent immediately after the last chunk",
+    "normalization": "stt/normalize.ts (lowercase, punctuation stripped, numbers to single digits, spelling equivalences)",
+    "wer": "corpus-level: total substitutions+deletions+insertions / total reference tokens; a line with no transcript counts as all deleted",
+    "criticalTokens": "results/stt/critical-tokens.json, matched by stt/critical.ts",
+    "p95": "nearest rank (ceil(0.95 n)-th smallest)"
+  },
+  "updatedAt": "2026-11-14T08:01:45.288Z",
+  "summary": {
+    "lines": 34,
+    "withFinal": 34,
+    "errors": [],
+    "lateText": [],
+    "latencyMs": {
+      "median": 633.6,
+      "p95": 812.3,
+      "min": 513.7,
+      "max": 969.7,
+      "withinBudget": 0
+    },
+    "firstTextMs": {
+      "median": 6194.5
+    },
+    "wer": 0.019784172661870502,
+    "critical": {
+      "overall": 0.9894736842105263,
+      "callsign": 0.9696969696969697,
+      "runways": 1,
+      "taxiways": 1,
+      "holdShort": 1
+    },
+    "criticalCounts": {
+      "callsign": {
+        "expected": 33,
+        "found": 32
+      },
+      "runways": {
+        "expected": 11,
+        "found": 11
+      },
+      "taxiways": {
+        "expected": 35,
+        "found": 35
+      },
+      "holdShort": {
+        "expected": 16,
+        "found": 16
+      }
+    },
+    "linesAllCriticalCorrect": 33,
+    "audioSec": 206.22,
+    "billedSessionSec": null,
+    "peakCostPerHr": {
+      "low": 0.13499999999999998,
+      "high": null,
+      "measured": null
+    }
+  },
+  "lines": [
+    {
+      "num": "01",
+      "say": "Delta four, runway three one left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.",
+      "style": "textbook",
+      "audioSec": 6.3,
+      "runAt": "2026-11-14T07:45:58.570Z",
+      "transcript": "Delta four, runway three one left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.",
+      "latencyMs": 570.4,
+      "timings": {
+        "connectMs": 282.7,
+        "firstTextMs": 6558.2,
+        "streamMs": 6302.4,
+        "driftMs": 2.4,
+        "billedSessionSec": null
+      },
+      "partials": 23,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":7}"
+      ],
+      "trace": [
+        {
+          "t": -6345,
+          "type": "session.created"
+        },
+        {
+          "t": -6302,
+          "type": "session.updated"
+        },
+        {
+          "t": 72,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 72,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 72,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 256,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 259,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 263,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 267,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 276,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 276,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 280,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 300,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 304,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 305,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 307,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 309,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 311,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 312,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 316,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 320,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 326,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 370,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 372,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 372,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 372,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 372,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 372,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 570,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "02",
+      "say": "JetBlue eleven twenty-three, three one left, taxi via Alpha, Kilo Delta, hold short of Bravo and hold short of runway three one right.",
+      "style": "textbook",
+      "audioSec": 8.94,
+      "runAt": "2026-11-14T07:46:09.676Z",
+      "transcript": "JetBlue eleven twenty three, three one left, taxi via Alpha, Kilo Delta, hold short of Bravo and hold short of runway three one right.",
+      "latencyMs": 633.6,
+      "timings": {
+        "connectMs": 450.8,
+        "firstTextMs": 9357.7,
+        "streamMs": 8941,
+        "driftMs": 1,
+        "billedSessionSec": null
+      },
+      "partials": 31,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":9}"
+      ],
+      "trace": [
+        {
+          "t": -9020,
+          "type": "session.created"
+        },
+        {
+          "t": -8941,
+          "type": "session.updated"
+        },
+        {
+          "t": 78,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 78,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 78,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 417,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 421,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 421,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 421,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 421,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 421,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 421,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 421,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 421,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 422,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 422,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 422,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 422,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 422,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 422,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 422,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 423,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 423,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 423,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 423,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 423,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 423,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 423,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 423,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 423,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 454,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 454,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 456,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 456,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 456,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 456,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 634,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "and",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "3",
+          "1",
+          "right"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "and",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "3",
+          "1",
+          "right"
+        ],
+        "wer": {
+          "refWords": 25,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "03",
+      "say": "American one hundred, okay, three one left, go ahead and take Alpha to Kilo Foxtrot, hold short three one right.",
+      "style": "loose",
+      "audioSec": 6.78,
+      "runAt": "2026-11-14T07:46:18.450Z",
+      "transcript": "American one hundred, okay, three one left, go ahead and take Alpha to Kilo Foxtrot, hold short three one right.",
+      "latencyMs": 672.4,
+      "timings": {
+        "connectMs": 263.4,
+        "firstTextMs": 7122.9,
+        "streamMs": 6779.7,
+        "driftMs": -0.3,
+        "billedSessionSec": null
+      },
+      "partials": 28,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":7}"
+      ],
+      "trace": [
+        {
+          "t": -6828,
+          "type": "session.created"
+        },
+        {
+          "t": -6780,
+          "type": "session.updated"
+        },
+        {
+          "t": 104,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 150,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 179,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 343,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 347,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 352,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 356,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 362,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 365,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 373,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 373,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 379,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 383,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 388,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 392,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 396,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 407,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 409,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 410,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 424,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 424,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 424,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 430,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 433,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 440,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 442,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 447,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 454,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 456,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 463,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 672,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "okay",
+          "3",
+          "1",
+          "left",
+          "go",
+          "ahead",
+          "and",
+          "take",
+          "alpha",
+          "to",
+          "kilo",
+          "foxtrot",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "okay",
+          "3",
+          "1",
+          "left",
+          "go",
+          "ahead",
+          "and",
+          "take",
+          "alpha",
+          "to",
+          "kilo",
+          "foxtrot",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right"
+        ],
+        "wer": {
+          "refWords": 21,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "04",
+      "say": "Shamrock one zero four, three one left, Alpha, Juliet, hold short Bravo.",
+      "style": "loose",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:46:25.658Z",
+      "transcript": "Shamrock one zero four, three one left, Alpha Juliet hold short Bravo.",
+      "latencyMs": 720,
+      "timings": {
+        "connectMs": 420.1,
+        "firstTextMs": 5445.4,
+        "streamMs": 4981.5,
+        "driftMs": 1.5,
+        "billedSessionSec": null
+      },
+      "partials": 17,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":5}"
+      ],
+      "trace": [
+        {
+          "t": -5140,
+          "type": "session.created"
+        },
+        {
+          "t": -4982,
+          "type": "session.updated"
+        },
+        {
+          "t": 71,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 71,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 71,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 464,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 464,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 467,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 471,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 471,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 474,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 478,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 478,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 478,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 481,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 483,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 485,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 485,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 488,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 493,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 498,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 720,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 12,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "05",
+      "say": "Lufthansa four zero five heavy, left on Alpha, right Kilo Echo, three one left, hold short three one right, then hold short Kilo.",
+      "style": "loose",
+      "audioSec": 11.1,
+      "runAt": "2026-11-14T07:46:39.114Z",
+      "transcript": "Lufthansa four zero five heavy, left on Alpha, right on Kilo Echo, three one left, hold short three one right, then hold short Kilo.",
+      "latencyMs": 969.7,
+      "timings": {
+        "connectMs": 309.2,
+        "firstTextMs": 11778.4,
+        "streamMs": 11101.4,
+        "driftMs": 1.4,
+        "billedSessionSec": null
+      },
+      "partials": 33,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":12}"
+      ],
+      "trace": [
+        {
+          "t": -11162,
+          "type": "session.created"
+        },
+        {
+          "t": -11102,
+          "type": "session.updated"
+        },
+        {
+          "t": 68,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 68,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 68,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 677,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 677,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 677,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 677,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 678,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 678,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 678,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 678,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 678,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 678,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 678,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 679,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 679,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 679,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 682,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 695,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 695,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 719,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 719,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 719,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 720,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 720,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 720,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 720,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 752,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 754,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 754,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 754,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 754,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 754,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 754,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 754,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 758,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 970,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "left",
+          "on",
+          "alpha",
+          "right",
+          "kilo",
+          "echo",
+          "3",
+          "1",
+          "left",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right",
+          "then",
+          "hold",
+          "short",
+          "kilo"
+        ],
+        "hypTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "left",
+          "on",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "3",
+          "1",
+          "left",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right",
+          "then",
+          "hold",
+          "short",
+          "kilo"
+        ],
+        "wer": {
+          "refWords": 23,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "06",
+      "say": "Delta twenty-three forty, information Papa is current, altimeter two niner niner two, runway three one left, Alpha, Kilo Delta, hold short Bravo.",
+      "style": "textbook",
+      "audioSec": 11.34,
+      "runAt": "2026-11-14T07:46:52.669Z",
+      "transcript": "Delta thirty twenty-three forty, information Papa is current altimeter two niner niner two, runway three one left, Alpha Kilo Delta hold short Bravo.",
+      "latencyMs": 812.3,
+      "timings": {
+        "connectMs": 312.4,
+        "firstTextMs": 11779.4,
+        "streamMs": 11339.6,
+        "driftMs": -0.4,
+        "billedSessionSec": null
+      },
+      "partials": 32,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":12}"
+      ],
+      "trace": [
+        {
+          "t": -11390,
+          "type": "session.created"
+        },
+        {
+          "t": -11340,
+          "type": "session.updated"
+        },
+        {
+          "t": 67,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 67,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 69,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 440,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 443,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 449,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 451,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 457,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 461,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 464,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 474,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 474,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 480,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 483,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 487,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 493,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 495,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 501,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 507,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 507,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 513,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 603,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 605,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 605,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 605,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 605,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 606,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 606,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 606,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 606,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 606,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 606,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 607,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 607,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 607,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 812,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "2",
+          "3",
+          "4",
+          "0",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "3",
+          "0",
+          "2",
+          "3",
+          "4",
+          "0",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 24,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 2
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Delta twenty-three forty"
+            ]
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "07",
+      "say": "JetBlue six one five, Kennedy Ground, Oscar's old, information Papa is current, altimeter two niner niner two.",
+      "style": "loose",
+      "audioSec": 8.4,
+      "runAt": "2026-11-14T07:47:03.226Z",
+      "transcript": "JetBlue six one five, Kennedy Ground, Oscar's old, information Papa is current, altimeter two niner niner two.",
+      "latencyMs": 712.2,
+      "timings": {
+        "connectMs": 359.8,
+        "firstTextMs": 8829.2,
+        "streamMs": 8401.4,
+        "driftMs": 1.4,
+        "billedSessionSec": null
+      },
+      "partials": 27,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":9}"
+      ],
+      "trace": [
+        {
+          "t": -8454,
+          "type": "session.created"
+        },
+        {
+          "t": -8402,
+          "type": "session.updated"
+        },
+        {
+          "t": 62,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 62,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 62,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 428,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 428,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 428,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 428,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 429,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 429,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 429,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 429,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 429,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 429,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 430,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 430,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 430,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 430,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 430,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 432,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 434,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 438,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 443,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 449,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 451,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 454,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 467,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 468,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 469,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 473,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 477,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 712,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "kennedy",
+          "ground",
+          "oscar's",
+          "old",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "kennedy",
+          "ground",
+          "oscar's",
+          "old",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "08",
+      "say": "Emirates two zero two heavy, taxi to the Terminal Four ramp via Kilo Echo, left on Alpha.",
+      "style": "textbook",
+      "audioSec": 6.54,
+      "runAt": "2026-11-14T07:47:11.763Z",
+      "transcript": "Emirates two zero two heavy, taxi to the Terminal Four ramp via Kilo Echo, left on Alpha.",
+      "latencyMs": 598.3,
+      "timings": {
+        "connectMs": 283.4,
+        "firstTextMs": 6824.3,
+        "streamMs": 6542.1,
+        "driftMs": 2.1,
+        "billedSessionSec": null
+      },
+      "partials": 23,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":7}"
+      ],
+      "trace": [
+        {
+          "t": -6591,
+          "type": "session.created"
+        },
+        {
+          "t": -6542,
+          "type": "session.updated"
+        },
+        {
+          "t": 65,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 67,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 67,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 282,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 293,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 293,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 294,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 299,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 303,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 308,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 314,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 341,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 344,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 344,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 344,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 345,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 345,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 345,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 348,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 354,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 356,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 363,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 364,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 370,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 375,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 378,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 598,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "taxi",
+          "to",
+          "the",
+          "terminal",
+          "4",
+          "ramp",
+          "via",
+          "kilo",
+          "echo",
+          "left",
+          "on",
+          "alpha"
+        ],
+        "hypTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "taxi",
+          "to",
+          "the",
+          "terminal",
+          "4",
+          "ramp",
+          "via",
+          "kilo",
+          "echo",
+          "left",
+          "on",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "09",
+      "say": "JetBlue three eighty-seven, alright, Kilo Foxtrot, right on Alpha into the ramp, and monitor ramp when you get there.",
+      "style": "loose",
+      "audioSec": 7.5,
+      "runAt": "2026-11-14T07:47:21.277Z",
+      "transcript": "JetBlue 387, all right. Kilo Foxtrot right on Alpha into the ramp and monitor ramp when you get there.",
+      "latencyMs": 638.9,
+      "timings": {
+        "connectMs": 285.2,
+        "firstTextMs": 7816.1,
+        "streamMs": 7500.6,
+        "driftMs": 0.6,
+        "billedSessionSec": null
+      },
+      "partials": 26,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":8}"
+      ],
+      "trace": [
+        {
+          "t": -7549,
+          "type": "session.created"
+        },
+        {
+          "t": -7501,
+          "type": "session.updated"
+        },
+        {
+          "t": 132,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 141,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 142,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 315,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 320,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 337,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 337,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 338,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 340,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 342,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 347,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 353,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 355,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 361,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 363,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 373,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 373,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 375,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 381,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 384,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 392,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 393,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 399,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 400,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 404,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 409,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 413,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 419,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 424,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 426,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 639,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "3",
+          "8",
+          "7",
+          "alright",
+          "kilo",
+          "foxtrot",
+          "right",
+          "on",
+          "alpha",
+          "into",
+          "the",
+          "ramp",
+          "and",
+          "monitor",
+          "ramp",
+          "when",
+          "you",
+          "get",
+          "there"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "3",
+          "8",
+          "7",
+          "alright",
+          "kilo",
+          "foxtrot",
+          "right",
+          "on",
+          "alpha",
+          "into",
+          "the",
+          "ramp",
+          "and",
+          "monitor",
+          "ramp",
+          "when",
+          "you",
+          "get",
+          "there"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "10",
+      "say": "American one forty-two heavy, gonna be Kilo Delta, right on Bravo, left Hotel into Terminal Eight, hold short Alpha.",
+      "style": "loose",
+      "audioSec": 8.94,
+      "runAt": "2026-11-14T07:47:32.329Z",
+      "transcript": "American one forty two heavy, gonna be Kilo Delta right on Bravo, left hotel to Terminal Eight, hold short Alpha.",
+      "latencyMs": 693.9,
+      "timings": {
+        "connectMs": 300,
+        "firstTextMs": 9257.9,
+        "streamMs": 8941,
+        "driftMs": 1,
+        "billedSessionSec": null
+      },
+      "partials": 25,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":9}"
+      ],
+      "trace": [
+        {
+          "t": -8991,
+          "type": "session.created"
+        },
+        {
+          "t": -8941,
+          "type": "session.updated"
+        },
+        {
+          "t": 56,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 59,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 59,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 317,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 321,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 325,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 327,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 335,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 337,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 344,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 344,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 349,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 354,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 367,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 367,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 372,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 375,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 381,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 384,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 389,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 392,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 397,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 402,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 406,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 408,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 413,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 418,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 421,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 694,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "4",
+          "2",
+          "heavy",
+          "gonna",
+          "be",
+          "kilo",
+          "delta",
+          "right",
+          "on",
+          "bravo",
+          "left",
+          "hotel",
+          "into",
+          "terminal",
+          "8",
+          "hold",
+          "short",
+          "alpha"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "4",
+          "2",
+          "heavy",
+          "gonna",
+          "be",
+          "kilo",
+          "delta",
+          "right",
+          "on",
+          "bravo",
+          "left",
+          "hotel",
+          "to",
+          "terminal",
+          "8",
+          "hold",
+          "short",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 3,
+            "found": 3,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "11",
+      "say": "Alaska niner three, hold short of runway four right.",
+      "style": "textbook",
+      "audioSec": 3.06,
+      "runAt": "2026-11-14T07:47:37.518Z",
+      "transcript": "Alaska niner three hold short of runway four right.",
+      "latencyMs": 638.9,
+      "timings": {
+        "connectMs": 305.5,
+        "firstTextMs": 3459.2,
+        "streamMs": 3062.4,
+        "driftMs": 2.4,
+        "billedSessionSec": null
+      },
+      "partials": 12,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":4}"
+      ],
+      "trace": [
+        {
+          "t": -3118,
+          "type": "session.created"
+        },
+        {
+          "t": -3062,
+          "type": "session.updated"
+        },
+        {
+          "t": 68,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 68,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 71,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 397,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 397,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 403,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 405,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 414,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 414,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 417,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 424,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 427,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 432,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 434,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 439,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 639,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "alaska",
+          "9",
+          "3",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "4",
+          "right"
+        ],
+        "hypTokens": [
+          "alaska",
+          "9",
+          "3",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "4",
+          "right"
+        ],
+        "wer": {
+          "refWords": 9,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "12",
+      "say": "Delta four, actually, I need you to hold short of three one right, traffic on short final.",
+      "style": "loose",
+      "audioSec": 4.92,
+      "runAt": "2026-11-14T07:47:44.935Z",
+      "transcript": "Delta four, actually I need you to hold short of three one right, traffic on short final.",
+      "latencyMs": 691,
+      "timings": {
+        "connectMs": 303.4,
+        "firstTextMs": 5345.4,
+        "streamMs": 4921,
+        "driftMs": 1,
+        "billedSessionSec": null
+      },
+      "partials": 20,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":5}"
+      ],
+      "trace": [
+        {
+          "t": -4977,
+          "type": "session.created"
+        },
+        {
+          "t": -4921,
+          "type": "session.updated"
+        },
+        {
+          "t": 74,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 75,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 77,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 424,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 425,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 425,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 426,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 427,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 430,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 437,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 437,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 437,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 437,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 439,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 441,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 443,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 445,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 451,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 451,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 451,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 460,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 467,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 467,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 691,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "actually",
+          "i",
+          "need",
+          "you",
+          "to",
+          "hold",
+          "short",
+          "of",
+          "3",
+          "1",
+          "right",
+          "traffic",
+          "on",
+          "short",
+          "final"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "actually",
+          "i",
+          "need",
+          "you",
+          "to",
+          "hold",
+          "short",
+          "of",
+          "3",
+          "1",
+          "right",
+          "traffic",
+          "on",
+          "short",
+          "final"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "13",
+      "say": "Iberia six two six heavy, hold short of Bravo, you'll have a Delta seven sixty-seven passing left to right.",
+      "style": "loose",
+      "audioSec": 6.48,
+      "runAt": "2026-11-14T07:47:53.421Z",
+      "transcript": "Iberia six two six heavy, hold short of Bravo, you'll have a Delta seven sixty seven passing left to right.",
+      "latencyMs": 629,
+      "timings": {
+        "connectMs": 296.6,
+        "firstTextMs": 6833.4,
+        "streamMs": 6482.2,
+        "driftMs": 2.2,
+        "billedSessionSec": null
+      },
+      "partials": 25,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":7}"
+      ],
+      "trace": [
+        {
+          "t": -6531,
+          "type": "session.created"
+        },
+        {
+          "t": -6482,
+          "type": "session.updated"
+        },
+        {
+          "t": 58,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 58,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 62,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 351,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 351,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 351,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 351,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 351,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 351,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 351,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 358,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 358,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 358,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 359,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 359,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 359,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 364,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 366,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 377,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 377,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 377,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 477,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 477,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 477,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 477,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 477,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 477,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 477,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 629,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "you'll",
+          "have",
+          "a",
+          "delta",
+          "7",
+          "6",
+          "7",
+          "passing",
+          "left",
+          "to",
+          "right"
+        ],
+        "hypTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "you'll",
+          "have",
+          "a",
+          "delta",
+          "7",
+          "6",
+          "7",
+          "passing",
+          "left",
+          "to",
+          "right"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "14",
+      "say": "JetBlue eleven twenty-three, hold position.",
+      "style": "textbook",
+      "audioSec": 3.42,
+      "runAt": "2026-11-14T07:47:58.892Z",
+      "transcript": "JetBlue eleven twenty three hold position.",
+      "latencyMs": 624.5,
+      "timings": {
+        "connectMs": 362.7,
+        "firstTextMs": 3821.5,
+        "streamMs": 3420.5,
+        "driftMs": 0.5,
+        "billedSessionSec": null
+      },
+      "partials": 8,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":4}"
+      ],
+      "trace": [
+        {
+          "t": -3472,
+          "type": "session.created"
+        },
+        {
+          "t": -3421,
+          "type": "session.updated"
+        },
+        {
+          "t": 57,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 57,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 58,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 401,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 401,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 401,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 401,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 401,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 404,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 410,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 413,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 624,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "hold",
+          "position"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "hold",
+          "position"
+        ],
+        "wer": {
+          "refWords": 7,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "15",
+      "say": "Iberia six two six heavy, traffic's by, go ahead and continue, thanks for waiting.",
+      "style": "loose",
+      "audioSec": 4.44,
+      "runAt": "2026-11-14T07:48:05.320Z",
+      "transcript": "Iberia six two six heavy, traffic’s by, go ahead and continue, thanks for waiting.",
+      "latencyMs": 589.3,
+      "timings": {
+        "connectMs": 324.6,
+        "firstTextMs": 4735,
+        "streamMs": 4441.2,
+        "driftMs": 1.2,
+        "billedSessionSec": null
+      },
+      "partials": 21,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":5}"
+      ],
+      "trace": [
+        {
+          "t": -4502,
+          "type": "session.created"
+        },
+        {
+          "t": -4441,
+          "type": "session.updated"
+        },
+        {
+          "t": 101,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 102,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 102,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 294,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 297,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 300,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 306,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 309,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 313,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 318,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 320,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 324,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 328,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 334,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 340,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 343,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 345,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 353,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 353,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 356,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 363,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 396,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 396,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 396,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 589,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "traffic's",
+          "by",
+          "go",
+          "ahead",
+          "and",
+          "continue",
+          "thanks",
+          "for",
+          "waiting"
+        ],
+        "hypTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "traffic's",
+          "by",
+          "go",
+          "ahead",
+          "and",
+          "continue",
+          "thanks",
+          "for",
+          "waiting"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "16",
+      "say": "Speedbird one seven five heavy, stop, stop, hold your position.",
+      "style": "loose",
+      "audioSec": 4.5,
+      "runAt": "2026-11-14T07:48:11.926Z",
+      "transcript": "Speedbird one seven five heavy, stop, stop, hold position.",
+      "latencyMs": 697,
+      "timings": {
+        "connectMs": 337.8,
+        "firstTextMs": 4933.8,
+        "streamMs": 4502,
+        "driftMs": 2,
+        "billedSessionSec": null
+      },
+      "partials": 14,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":5}"
+      ],
+      "trace": [
+        {
+          "t": -4552,
+          "type": "session.created"
+        },
+        {
+          "t": -4502,
+          "type": "session.updated"
+        },
+        {
+          "t": 58,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 59,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 59,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 432,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 436,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 439,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 444,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 458,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 459,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 459,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 462,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 466,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 471,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 476,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 482,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 485,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 493,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 697,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "stop",
+          "stop",
+          "hold",
+          "your",
+          "position"
+        ],
+        "hypTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "stop",
+          "stop",
+          "hold",
+          "position"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 0,
+          "deletions": 1,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "17",
+      "say": "Delta four, cross runway three one right at Kilo Echo.",
+      "style": "textbook",
+      "audioSec": 3.78,
+      "runAt": "2026-11-14T07:48:17.685Z",
+      "transcript": "Delta four cross runway three one right at Kilo Echo.",
+      "latencyMs": 520,
+      "timings": {
+        "connectMs": 321,
+        "firstTextMs": 4078.3,
+        "streamMs": 3782.1,
+        "driftMs": 2.1,
+        "billedSessionSec": null
+      },
+      "partials": 12,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":4}"
+      ],
+      "trace": [
+        {
+          "t": -3838,
+          "type": "session.created"
+        },
+        {
+          "t": -3782,
+          "type": "session.updated"
+        },
+        {
+          "t": 59,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 59,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 60,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 296,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 296,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 297,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 297,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 297,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 298,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 298,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 299,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 302,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 302,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 303,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 304,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 520,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "cross",
+          "runway",
+          "3",
+          "1",
+          "right",
+          "at",
+          "kilo",
+          "echo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "cross",
+          "runway",
+          "3",
+          "1",
+          "right",
+          "at",
+          "kilo",
+          "echo"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "18",
+      "say": "Swiss one seven heavy, go ahead and cross two two right at Yankee, then hold short of Bravo.",
+      "style": "loose",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:48:24.728Z",
+      "transcript": "Swiss one seven heavy, go ahead and cross two two right at Yankee, then hold short of Bravo.",
+      "latencyMs": 676,
+      "timings": {
+        "connectMs": 278.9,
+        "firstTextMs": 5323.6,
+        "streamMs": 4981.9,
+        "driftMs": 1.9,
+        "billedSessionSec": null
+      },
+      "partials": 21,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":5}"
+      ],
+      "trace": [
+        {
+          "t": -5037,
+          "type": "session.created"
+        },
+        {
+          "t": -4982,
+          "type": "session.updated"
+        },
+        {
+          "t": 55,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 56,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 59,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 342,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 345,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 379,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 379,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 379,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 379,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 379,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 380,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 380,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 380,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 380,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 383,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 391,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 393,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 396,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 401,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 404,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 409,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 413,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 417,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 419,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 676,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "swiss",
+          "1",
+          "7",
+          "heavy",
+          "go",
+          "ahead",
+          "and",
+          "cross",
+          "2",
+          "2",
+          "right",
+          "at",
+          "yankee",
+          "then",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "hypTokens": [
+          "swiss",
+          "1",
+          "7",
+          "heavy",
+          "go",
+          "ahead",
+          "and",
+          "cross",
+          "2",
+          "2",
+          "right",
+          "at",
+          "yankee",
+          "then",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 18,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "19",
+      "say": "Qatari seven zero one heavy, at Kilo Echo, cross three one right, then Kilo to three one left.",
+      "style": "loose",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:48:32.485Z",
+      "transcript": "Qatari seven zero one heavy at Kilo Echo, cross three one right then Kilo to three one left.",
+      "latencyMs": 649.6,
+      "timings": {
+        "connectMs": 274.1,
+        "firstTextMs": 6107.5,
+        "streamMs": 5761.1,
+        "driftMs": 1.1,
+        "billedSessionSec": null
+      },
+      "partials": 24,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":6}"
+      ],
+      "trace": [
+        {
+          "t": -5807,
+          "type": "session.created"
+        },
+        {
+          "t": -5761,
+          "type": "session.updated"
+        },
+        {
+          "t": 72,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 74,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 74,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 346,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 348,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 353,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 353,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 355,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 357,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 358,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 361,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 362,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 365,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 367,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 369,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 371,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 377,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 377,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 377,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 379,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 382,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 386,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 386,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 388,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 444,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 446,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 448,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 650,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "qatari",
+          "7",
+          "0",
+          "1",
+          "heavy",
+          "at",
+          "kilo",
+          "echo",
+          "cross",
+          "3",
+          "1",
+          "right",
+          "then",
+          "kilo",
+          "to",
+          "3",
+          "1",
+          "left"
+        ],
+        "hypTokens": [
+          "qatari",
+          "7",
+          "0",
+          "1",
+          "heavy",
+          "at",
+          "kilo",
+          "echo",
+          "cross",
+          "3",
+          "1",
+          "right",
+          "then",
+          "kilo",
+          "to",
+          "3",
+          "1",
+          "left"
+        ],
+        "wer": {
+          "refWords": 18,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "20",
+      "say": "Air France two three heavy, exit the line at the next left, Kilo Delta, and hold on the pad.",
+      "style": "textbook",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:48:39.442Z",
+      "transcript": "Air France two three heavy exit the line at the next left Kilo Delta and hold on the pad.",
+      "latencyMs": 540.9,
+      "timings": {
+        "connectMs": 349.2,
+        "firstTextMs": 5216,
+        "streamMs": 4981.2,
+        "driftMs": 1.2,
+        "billedSessionSec": null
+      },
+      "partials": 21,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":5}"
+      ],
+      "trace": [
+        {
+          "t": -5042,
+          "type": "session.created"
+        },
+        {
+          "t": -4981,
+          "type": "session.updated"
+        },
+        {
+          "t": 55,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 56,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 56,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 235,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 235,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 238,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 246,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 246,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 251,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 254,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 261,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 263,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 267,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 271,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 277,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 284,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 284,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 287,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 292,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 296,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 300,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 329,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 329,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 329,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 541,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "air",
+          "france",
+          "2",
+          "3",
+          "heavy",
+          "exit",
+          "the",
+          "line",
+          "at",
+          "the",
+          "next",
+          "left",
+          "kilo",
+          "delta",
+          "and",
+          "hold",
+          "on",
+          "the",
+          "pad"
+        ],
+        "hypTokens": [
+          "air",
+          "france",
+          "2",
+          "3",
+          "heavy",
+          "exit",
+          "the",
+          "line",
+          "at",
+          "the",
+          "next",
+          "left",
+          "kilo",
+          "delta",
+          "and",
+          "hold",
+          "on",
+          "the",
+          "pad"
+        ],
+        "wer": {
+          "refWords": 19,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "21",
+      "say": "Delta twelve oh four, bad news, ground stop for Atlanta, take the next right at Kilo Charlie and head over to the penalty box.",
+      "style": "loose",
+      "audioSec": 7.26,
+      "runAt": "2026-11-14T07:48:48.868Z",
+      "transcript": "Delta twelve oh four, bad news, ground stop for Atlanta. Take the next right at Kilo Charlie and head over to the penalty box.",
+      "latencyMs": 596.3,
+      "timings": {
+        "connectMs": 440.1,
+        "firstTextMs": 7568.2,
+        "streamMs": 7261.7,
+        "driftMs": 1.7,
+        "billedSessionSec": null
+      },
+      "partials": 29,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":8}"
+      ],
+      "trace": [
+        {
+          "t": -7447,
+          "type": "session.created"
+        },
+        {
+          "t": -7262,
+          "type": "session.updated"
+        },
+        {
+          "t": 61,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 63,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 63,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 306,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 309,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 309,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 312,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 313,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 317,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 317,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 317,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 318,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 319,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 321,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 323,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 323,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 327,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 329,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 333,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 338,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 341,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 346,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 350,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 356,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 358,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 363,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 367,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 371,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 379,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 381,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 384,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 388,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 596,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "1",
+          "2",
+          "0",
+          "4",
+          "bad",
+          "news",
+          "ground",
+          "stop",
+          "for",
+          "atlanta",
+          "take",
+          "the",
+          "next",
+          "right",
+          "at",
+          "kilo",
+          "charlie",
+          "and",
+          "head",
+          "over",
+          "to",
+          "the",
+          "penalty",
+          "box"
+        ],
+        "hypTokens": [
+          "delta",
+          "1",
+          "2",
+          "0",
+          "4",
+          "bad",
+          "news",
+          "ground",
+          "stop",
+          "for",
+          "atlanta",
+          "take",
+          "the",
+          "next",
+          "right",
+          "at",
+          "kilo",
+          "charlie",
+          "and",
+          "head",
+          "over",
+          "to",
+          "the",
+          "penalty",
+          "box"
+        ],
+        "wer": {
+          "refWords": 25,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "22",
+      "say": "JetBlue six one five, release time one four five two for you, taxi to the pad via Alpha, Kilo Kilo, and sit tight.",
+      "style": "loose",
+      "audioSec": 8.04,
+      "runAt": "2026-11-14T07:48:58.848Z",
+      "transcript": "JetBlue six one five release time one four five two for you taxi to the pad via Alpha Kilo Kilo and sit tight.",
+      "latencyMs": 561.2,
+      "timings": {
+        "connectMs": 287.4,
+        "firstTextMs": 8296.8,
+        "streamMs": 8042.7,
+        "driftMs": 2.7,
+        "billedSessionSec": null
+      },
+      "partials": 27,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":9}"
+      ],
+      "trace": [
+        {
+          "t": -8091,
+          "type": "session.created"
+        },
+        {
+          "t": -8043,
+          "type": "session.updated"
+        },
+        {
+          "t": 59,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 59,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 61,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 254,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 257,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 262,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 265,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 270,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 273,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 277,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 286,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 286,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 289,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 295,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 298,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 305,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 305,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 311,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 319,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 319,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 323,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 327,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 330,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 335,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 338,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 343,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 347,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 351,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 356,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 360,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 561,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "release",
+          "time",
+          "1",
+          "4",
+          "5",
+          "2",
+          "for",
+          "you",
+          "taxi",
+          "to",
+          "the",
+          "pad",
+          "via",
+          "alpha",
+          "kilo",
+          "kilo",
+          "and",
+          "sit",
+          "tight"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "release",
+          "time",
+          "1",
+          "4",
+          "5",
+          "2",
+          "for",
+          "you",
+          "taxi",
+          "to",
+          "the",
+          "pad",
+          "via",
+          "alpha",
+          "kilo",
+          "kilo",
+          "and",
+          "sit",
+          "tight"
+        ],
+        "wer": {
+          "refWords": 23,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "23",
+      "say": "Virgin three, roger, taxi to the penalty box via Kilo Foxtrot, Bravo, and let me know when your gate opens up.",
+      "style": "loose",
+      "audioSec": 7.62,
+      "runAt": "2026-11-14T07:49:08.779Z",
+      "transcript": "Virgin three, roger. Taxi to the penalty box via Kilo Foxtrot, Bravo, and let me know when your gate opens up.",
+      "latencyMs": 763.2,
+      "timings": {
+        "connectMs": 429.4,
+        "firstTextMs": 8019.5,
+        "streamMs": 7621.6,
+        "driftMs": 1.6,
+        "billedSessionSec": null
+      },
+      "partials": 30,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":8}"
+      ],
+      "trace": [
+        {
+          "t": -7745,
+          "type": "session.created"
+        },
+        {
+          "t": -7622,
+          "type": "session.updated"
+        },
+        {
+          "t": 81,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 81,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 83,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 398,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 402,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 407,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 436,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 440,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 440,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 440,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 440,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 440,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 440,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 442,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 445,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 451,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 456,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 459,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 461,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 467,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 470,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 477,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 481,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 488,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 492,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 496,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 501,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 513,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 513,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 514,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 517,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 521,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 554,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 763,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "virgin",
+          "3",
+          "roger",
+          "taxi",
+          "to",
+          "the",
+          "penalty",
+          "box",
+          "via",
+          "kilo",
+          "foxtrot",
+          "bravo",
+          "and",
+          "let",
+          "me",
+          "know",
+          "when",
+          "your",
+          "gate",
+          "opens",
+          "up"
+        ],
+        "hypTokens": [
+          "virgin",
+          "3",
+          "roger",
+          "taxi",
+          "to",
+          "the",
+          "penalty",
+          "box",
+          "via",
+          "kilo",
+          "foxtrot",
+          "bravo",
+          "and",
+          "let",
+          "me",
+          "know",
+          "when",
+          "your",
+          "gate",
+          "opens",
+          "up"
+        ],
+        "wer": {
+          "refWords": 21,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "24",
+      "say": "Speedbird one seven five heavy, number two for departure, monitor tower one one niner point one.",
+      "style": "textbook",
+      "audioSec": 6.24,
+      "runAt": "2026-11-14T07:49:17.170Z",
+      "transcript": "Speedbird one seven five heavy, number two for departure, monitor tower one one niner point one.",
+      "latencyMs": 617.1,
+      "timings": {
+        "connectMs": 317.2,
+        "firstTextMs": 6522.6,
+        "streamMs": 6239.6,
+        "driftMs": -0.4,
+        "billedSessionSec": null
+      },
+      "partials": 21,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":7}"
+      ],
+      "trace": [
+        {
+          "t": -6293,
+          "type": "session.created"
+        },
+        {
+          "t": -6240,
+          "type": "session.updated"
+        },
+        {
+          "t": 60,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 60,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 63,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 283,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 286,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 290,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 295,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 299,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 303,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 310,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 311,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 318,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 320,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 325,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 329,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 334,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 344,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 344,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 349,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 351,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 356,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 360,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 363,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 368,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 617,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "number",
+          "2",
+          "for",
+          "departure",
+          "monitor",
+          "tower",
+          "1",
+          "1",
+          "9",
+          "1"
+        ],
+        "hypTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "number",
+          "2",
+          "for",
+          "departure",
+          "monitor",
+          "tower",
+          "1",
+          "1",
+          "9",
+          "1"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "25",
+      "say": "Emirates two zero two heavy, contact ramp, so long.",
+      "style": "loose",
+      "audioSec": 4.02,
+      "runAt": "2026-11-14T07:49:23.179Z",
+      "transcript": "Emirates two zero two heavy, contact ramp, so long.",
+      "latencyMs": 567.8,
+      "timings": {
+        "connectMs": 344.6,
+        "firstTextMs": 4332.2,
+        "streamMs": 4021.7,
+        "driftMs": 1.7,
+        "billedSessionSec": null
+      },
+      "partials": 14,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":5}"
+      ],
+      "trace": [
+        {
+          "t": -4114,
+          "type": "session.created"
+        },
+        {
+          "t": -4022,
+          "type": "session.updated"
+        },
+        {
+          "t": 72,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 74,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 75,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 311,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 312,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 322,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 324,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 326,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 331,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 334,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 340,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 341,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 353,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 361,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 361,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 361,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 366,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 568,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "contact",
+          "ramp",
+          "so",
+          "long"
+        ],
+        "hypTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "contact",
+          "ramp",
+          "so",
+          "long"
+        ],
+        "wer": {
+          "refWords": 9,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "26",
+      "say": "Delta four, negative, hold short of Bravo, hold short Bravo.",
+      "style": "textbook",
+      "audioSec": 3.9,
+      "runAt": "2026-11-14T07:49:29.068Z",
+      "transcript": "Delta four negative, hold short of Bravo, hold short Bravo.",
+      "latencyMs": 568.1,
+      "timings": {
+        "connectMs": 355.1,
+        "firstTextMs": 4199.7,
+        "streamMs": 3899.5,
+        "driftMs": -0.5,
+        "billedSessionSec": null
+      },
+      "partials": 13,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":4}"
+      ],
+      "trace": [
+        {
+          "t": -3946,
+          "type": "session.created"
+        },
+        {
+          "t": -3900,
+          "type": "session.updated"
+        },
+        {
+          "t": 147,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 148,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 148,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 300,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 350,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 350,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 353,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 355,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 357,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 357,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 391,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 391,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 391,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 391,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 391,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 391,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 568,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "negative",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "negative",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "27",
+      "say": "Lufthansa four zero five heavy, negative, that's a right turn on Kilo Echo, right Kilo Echo.",
+      "style": "loose",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:49:37.040Z",
+      "transcript": "Lufthansa four zero five heavy, negative, that's a right turn on Kilo Echo, right on Kilo Echo.",
+      "latencyMs": 690,
+      "timings": {
+        "connectMs": 357.9,
+        "firstTextMs": 6194.5,
+        "streamMs": 5761,
+        "driftMs": 1,
+        "billedSessionSec": null
+      },
+      "partials": 24,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":6}"
+      ],
+      "trace": [
+        {
+          "t": -5826,
+          "type": "session.created"
+        },
+        {
+          "t": -5761,
+          "type": "session.updated"
+        },
+        {
+          "t": 66,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 66,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 67,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 433,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 435,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 438,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 440,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 442,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 445,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 446,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 448,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 449,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 451,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 451,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 454,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 466,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 466,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 466,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 466,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 466,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 466,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 481,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 481,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 481,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 482,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 482,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 482,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 690,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "negative",
+          "that's",
+          "a",
+          "right",
+          "turn",
+          "on",
+          "kilo",
+          "echo",
+          "right",
+          "kilo",
+          "echo"
+        ],
+        "hypTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "negative",
+          "that's",
+          "a",
+          "right",
+          "turn",
+          "on",
+          "kilo",
+          "echo",
+          "right",
+          "on",
+          "kilo",
+          "echo"
+        ],
+        "wer": {
+          "refWords": 16,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "28",
+      "say": "American one hundred, nope, departure runway is three one left, not right.",
+      "style": "loose",
+      "audioSec": 4.86,
+      "runAt": "2026-11-14T07:49:43.954Z",
+      "transcript": "American one hundred, nope, departure runway is three one left, not right.",
+      "latencyMs": 621.1,
+      "timings": {
+        "connectMs": 354.3,
+        "firstTextMs": 5221.3,
+        "streamMs": 4860,
+        "driftMs": 0,
+        "billedSessionSec": null
+      },
+      "partials": 16,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":5}"
+      ],
+      "trace": [
+        {
+          "t": -4988,
+          "type": "session.created"
+        },
+        {
+          "t": -4860,
+          "type": "session.updated"
+        },
+        {
+          "t": 98,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 98,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 98,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 361,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 361,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 364,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 370,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 372,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 376,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 381,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 412,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 417,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 417,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 417,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 417,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 417,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 417,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 420,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 420,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 621,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "nope",
+          "departure",
+          "runway",
+          "is",
+          "3",
+          "1",
+          "left",
+          "not",
+          "right"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "nope",
+          "departure",
+          "runway",
+          "is",
+          "3",
+          "1",
+          "left",
+          "not",
+          "right"
+        ],
+        "wer": {
+          "refWords": 13,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "29",
+      "say": "Shamrock one zero four, negative, you've got them backwards, it's Alpha, Juliet, hold short Bravo.",
+      "style": "loose",
+      "audioSec": 6.54,
+      "runAt": "2026-11-14T07:49:52.809Z",
+      "transcript": "Shamrock one zero four negative, you've got that backwards, it's Alpha Juliet, hold short Bravo.",
+      "latencyMs": 750.3,
+      "timings": {
+        "connectMs": 463.3,
+        "firstTextMs": 6940.7,
+        "streamMs": 6542.4,
+        "driftMs": 2.4,
+        "billedSessionSec": null
+      },
+      "partials": 21,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":7}"
+      ],
+      "trace": [
+        {
+          "t": -6733,
+          "type": "session.created"
+        },
+        {
+          "t": -6543,
+          "type": "session.updated"
+        },
+        {
+          "t": 64,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 64,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 66,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 398,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 401,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 404,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 410,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 413,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 417,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 423,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 425,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 429,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 433,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 438,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 443,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 446,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 450,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 455,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 461,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 461,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 466,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 471,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 475,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 479,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 750,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "negative",
+          "you've",
+          "got",
+          "them",
+          "backwards",
+          "it's",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "negative",
+          "you've",
+          "got",
+          "that",
+          "backwards",
+          "it's",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "30",
+      "say": "KLM six four four heavy, sorry, you got stepped on, go ahead and say again.",
+      "style": "loose",
+      "audioSec": 4.44,
+      "runAt": "2026-11-14T07:49:59.313Z",
+      "transcript": "KLM six four four heavy, sorry you got stepped on. Go ahead and say it again.",
+      "latencyMs": 714.7,
+      "timings": {
+        "connectMs": 283.2,
+        "firstTextMs": 4906,
+        "streamMs": 4441.1,
+        "driftMs": 1.1,
+        "billedSessionSec": null
+      },
+      "partials": 20,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":5}"
+      ],
+      "trace": [
+        {
+          "t": -4488,
+          "type": "session.created"
+        },
+        {
+          "t": -4441,
+          "type": "session.updated"
+        },
+        {
+          "t": 72,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 74,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 74,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 465,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 466,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 466,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 466,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 715,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "klm",
+          "6",
+          "4",
+          "4",
+          "heavy",
+          "sorry",
+          "you",
+          "got",
+          "stepped",
+          "on",
+          "go",
+          "ahead",
+          "and",
+          "say",
+          "again"
+        ],
+        "hypTokens": [
+          "klm",
+          "6",
+          "4",
+          "4",
+          "heavy",
+          "sorry",
+          "you",
+          "got",
+          "stepped",
+          "on",
+          "go",
+          "ahead",
+          "and",
+          "say",
+          "it",
+          "again"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "31",
+      "say": "Aircraft calling Kennedy Ground, say again your callsign.",
+      "style": "textbook",
+      "audioSec": 3.6,
+      "runAt": "2026-11-14T07:50:04.876Z",
+      "transcript": "Aircraft calling Kennedy Ground, say again your callsign.",
+      "latencyMs": 559.3,
+      "timings": {
+        "connectMs": 319.6,
+        "firstTextMs": 3858.2,
+        "streamMs": 3599.9,
+        "driftMs": -0.1,
+        "billedSessionSec": null
+      },
+      "partials": 11,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":4}"
+      ],
+      "trace": [
+        {
+          "t": -3646,
+          "type": "session.created"
+        },
+        {
+          "t": -3600,
+          "type": "session.updated"
+        },
+        {
+          "t": 61,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 64,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 64,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 258,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 262,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 321,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 321,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 324,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 326,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 328,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 330,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 332,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 332,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 332,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 559,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "aircraft",
+          "calling",
+          "kennedy",
+          "ground",
+          "say",
+          "again",
+          "your",
+          "callsign"
+        ],
+        "hypTokens": [
+          "aircraft",
+          "calling",
+          "kennedy",
+          "ground",
+          "say",
+          "again",
+          "your",
+          "callsign"
+        ],
+        "wer": {
+          "refWords": 8,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "32",
+      "say": "Brickyard thirty-five sixty, ground stop for Boston, expect about twenty minutes.",
+      "style": "textbook",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:50:12.781Z",
+      "transcript": "Brickyard thirty five sixty, ground stop for Boston, expect twenty thirty minutes.",
+      "latencyMs": 769.9,
+      "timings": {
+        "connectMs": 311.1,
+        "firstTextMs": 6287.4,
+        "streamMs": 5761.6,
+        "driftMs": 1.6,
+        "billedSessionSec": null
+      },
+      "partials": 17,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":6}"
+      ],
+      "trace": [
+        {
+          "t": -5818,
+          "type": "session.created"
+        },
+        {
+          "t": -5762,
+          "type": "session.updated"
+        },
+        {
+          "t": 64,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 65,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 65,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 526,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 530,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 534,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 543,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 543,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 546,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 552,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 556,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 560,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 564,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 567,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 575,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 577,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 582,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 679,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 679,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 679,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 770,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "brickyard",
+          "3",
+          "5",
+          "6",
+          "0",
+          "ground",
+          "stop",
+          "for",
+          "boston",
+          "expect",
+          "about",
+          "2",
+          "0",
+          "minutes"
+        ],
+        "hypTokens": [
+          "brickyard",
+          "3",
+          "5",
+          "6",
+          "0",
+          "ground",
+          "stop",
+          "for",
+          "boston",
+          "expect",
+          "2",
+          "0",
+          "3",
+          "0",
+          "minutes"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "33",
+      "say": "United fourteen sixteen, hold for release, expect one five minutes departure delay.",
+      "style": "textbook",
+      "audioSec": 5.1,
+      "runAt": "2026-11-14T07:50:19.815Z",
+      "transcript": "United fourteen sixteen hold for release expect one five minutes departure delay.",
+      "latencyMs": 513.7,
+      "timings": {
+        "connectMs": 298.1,
+        "firstTextMs": 5326.4,
+        "streamMs": 5100.7,
+        "driftMs": 0.7,
+        "billedSessionSec": null
+      },
+      "partials": 13,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":6}"
+      ],
+      "trace": [
+        {
+          "t": -5154,
+          "type": "session.created"
+        },
+        {
+          "t": -5101,
+          "type": "session.updated"
+        },
+        {
+          "t": 61,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 61,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 63,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 226,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 229,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 234,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 238,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 243,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 248,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 253,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 256,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 261,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 266,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 270,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 275,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 279,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 514,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "united",
+          "1",
+          "4",
+          "1",
+          "6",
+          "hold",
+          "for",
+          "release",
+          "expect",
+          "1",
+          "5",
+          "minutes",
+          "departure",
+          "delay"
+        ],
+        "hypTokens": [
+          "united",
+          "1",
+          "4",
+          "1",
+          "6",
+          "hold",
+          "for",
+          "release",
+          "expect",
+          "1",
+          "5",
+          "minutes",
+          "departure",
+          "delay"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "34",
+      "say": "JetBlue eleven twenty-three, give way to the Emirates heavy coming off Kilo Echo, then follow him on Alpha.",
+      "style": "loose",
+      "audioSec": 5.94,
+      "runAt": "2026-11-14T07:50:27.923Z",
+      "transcript": "JetBlue eleven twenty three give way to the Emirates heavy coming off Kilo Echo then follow him on Alpha.",
+      "latencyMs": 610.9,
+      "timings": {
+        "connectMs": 332.9,
+        "firstTextMs": 6243.1,
+        "streamMs": 5939.6,
+        "driftMs": -0.4,
+        "billedSessionSec": null
+      },
+      "partials": 22,
+      "error": null,
+      "lateText": null,
+      "notes": [
+        "server echo: model=gpt-transcribe delay=(absent) prompt=set keywords=87 languages=en format={\"type\":\"audio/pcm\",\"rate\":24000} turn_detection=null",
+        "usage: {\"type\":\"duration\",\"seconds\":6}"
+      ],
+      "trace": [
+        {
+          "t": -6017,
+          "type": "session.created"
+        },
+        {
+          "t": -5940,
+          "type": "session.updated"
+        },
+        {
+          "t": 72,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "t": 72,
+          "type": "conversation.item.added"
+        },
+        {
+          "t": 72,
+          "type": "conversation.item.done"
+        },
+        {
+          "t": 303,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 306,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 311,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 316,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 319,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 323,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 328,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 332,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 335,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 340,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 344,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 357,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 357,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 358,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 364,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 366,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 371,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 376,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 409,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 410,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 410,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 410,
+          "type": "conversation.item.input_audio_transcription.delta"
+        },
+        {
+          "t": 611,
+          "type": "conversation.item.input_audio_transcription.completed"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "give",
+          "way",
+          "to",
+          "the",
+          "emirates",
+          "heavy",
+          "coming",
+          "off",
+          "kilo",
+          "echo",
+          "then",
+          "follow",
+          "him",
+          "on",
+          "alpha"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "give",
+          "way",
+          "to",
+          "the",
+          "emirates",
+          "heavy",
+          "coming",
+          "off",
+          "kilo",
+          "echo",
+          "then",
+          "follow",
+          "him",
+          "on",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    }
+  ]
+}

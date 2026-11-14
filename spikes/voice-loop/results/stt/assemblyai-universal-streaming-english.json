@@ -1,0 +1,6528 @@
+{
+  "candidate": "assemblyai-universal-streaming-english",
+  "provider": "assemblyai",
+  "model": "universal-streaming-english",
+  "pricing": {
+    "basis": "session",
+    "perMin": 0.0031666666666666666,
+    "note": "$0.15/hr + $0.04/hr keyterms, on session time"
+  },
+  "config": {
+    "vocabTerms": 87,
+    "speech_model": "universal-streaming-english",
+    "format_turns": false,
+    "min_turn_silence": 5000,
+    "max_turn_silence": 5000,
+    "endOfTurn": "Terminate"
+  },
+  "method": {
+    "chunkMs": 80,
+    "pacing": "chunk sent when its last sample would have been spoken (start + audio time of chunk end); tails < 20 ms merged into the previous chunk",
+    "session": "one fresh WebSocket session per clip, opened and configured before audio starts (connect time is not in latency)",
+    "latency": "performance.now() at final-transcript message arrival minus performance.now() just after the last audio chunk was handed to the socket; the end-of-turn signal is sent immediately after the last chunk",
+    "normalization": "stt/normalize.ts (lowercase, punctuation stripped, numbers to single digits, spelling equivalences)",
+    "wer": "corpus-level: total substitutions+deletions+insertions / total reference tokens; a line with no transcript counts as all deleted",
+    "criticalTokens": "results/stt/critical-tokens.json, matched by stt/critical.ts",
+    "p95": "nearest rank (ceil(0.95 n)-th smallest)"
+  },
+  "updatedAt": "2026-11-14T08:01:45.296Z",
+  "summary": {
+    "lines": 34,
+    "withFinal": 34,
+    "errors": [],
+    "lateText": [],
+    "latencyMs": {
+      "median": 616.4,
+      "p95": 748.8,
+      "min": 553.3,
+      "max": 1231.8,
+      "withinBudget": 0
+    },
+    "firstTextMs": {
+      "median": 1874.2
+    },
+    "wer": 0.050359712230215826,
+    "critical": {
+      "overall": 0.9578947368421052,
+      "callsign": 1,
+      "runways": 0.8181818181818182,
+      "taxiways": 1,
+      "holdShort": 0.875
+    },
+    "criticalCounts": {
+      "callsign": {
+        "expected": 33,
+        "found": 33
+      },
+      "runways": {
+        "expected": 11,
+        "found": 9
+      },
+      "taxiways": {
+        "expected": 35,
+        "found": 35
+      },
+      "holdShort": {
+        "expected": 16,
+        "found": 14
+      }
+    },
+    "linesAllCriticalCorrect": 31,
+    "audioSec": 206.22,
+    "billedSessionSec": 241,
+    "peakCostPerHr": {
+      "low": 0.095,
+      "high": 0.19,
+      "measured": 0.11102220929104839
+    }
+  },
+  "lines": [
+    {
+      "num": "01",
+      "say": "Delta four, runway three one left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.",
+      "style": "textbook",
+      "audioSec": 6.3,
+      "runAt": "2026-11-14T07:41:19.290Z",
+      "transcript": "delta four runway 31 left taxi via alpha right on kilo echo hold short of bravo",
+      "latencyMs": 686.1,
+      "timings": {
+        "connectMs": 371.2,
+        "firstTextMs": 1518.3,
+        "streamMs": 6302.2,
+        "driftMs": 2.2,
+        "billedSessionSec": 7
+      },
+      "partials": 22,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6302,
+          "type": "Begin"
+        },
+        {
+          "t": -5183,
+          "type": "Turn"
+        },
+        {
+          "t": -4855,
+          "type": "Turn"
+        },
+        {
+          "t": -4784,
+          "type": "Turn"
+        },
+        {
+          "t": -4250,
+          "type": "Turn"
+        },
+        {
+          "t": -4057,
+          "type": "Turn"
+        },
+        {
+          "t": -3896,
+          "type": "Turn"
+        },
+        {
+          "t": -3650,
+          "type": "Turn"
+        },
+        {
+          "t": -3435,
+          "type": "Turn"
+        },
+        {
+          "t": -2799,
+          "type": "Turn"
+        },
+        {
+          "t": -2632,
+          "type": "Turn"
+        },
+        {
+          "t": -2403,
+          "type": "Turn"
+        },
+        {
+          "t": -2223,
+          "type": "Turn"
+        },
+        {
+          "t": -2049,
+          "type": "Turn"
+        },
+        {
+          "t": -1439,
+          "type": "Turn"
+        },
+        {
+          "t": -1384,
+          "type": "Turn"
+        },
+        {
+          "t": -1282,
+          "type": "Turn"
+        },
+        {
+          "t": -1008,
+          "type": "Turn"
+        },
+        {
+          "t": -879,
+          "type": "Turn"
+        },
+        {
+          "t": -715,
+          "type": "Turn"
+        },
+        {
+          "t": -316,
+          "type": "Turn"
+        },
+        {
+          "t": -248,
+          "type": "Turn"
+        },
+        {
+          "t": -73,
+          "type": "Turn"
+        },
+        {
+          "t": 70,
+          "type": "Turn"
+        },
+        {
+          "t": 171,
+          "type": "Turn"
+        },
+        {
+          "t": 686,
+          "type": "Turn"
+        },
+        {
+          "t": 952,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "02",
+      "say": "JetBlue eleven twenty-three, three one left, taxi via Alpha, Kilo Delta, hold short of Bravo and hold short of runway three one right.",
+      "style": "textbook",
+      "audioSec": 8.94,
+      "runAt": "2026-11-14T07:41:29.672Z",
+      "transcript": "jetblue 11231 left taxi via alpha kilo delta hold short of bravo and hold short of runway 3-1 right",
+      "latencyMs": 582,
+      "timings": {
+        "connectMs": 427,
+        "firstTextMs": 1874.2,
+        "streamMs": 8940,
+        "driftMs": 0,
+        "billedSessionSec": 10
+      },
+      "partials": 30,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8940,
+          "type": "Begin"
+        },
+        {
+          "t": -7825,
+          "type": "Turn"
+        },
+        {
+          "t": -7519,
+          "type": "Turn"
+        },
+        {
+          "t": -7066,
+          "type": "Turn"
+        },
+        {
+          "t": -6884,
+          "type": "Turn"
+        },
+        {
+          "t": -6594,
+          "type": "Turn"
+        },
+        {
+          "t": -5676,
+          "type": "Turn"
+        },
+        {
+          "t": -5357,
+          "type": "Turn"
+        },
+        {
+          "t": -4875,
+          "type": "Turn"
+        },
+        {
+          "t": -4676,
+          "type": "Turn"
+        },
+        {
+          "t": -4502,
+          "type": "Turn"
+        },
+        {
+          "t": -4201,
+          "type": "Turn"
+        },
+        {
+          "t": -4049,
+          "type": "Turn"
+        },
+        {
+          "t": -3679,
+          "type": "Turn"
+        },
+        {
+          "t": -3321,
+          "type": "Turn"
+        },
+        {
+          "t": -3100,
+          "type": "Turn"
+        },
+        {
+          "t": -2905,
+          "type": "Turn"
+        },
+        {
+          "t": -2263,
+          "type": "Turn"
+        },
+        {
+          "t": -1868,
+          "type": "Turn"
+        },
+        {
+          "t": -1833,
+          "type": "Turn"
+        },
+        {
+          "t": -1765,
+          "type": "Turn"
+        },
+        {
+          "t": -1464,
+          "type": "Turn"
+        },
+        {
+          "t": -1272,
+          "type": "Turn"
+        },
+        {
+          "t": -1063,
+          "type": "Turn"
+        },
+        {
+          "t": -964,
+          "type": "Turn"
+        },
+        {
+          "t": -804,
+          "type": "Turn"
+        },
+        {
+          "t": -633,
+          "type": "Turn"
+        },
+        {
+          "t": -566,
+          "type": "Turn"
+        },
+        {
+          "t": -120,
+          "type": "Turn"
+        },
+        {
+          "t": 59,
+          "type": "Turn"
+        },
+        {
+          "t": 92,
+          "type": "Turn"
+        },
+        {
+          "t": 191,
+          "type": "Turn"
+        },
+        {
+          "t": 291,
+          "type": "Turn"
+        },
+        {
+          "t": 582,
+          "type": "Turn"
+        },
+        {
+          "t": 932,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "and",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "3",
+          "1",
+          "right"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "and",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "3",
+          "1",
+          "right"
+        ],
+        "wer": {
+          "refWords": 25,
+          "substitutions": 0,
+          "deletions": 1,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "three one left"
+            ]
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "03",
+      "say": "American one hundred, okay, three one left, go ahead and take Alpha to Kilo Foxtrot, hold short three one right.",
+      "style": "loose",
+      "audioSec": 6.78,
+      "runAt": "2026-11-14T07:41:37.972Z",
+      "transcript": "american 100 okay 3-1 left go ahead and take alpha kilo foxtrot hold short 3-1 right",
+      "latencyMs": 572.4,
+      "timings": {
+        "connectMs": 475.2,
+        "firstTextMs": 1683,
+        "streamMs": 6782.4,
+        "driftMs": 2.4,
+        "billedSessionSec": 8
+      },
+      "partials": 28,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6782,
+          "type": "Begin"
+        },
+        {
+          "t": -5715,
+          "type": "Turn"
+        },
+        {
+          "t": -5608,
+          "type": "Turn"
+        },
+        {
+          "t": -5099,
+          "type": "Turn"
+        },
+        {
+          "t": -4494,
+          "type": "Turn"
+        },
+        {
+          "t": -4325,
+          "type": "Turn"
+        },
+        {
+          "t": -3977,
+          "type": "Turn"
+        },
+        {
+          "t": -3674,
+          "type": "Turn"
+        },
+        {
+          "t": -3674,
+          "type": "Turn"
+        },
+        {
+          "t": -3567,
+          "type": "Turn"
+        },
+        {
+          "t": -3310,
+          "type": "Turn"
+        },
+        {
+          "t": -3210,
+          "type": "Turn"
+        },
+        {
+          "t": -2954,
+          "type": "Turn"
+        },
+        {
+          "t": -2918,
+          "type": "Turn"
+        },
+        {
+          "t": -2881,
+          "type": "Turn"
+        },
+        {
+          "t": -2394,
+          "type": "Turn"
+        },
+        {
+          "t": -2147,
+          "type": "Turn"
+        },
+        {
+          "t": -1761,
+          "type": "Turn"
+        },
+        {
+          "t": -1711,
+          "type": "Turn"
+        },
+        {
+          "t": -1585,
+          "type": "Turn"
+        },
+        {
+          "t": -1513,
+          "type": "Turn"
+        },
+        {
+          "t": -1368,
+          "type": "Turn"
+        },
+        {
+          "t": -1239,
+          "type": "Turn"
+        },
+        {
+          "t": -472,
+          "type": "Turn"
+        },
+        {
+          "t": -306,
+          "type": "Turn"
+        },
+        {
+          "t": 23,
+          "type": "Turn"
+        },
+        {
+          "t": 111,
+          "type": "Turn"
+        },
+        {
+          "t": 151,
+          "type": "Turn"
+        },
+        {
+          "t": 214,
+          "type": "Turn"
+        },
+        {
+          "t": 294,
+          "type": "Turn"
+        },
+        {
+          "t": 340,
+          "type": "Turn"
+        },
+        {
+          "t": 572,
+          "type": "Turn"
+        },
+        {
+          "t": 944,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "okay",
+          "3",
+          "1",
+          "left",
+          "go",
+          "ahead",
+          "and",
+          "take",
+          "alpha",
+          "to",
+          "kilo",
+          "foxtrot",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "okay",
+          "3",
+          "1",
+          "left",
+          "go",
+          "ahead",
+          "and",
+          "take",
+          "alpha",
+          "kilo",
+          "foxtrot",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right"
+        ],
+        "wer": {
+          "refWords": 21,
+          "substitutions": 0,
+          "deletions": 1,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "04",
+      "say": "Shamrock one zero four, three one left, Alpha, Juliet, hold short Bravo.",
+      "style": "loose",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:41:44.448Z",
+      "transcript": "shamrock 104 3-1 left alpha juliet hold short bravo",
+      "latencyMs": 717.4,
+      "timings": {
+        "connectMs": 425.8,
+        "firstTextMs": 1914,
+        "streamMs": 4982.4,
+        "driftMs": 2.4,
+        "billedSessionSec": 6
+      },
+      "partials": 14,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4982,
+          "type": "Begin"
+        },
+        {
+          "t": -3920,
+          "type": "Turn"
+        },
+        {
+          "t": -3472,
+          "type": "Turn"
+        },
+        {
+          "t": -3068,
+          "type": "Turn"
+        },
+        {
+          "t": -2722,
+          "type": "Turn"
+        },
+        {
+          "t": -1771,
+          "type": "Turn"
+        },
+        {
+          "t": -1700,
+          "type": "Turn"
+        },
+        {
+          "t": -1532,
+          "type": "Turn"
+        },
+        {
+          "t": -1470,
+          "type": "Turn"
+        },
+        {
+          "t": -1106,
+          "type": "Turn"
+        },
+        {
+          "t": -1062,
+          "type": "Turn"
+        },
+        {
+          "t": -627,
+          "type": "Turn"
+        },
+        {
+          "t": -585,
+          "type": "Turn"
+        },
+        {
+          "t": -148,
+          "type": "Turn"
+        },
+        {
+          "t": 82,
+          "type": "Turn"
+        },
+        {
+          "t": 205,
+          "type": "Turn"
+        },
+        {
+          "t": 311,
+          "type": "Turn"
+        },
+        {
+          "t": 717,
+          "type": "Turn"
+        },
+        {
+          "t": 1012,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 12,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "05",
+      "say": "Lufthansa four zero five heavy, left on Alpha, right Kilo Echo, three one left, hold short three one right, then hold short Kilo.",
+      "style": "loose",
+      "audioSec": 11.1,
+      "runAt": "2026-11-14T07:41:57.114Z",
+      "transcript": "lufthansa 405 heavy left on alpha right on at kilo echo 3-1 left hold short 3-1 right then hold short kilo",
+      "latencyMs": 648.1,
+      "timings": {
+        "connectMs": 478.5,
+        "firstTextMs": 2485.7,
+        "streamMs": 11105.9,
+        "driftMs": 5.9,
+        "billedSessionSec": 12
+      },
+      "partials": 31,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -11106,
+          "type": "Begin"
+        },
+        {
+          "t": -9975,
+          "type": "Turn"
+        },
+        {
+          "t": -9688,
+          "type": "Turn"
+        },
+        {
+          "t": -9234,
+          "type": "Turn"
+        },
+        {
+          "t": -8620,
+          "type": "Turn"
+        },
+        {
+          "t": -8441,
+          "type": "Turn"
+        },
+        {
+          "t": -8225,
+          "type": "Turn"
+        },
+        {
+          "t": -7715,
+          "type": "Turn"
+        },
+        {
+          "t": -7618,
+          "type": "Turn"
+        },
+        {
+          "t": -6638,
+          "type": "Turn"
+        },
+        {
+          "t": -6601,
+          "type": "Turn"
+        },
+        {
+          "t": -6243,
+          "type": "Turn"
+        },
+        {
+          "t": -6067,
+          "type": "Turn"
+        },
+        {
+          "t": -5558,
+          "type": "Turn"
+        },
+        {
+          "t": -5520,
+          "type": "Turn"
+        },
+        {
+          "t": -5240,
+          "type": "Turn"
+        },
+        {
+          "t": -5171,
+          "type": "Turn"
+        },
+        {
+          "t": -4878,
+          "type": "Turn"
+        },
+        {
+          "t": -4775,
+          "type": "Turn"
+        },
+        {
+          "t": -4384,
+          "type": "Turn"
+        },
+        {
+          "t": -3238,
+          "type": "Turn"
+        },
+        {
+          "t": -3117,
+          "type": "Turn"
+        },
+        {
+          "t": -3028,
+          "type": "Turn"
+        },
+        {
+          "t": -2713,
+          "type": "Turn"
+        },
+        {
+          "t": -1593,
+          "type": "Turn"
+        },
+        {
+          "t": -1314,
+          "type": "Turn"
+        },
+        {
+          "t": -1027,
+          "type": "Turn"
+        },
+        {
+          "t": -848,
+          "type": "Turn"
+        },
+        {
+          "t": -812,
+          "type": "Turn"
+        },
+        {
+          "t": -605,
+          "type": "Turn"
+        },
+        {
+          "t": -421,
+          "type": "Turn"
+        },
+        {
+          "t": -262,
+          "type": "Turn"
+        },
+        {
+          "t": 86,
+          "type": "Turn"
+        },
+        {
+          "t": 189,
+          "type": "Turn"
+        },
+        {
+          "t": 266,
+          "type": "Turn"
+        },
+        {
+          "t": 648,
+          "type": "Turn"
+        },
+        {
+          "t": 995,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "left",
+          "on",
+          "alpha",
+          "right",
+          "kilo",
+          "echo",
+          "3",
+          "1",
+          "left",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right",
+          "then",
+          "hold",
+          "short",
+          "kilo"
+        ],
+        "hypTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "left",
+          "on",
+          "alpha",
+          "right",
+          "on",
+          "at",
+          "kilo",
+          "echo",
+          "3",
+          "1",
+          "left",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right",
+          "then",
+          "hold",
+          "short",
+          "kilo"
+        ],
+        "wer": {
+          "refWords": 23,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 2
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "06",
+      "say": "Delta twenty-three forty, information Papa is current, altimeter two niner niner two, runway three one left, Alpha, Kilo Delta, hold short Bravo.",
+      "style": "textbook",
+      "audioSec": 11.34,
+      "runAt": "2026-11-14T07:42:25.349Z",
+      "transcript": "delta 2340 information papa is current altimeter 290 niner two runway through one left alpha kilo delta ultra bravo",
+      "latencyMs": 625.7,
+      "timings": {
+        "connectMs": 377.4,
+        "firstTextMs": 2067.6,
+        "streamMs": 11340.6,
+        "driftMs": 0.6,
+        "billedSessionSec": 12
+      },
+      "partials": 33,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -11341,
+          "type": "Begin"
+        },
+        {
+          "t": -10087,
+          "type": "Turn"
+        },
+        {
+          "t": -9735,
+          "type": "Turn"
+        },
+        {
+          "t": -9273,
+          "type": "Turn"
+        },
+        {
+          "t": -9107,
+          "type": "Turn"
+        },
+        {
+          "t": -8941,
+          "type": "Turn"
+        },
+        {
+          "t": -8681,
+          "type": "Turn"
+        },
+        {
+          "t": -7854,
+          "type": "Turn"
+        },
+        {
+          "t": -7075,
+          "type": "Turn"
+        },
+        {
+          "t": -7042,
+          "type": "Turn"
+        },
+        {
+          "t": -6621,
+          "type": "Turn"
+        },
+        {
+          "t": -6554,
+          "type": "Turn"
+        },
+        {
+          "t": -5915,
+          "type": "Turn"
+        },
+        {
+          "t": -5846,
+          "type": "Turn"
+        },
+        {
+          "t": -5605,
+          "type": "Turn"
+        },
+        {
+          "t": -4300,
+          "type": "Turn"
+        },
+        {
+          "t": -4225,
+          "type": "Turn"
+        },
+        {
+          "t": -4079,
+          "type": "Turn"
+        },
+        {
+          "t": -3803,
+          "type": "Turn"
+        },
+        {
+          "t": -3669,
+          "type": "Turn"
+        },
+        {
+          "t": -3480,
+          "type": "Turn"
+        },
+        {
+          "t": -2710,
+          "type": "Turn"
+        },
+        {
+          "t": -2676,
+          "type": "Turn"
+        },
+        {
+          "t": -2479,
+          "type": "Turn"
+        },
+        {
+          "t": -2207,
+          "type": "Turn"
+        },
+        {
+          "t": -2142,
+          "type": "Turn"
+        },
+        {
+          "t": -1316,
+          "type": "Turn"
+        },
+        {
+          "t": -1311,
+          "type": "Turn"
+        },
+        {
+          "t": -1120,
+          "type": "Turn"
+        },
+        {
+          "t": -1025,
+          "type": "Turn"
+        },
+        {
+          "t": -891,
+          "type": "Turn"
+        },
+        {
+          "t": -554,
+          "type": "Turn"
+        },
+        {
+          "t": 54,
+          "type": "Turn"
+        },
+        {
+          "t": 86,
+          "type": "Turn"
+        },
+        {
+          "t": 196,
+          "type": "Turn"
+        },
+        {
+          "t": 322,
+          "type": "Turn"
+        },
+        {
+          "t": 626,
+          "type": "Turn"
+        },
+        {
+          "t": 921,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "2",
+          "3",
+          "4",
+          "0",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "2",
+          "3",
+          "4",
+          "0",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "0",
+          "9",
+          "2",
+          "runway",
+          "through",
+          "1",
+          "left",
+          "alpha",
+          "kilo",
+          "delta",
+          "ultra",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 24,
+          "substitutions": 2,
+          "deletions": 1,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "three one left"
+            ]
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Bravo"
+            ]
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "07",
+      "say": "JetBlue six one five, Kennedy Ground, Oscar's old, information Papa is current, altimeter two niner niner two.",
+      "style": "loose",
+      "audioSec": 8.4,
+      "runAt": "2026-11-14T07:42:35.182Z",
+      "transcript": "jetblue 615 kennedy ground oscar's old information papa is current altimeter 2-9 or 902",
+      "latencyMs": 677,
+      "timings": {
+        "connectMs": 346.6,
+        "firstTextMs": 1844.9,
+        "streamMs": 8402,
+        "driftMs": 2,
+        "billedSessionSec": 9
+      },
+      "partials": 25,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8402,
+          "type": "Begin"
+        },
+        {
+          "t": -7287,
+          "type": "Turn"
+        },
+        {
+          "t": -6886,
+          "type": "Turn"
+        },
+        {
+          "t": -6557,
+          "type": "Turn"
+        },
+        {
+          "t": -6484,
+          "type": "Turn"
+        },
+        {
+          "t": -6350,
+          "type": "Turn"
+        },
+        {
+          "t": -5746,
+          "type": "Turn"
+        },
+        {
+          "t": -5593,
+          "type": "Turn"
+        },
+        {
+          "t": -5345,
+          "type": "Turn"
+        },
+        {
+          "t": -4492,
+          "type": "Turn"
+        },
+        {
+          "t": -4297,
+          "type": "Turn"
+        },
+        {
+          "t": -4187,
+          "type": "Turn"
+        },
+        {
+          "t": -4014,
+          "type": "Turn"
+        },
+        {
+          "t": -3722,
+          "type": "Turn"
+        },
+        {
+          "t": -3324,
+          "type": "Turn"
+        },
+        {
+          "t": -3197,
+          "type": "Turn"
+        },
+        {
+          "t": -2969,
+          "type": "Turn"
+        },
+        {
+          "t": -2687,
+          "type": "Turn"
+        },
+        {
+          "t": -1627,
+          "type": "Turn"
+        },
+        {
+          "t": -1556,
+          "type": "Turn"
+        },
+        {
+          "t": -1485,
+          "type": "Turn"
+        },
+        {
+          "t": -292,
+          "type": "Turn"
+        },
+        {
+          "t": -280,
+          "type": "Turn"
+        },
+        {
+          "t": -168,
+          "type": "Turn"
+        },
+        {
+          "t": -95,
+          "type": "Turn"
+        },
+        {
+          "t": 188,
+          "type": "Turn"
+        },
+        {
+          "t": 332,
+          "type": "Turn"
+        },
+        {
+          "t": 332,
+          "type": "Turn"
+        },
+        {
+          "t": 677,
+          "type": "Turn"
+        },
+        {
+          "t": 1026,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "kennedy",
+          "ground",
+          "oscar's",
+          "old",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "kennedy",
+          "ground",
+          "oscar's",
+          "old",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "or",
+          "9",
+          "0",
+          "2"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 2
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "08",
+      "say": "Emirates two zero two heavy, taxi to the Terminal Four ramp via Kilo Echo, left on Alpha.",
+      "style": "textbook",
+      "audioSec": 6.54,
+      "runAt": "2026-11-14T07:42:43.276Z",
+      "transcript": "emirates 202 heavy taxi to the terminal four ramp via kilo echo left on alpha",
+      "latencyMs": 748.8,
+      "timings": {
+        "connectMs": 401.9,
+        "firstTextMs": 2127.3,
+        "streamMs": 6541.6,
+        "driftMs": 1.6,
+        "billedSessionSec": 8
+      },
+      "partials": 20,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6542,
+          "type": "Begin"
+        },
+        {
+          "t": -4771,
+          "type": "Turn"
+        },
+        {
+          "t": -4543,
+          "type": "Turn"
+        },
+        {
+          "t": -4414,
+          "type": "Turn"
+        },
+        {
+          "t": -3922,
+          "type": "Turn"
+        },
+        {
+          "t": -3885,
+          "type": "Turn"
+        },
+        {
+          "t": -3101,
+          "type": "Turn"
+        },
+        {
+          "t": -3033,
+          "type": "Turn"
+        },
+        {
+          "t": -3028,
+          "type": "Turn"
+        },
+        {
+          "t": -2852,
+          "type": "Turn"
+        },
+        {
+          "t": -2675,
+          "type": "Turn"
+        },
+        {
+          "t": -2418,
+          "type": "Turn"
+        },
+        {
+          "t": -2318,
+          "type": "Turn"
+        },
+        {
+          "t": -2073,
+          "type": "Turn"
+        },
+        {
+          "t": -1834,
+          "type": "Turn"
+        },
+        {
+          "t": -1391,
+          "type": "Turn"
+        },
+        {
+          "t": -1240,
+          "type": "Turn"
+        },
+        {
+          "t": -1018,
+          "type": "Turn"
+        },
+        {
+          "t": -675,
+          "type": "Turn"
+        },
+        {
+          "t": -298,
+          "type": "Turn"
+        },
+        {
+          "t": -258,
+          "type": "Turn"
+        },
+        {
+          "t": 287,
+          "type": "Turn"
+        },
+        {
+          "t": 325,
+          "type": "Turn"
+        },
+        {
+          "t": 749,
+          "type": "Turn"
+        },
+        {
+          "t": 1098,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "taxi",
+          "to",
+          "the",
+          "terminal",
+          "4",
+          "ramp",
+          "via",
+          "kilo",
+          "echo",
+          "left",
+          "on",
+          "alpha"
+        ],
+        "hypTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "taxi",
+          "to",
+          "the",
+          "terminal",
+          "4",
+          "ramp",
+          "via",
+          "kilo",
+          "echo",
+          "left",
+          "on",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "09",
+      "say": "JetBlue three eighty-seven, alright, Kilo Foxtrot, right on Alpha into the ramp, and monitor ramp when you get there.",
+      "style": "loose",
+      "audioSec": 7.5,
+      "runAt": "2026-11-14T07:42:52.368Z",
+      "transcript": "jetblue 387 all right kilo foxtrot right on alpha into the ramp and monitor right when you get there",
+      "latencyMs": 656.5,
+      "timings": {
+        "connectMs": 378.4,
+        "firstTextMs": 1922.2,
+        "streamMs": 7502,
+        "driftMs": 2,
+        "billedSessionSec": 9
+      },
+      "partials": 26,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7502,
+          "type": "Begin"
+        },
+        {
+          "t": -6389,
+          "type": "Turn"
+        },
+        {
+          "t": -5928,
+          "type": "Turn"
+        },
+        {
+          "t": -5580,
+          "type": "Turn"
+        },
+        {
+          "t": -5507,
+          "type": "Turn"
+        },
+        {
+          "t": -5191,
+          "type": "Turn"
+        },
+        {
+          "t": -4688,
+          "type": "Turn"
+        },
+        {
+          "t": -4611,
+          "type": "Turn"
+        },
+        {
+          "t": -3608,
+          "type": "Turn"
+        },
+        {
+          "t": -3443,
+          "type": "Turn"
+        },
+        {
+          "t": -3096,
+          "type": "Turn"
+        },
+        {
+          "t": -3008,
+          "type": "Turn"
+        },
+        {
+          "t": -2807,
+          "type": "Turn"
+        },
+        {
+          "t": -2494,
+          "type": "Turn"
+        },
+        {
+          "t": -2358,
+          "type": "Turn"
+        },
+        {
+          "t": -2320,
+          "type": "Turn"
+        },
+        {
+          "t": -1994,
+          "type": "Turn"
+        },
+        {
+          "t": -1903,
+          "type": "Turn"
+        },
+        {
+          "t": -1817,
+          "type": "Turn"
+        },
+        {
+          "t": -1623,
+          "type": "Turn"
+        },
+        {
+          "t": -713,
+          "type": "Turn"
+        },
+        {
+          "t": -410,
+          "type": "Turn"
+        },
+        {
+          "t": -304,
+          "type": "Turn"
+        },
+        {
+          "t": -230,
+          "type": "Turn"
+        },
+        {
+          "t": 63,
+          "type": "Turn"
+        },
+        {
+          "t": 63,
+          "type": "Turn"
+        },
+        {
+          "t": 130,
+          "type": "Turn"
+        },
+        {
+          "t": 167,
+          "type": "Turn"
+        },
+        {
+          "t": 249,
+          "type": "Turn"
+        },
+        {
+          "t": 656,
+          "type": "Turn"
+        },
+        {
+          "t": 1007,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "3",
+          "8",
+          "7",
+          "alright",
+          "kilo",
+          "foxtrot",
+          "right",
+          "on",
+          "alpha",
+          "into",
+          "the",
+          "ramp",
+          "and",
+          "monitor",
+          "ramp",
+          "when",
+          "you",
+          "get",
+          "there"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "3",
+          "8",
+          "7",
+          "alright",
+          "kilo",
+          "foxtrot",
+          "right",
+          "on",
+          "alpha",
+          "into",
+          "the",
+          "ramp",
+          "and",
+          "monitor",
+          "right",
+          "when",
+          "you",
+          "get",
+          "there"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "10",
+      "say": "American one forty-two heavy, gonna be Kilo Delta, right on Bravo, left Hotel into Terminal Eight, hold short Alpha.",
+      "style": "loose",
+      "audioSec": 8.94,
+      "runAt": "2026-11-14T07:43:02.813Z",
+      "transcript": "american 142 heavy going to be kilo delta red on bravo left hotel into terminal 8 holds short alpha",
+      "latencyMs": 645.6,
+      "timings": {
+        "connectMs": 333.4,
+        "firstTextMs": 2250.6,
+        "streamMs": 8941.3,
+        "driftMs": 1.3,
+        "billedSessionSec": 10
+      },
+      "partials": 27,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8941,
+          "type": "Begin"
+        },
+        {
+          "t": -7832,
+          "type": "Turn"
+        },
+        {
+          "t": -7643,
+          "type": "Turn"
+        },
+        {
+          "t": -6691,
+          "type": "Turn"
+        },
+        {
+          "t": -6354,
+          "type": "Turn"
+        },
+        {
+          "t": -5864,
+          "type": "Turn"
+        },
+        {
+          "t": -5490,
+          "type": "Turn"
+        },
+        {
+          "t": -5409,
+          "type": "Turn"
+        },
+        {
+          "t": -4105,
+          "type": "Turn"
+        },
+        {
+          "t": -4029,
+          "type": "Turn"
+        },
+        {
+          "t": -3756,
+          "type": "Turn"
+        },
+        {
+          "t": -3464,
+          "type": "Turn"
+        },
+        {
+          "t": -3353,
+          "type": "Turn"
+        },
+        {
+          "t": -3034,
+          "type": "Turn"
+        },
+        {
+          "t": -2684,
+          "type": "Turn"
+        },
+        {
+          "t": -2471,
+          "type": "Turn"
+        },
+        {
+          "t": -2316,
+          "type": "Turn"
+        },
+        {
+          "t": -2003,
+          "type": "Turn"
+        },
+        {
+          "t": -1519,
+          "type": "Turn"
+        },
+        {
+          "t": -1241,
+          "type": "Turn"
+        },
+        {
+          "t": -1016,
+          "type": "Turn"
+        },
+        {
+          "t": -920,
+          "type": "Turn"
+        },
+        {
+          "t": -582,
+          "type": "Turn"
+        },
+        {
+          "t": -550,
+          "type": "Turn"
+        },
+        {
+          "t": -474,
+          "type": "Turn"
+        },
+        {
+          "t": -73,
+          "type": "Turn"
+        },
+        {
+          "t": 129,
+          "type": "Turn"
+        },
+        {
+          "t": 174,
+          "type": "Turn"
+        },
+        {
+          "t": 266,
+          "type": "Turn"
+        },
+        {
+          "t": 304,
+          "type": "Turn"
+        },
+        {
+          "t": 646,
+          "type": "Turn"
+        },
+        {
+          "t": 1095,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "4",
+          "2",
+          "heavy",
+          "gonna",
+          "be",
+          "kilo",
+          "delta",
+          "right",
+          "on",
+          "bravo",
+          "left",
+          "hotel",
+          "into",
+          "terminal",
+          "8",
+          "hold",
+          "short",
+          "alpha"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "4",
+          "2",
+          "heavy",
+          "gonna",
+          "be",
+          "kilo",
+          "delta",
+          "red",
+          "on",
+          "bravo",
+          "left",
+          "hotel",
+          "into",
+          "terminal",
+          "8",
+          "holds",
+          "short",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 3,
+            "found": 3,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 0,
+            "missed": [
+              "Alpha"
+            ]
+          }
+        },
+        "allCriticalCorrect": false
+      }
+    },
+    {
+      "num": "11",
+      "say": "Alaska niner three, hold short of runway four right.",
+      "style": "textbook",
+      "audioSec": 3.06,
+      "runAt": "2026-11-14T07:43:18.099Z",
+      "transcript": "alaska niner three hold short of runway four right",
+      "latencyMs": 604.9,
+      "timings": {
+        "connectMs": 335.7,
+        "firstTextMs": 1669.7,
+        "streamMs": 3062.2,
+        "driftMs": 2.2,
+        "billedSessionSec": 4
+      },
+      "partials": 10,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3062,
+          "type": "Begin"
+        },
+        {
+          "t": -2211,
+          "type": "Turn"
+        },
+        {
+          "t": -1766,
+          "type": "Turn"
+        },
+        {
+          "t": -1393,
+          "type": "Turn"
+        },
+        {
+          "t": -1181,
+          "type": "Turn"
+        },
+        {
+          "t": -1077,
+          "type": "Turn"
+        },
+        {
+          "t": -829,
+          "type": "Turn"
+        },
+        {
+          "t": -652,
+          "type": "Turn"
+        },
+        {
+          "t": -437,
+          "type": "Turn"
+        },
+        {
+          "t": -212,
+          "type": "Turn"
+        },
+        {
+          "t": -163,
+          "type": "Turn"
+        },
+        {
+          "t": 105,
+          "type": "Turn"
+        },
+        {
+          "t": 203,
+          "type": "Turn"
+        },
+        {
+          "t": 605,
+          "type": "Turn"
+        },
+        {
+          "t": 938,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "alaska",
+          "9",
+          "3",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "4",
+          "right"
+        ],
+        "hypTokens": [
+          "alaska",
+          "9",
+          "3",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "4",
+          "right"
+        ],
+        "wer": {
+          "refWords": 9,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "12",
+      "say": "Delta four, actually, I need you to hold short of three one right, traffic on short final.",
+      "style": "loose",
+      "audioSec": 4.92,
+      "runAt": "2026-11-14T07:43:33.029Z",
+      "transcript": "delta four actually i need you to hold short of 3-1 right traffic on short final",
+      "latencyMs": 668.2,
+      "timings": {
+        "connectMs": 647.2,
+        "firstTextMs": 1313.4,
+        "streamMs": 4922.2,
+        "driftMs": 2.2,
+        "billedSessionSec": 6
+      },
+      "partials": 19,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4922,
+          "type": "Begin"
+        },
+        {
+          "t": -3994,
+          "type": "Turn"
+        },
+        {
+          "t": -3744,
+          "type": "Turn"
+        },
+        {
+          "t": -3609,
+          "type": "Turn"
+        },
+        {
+          "t": -3276,
+          "type": "Turn"
+        },
+        {
+          "t": -3014,
+          "type": "Turn"
+        },
+        {
+          "t": -2945,
+          "type": "Turn"
+        },
+        {
+          "t": -2874,
+          "type": "Turn"
+        },
+        {
+          "t": -2690,
+          "type": "Turn"
+        },
+        {
+          "t": -2617,
+          "type": "Turn"
+        },
+        {
+          "t": -2264,
+          "type": "Turn"
+        },
+        {
+          "t": -2185,
+          "type": "Turn"
+        },
+        {
+          "t": -1829,
+          "type": "Turn"
+        },
+        {
+          "t": -1652,
+          "type": "Turn"
+        },
+        {
+          "t": -1503,
+          "type": "Turn"
+        },
+        {
+          "t": -1075,
+          "type": "Turn"
+        },
+        {
+          "t": -817,
+          "type": "Turn"
+        },
+        {
+          "t": -629,
+          "type": "Turn"
+        },
+        {
+          "t": -591,
+          "type": "Turn"
+        },
+        {
+          "t": 124,
+          "type": "Turn"
+        },
+        {
+          "t": 198,
+          "type": "Turn"
+        },
+        {
+          "t": 234,
+          "type": "Turn"
+        },
+        {
+          "t": 668,
+          "type": "Turn"
+        },
+        {
+          "t": 999,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "actually",
+          "i",
+          "need",
+          "you",
+          "to",
+          "hold",
+          "short",
+          "of",
+          "3",
+          "1",
+          "right",
+          "traffic",
+          "on",
+          "short",
+          "final"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "actually",
+          "i",
+          "need",
+          "you",
+          "to",
+          "hold",
+          "short",
+          "of",
+          "3",
+          "1",
+          "right",
+          "traffic",
+          "on",
+          "short",
+          "final"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "13",
+      "say": "Iberia six two six heavy, hold short of Bravo, you'll have a Delta seven sixty-seven passing left to right.",
+      "style": "loose",
+      "audioSec": 6.48,
+      "runAt": "2026-11-14T07:43:44.297Z",
+      "transcript": "iberia 626 heavy hold short of bravo you'll have a delta 767 passing left to right",
+      "latencyMs": 682.5,
+      "timings": {
+        "connectMs": 530.4,
+        "firstTextMs": 1863.4,
+        "streamMs": 6481.9,
+        "driftMs": 1.9,
+        "billedSessionSec": 8
+      },
+      "partials": 23,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6482,
+          "type": "Begin"
+        },
+        {
+          "t": -5361,
+          "type": "Turn"
+        },
+        {
+          "t": -4953,
+          "type": "Turn"
+        },
+        {
+          "t": -4618,
+          "type": "Turn"
+        },
+        {
+          "t": -4395,
+          "type": "Turn"
+        },
+        {
+          "t": -4082,
+          "type": "Turn"
+        },
+        {
+          "t": -3792,
+          "type": "Turn"
+        },
+        {
+          "t": -3530,
+          "type": "Turn"
+        },
+        {
+          "t": -3201,
+          "type": "Turn"
+        },
+        {
+          "t": -3002,
+          "type": "Turn"
+        },
+        {
+          "t": -2956,
+          "type": "Turn"
+        },
+        {
+          "t": -2616,
+          "type": "Turn"
+        },
+        {
+          "t": -2448,
+          "type": "Turn"
+        },
+        {
+          "t": -2198,
+          "type": "Turn"
+        },
+        {
+          "t": -2157,
+          "type": "Turn"
+        },
+        {
+          "t": -2070,
+          "type": "Turn"
+        },
+        {
+          "t": -1993,
+          "type": "Turn"
+        },
+        {
+          "t": -1614,
+          "type": "Turn"
+        },
+        {
+          "t": -1295,
+          "type": "Turn"
+        },
+        {
+          "t": -997,
+          "type": "Turn"
+        },
+        {
+          "t": -816,
+          "type": "Turn"
+        },
+        {
+          "t": -154,
+          "type": "Turn"
+        },
+        {
+          "t": 3,
+          "type": "Turn"
+        },
+        {
+          "t": 118,
+          "type": "Turn"
+        },
+        {
+          "t": 157,
+          "type": "Turn"
+        },
+        {
+          "t": 192,
+          "type": "Turn"
+        },
+        {
+          "t": 683,
+          "type": "Turn"
+        },
+        {
+          "t": 1003,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "you'll",
+          "have",
+          "a",
+          "delta",
+          "7",
+          "6",
+          "7",
+          "passing",
+          "left",
+          "to",
+          "right"
+        ],
+        "hypTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "you'll",
+          "have",
+          "a",
+          "delta",
+          "7",
+          "6",
+          "7",
+          "passing",
+          "left",
+          "to",
+          "right"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "14",
+      "say": "JetBlue eleven twenty-three, hold position.",
+      "style": "textbook",
+      "audioSec": 3.42,
+      "runAt": "2026-11-14T07:43:49.110Z",
+      "transcript": "jetblue 1123 hold position",
+      "latencyMs": 580.2,
+      "timings": {
+        "connectMs": 399.7,
+        "firstTextMs": 2274.4,
+        "streamMs": 3420,
+        "driftMs": 0,
+        "billedSessionSec": 4
+      },
+      "partials": 7,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3420,
+          "type": "Begin"
+        },
+        {
+          "t": -1818,
+          "type": "Turn"
+        },
+        {
+          "t": -1515,
+          "type": "Turn"
+        },
+        {
+          "t": -1146,
+          "type": "Turn"
+        },
+        {
+          "t": -1109,
+          "type": "Turn"
+        },
+        {
+          "t": -966,
+          "type": "Turn"
+        },
+        {
+          "t": -759,
+          "type": "Turn"
+        },
+        {
+          "t": -279,
+          "type": "Turn"
+        },
+        {
+          "t": -4,
+          "type": "Turn"
+        },
+        {
+          "t": 35,
+          "type": "Turn"
+        },
+        {
+          "t": 580,
+          "type": "Turn"
+        },
+        {
+          "t": 932,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "hold",
+          "position"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "hold",
+          "position"
+        ],
+        "wer": {
+          "refWords": 7,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "15",
+      "say": "Iberia six two six heavy, traffic's by, go ahead and continue, thanks for waiting.",
+      "style": "loose",
+      "audioSec": 4.44,
+      "runAt": "2026-11-14T07:43:59.321Z",
+      "transcript": "iberia 626 heavy traffic spy go ahead and continue thanks for waiting",
+      "latencyMs": 685,
+      "timings": {
+        "connectMs": 351.9,
+        "firstTextMs": 1839.4,
+        "streamMs": 4441.4,
+        "driftMs": 1.4,
+        "billedSessionSec": 5
+      },
+      "partials": 16,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4442,
+          "type": "Begin"
+        },
+        {
+          "t": -3054,
+          "type": "Turn"
+        },
+        {
+          "t": -2832,
+          "type": "Turn"
+        },
+        {
+          "t": -2602,
+          "type": "Turn"
+        },
+        {
+          "t": -2524,
+          "type": "Turn"
+        },
+        {
+          "t": -2359,
+          "type": "Turn"
+        },
+        {
+          "t": -2011,
+          "type": "Turn"
+        },
+        {
+          "t": -1805,
+          "type": "Turn"
+        },
+        {
+          "t": -1381,
+          "type": "Turn"
+        },
+        {
+          "t": -1345,
+          "type": "Turn"
+        },
+        {
+          "t": -1165,
+          "type": "Turn"
+        },
+        {
+          "t": -887,
+          "type": "Turn"
+        },
+        {
+          "t": -765,
+          "type": "Turn"
+        },
+        {
+          "t": -560,
+          "type": "Turn"
+        },
+        {
+          "t": -374,
+          "type": "Turn"
+        },
+        {
+          "t": -154,
+          "type": "Turn"
+        },
+        {
+          "t": -115,
+          "type": "Turn"
+        },
+        {
+          "t": 155,
+          "type": "Turn"
+        },
+        {
+          "t": 260,
+          "type": "Turn"
+        },
+        {
+          "t": 685,
+          "type": "Turn"
+        },
+        {
+          "t": 1037,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "traffic's",
+          "by",
+          "go",
+          "ahead",
+          "and",
+          "continue",
+          "thanks",
+          "for",
+          "waiting"
+        ],
+        "hypTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "traffic",
+          "spy",
+          "go",
+          "ahead",
+          "and",
+          "continue",
+          "thanks",
+          "for",
+          "waiting"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "16",
+      "say": "Speedbird one seven five heavy, stop, stop, hold your position.",
+      "style": "loose",
+      "audioSec": 4.5,
+      "runAt": "2026-11-14T07:44:21.301Z",
+      "transcript": "speedbird 175 heavy stop stop hold your position",
+      "latencyMs": 1231.8,
+      "timings": {
+        "connectMs": 407,
+        "firstTextMs": 2247.5,
+        "streamMs": 4502.1,
+        "driftMs": 2.1,
+        "billedSessionSec": 6
+      },
+      "partials": 11,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4502,
+          "type": "Begin"
+        },
+        {
+          "t": -3309,
+          "type": "Turn"
+        },
+        {
+          "t": -2900,
+          "type": "Turn"
+        },
+        {
+          "t": -2255,
+          "type": "Turn"
+        },
+        {
+          "t": -2171,
+          "type": "Turn"
+        },
+        {
+          "t": -2035,
+          "type": "Turn"
+        },
+        {
+          "t": -1408,
+          "type": "Turn"
+        },
+        {
+          "t": -1329,
+          "type": "Turn"
+        },
+        {
+          "t": -1012,
+          "type": "Turn"
+        },
+        {
+          "t": -617,
+          "type": "Turn"
+        },
+        {
+          "t": 415,
+          "type": "Turn"
+        },
+        {
+          "t": 541,
+          "type": "Turn"
+        },
+        {
+          "t": 690,
+          "type": "Turn"
+        },
+        {
+          "t": 725,
+          "type": "Turn"
+        },
+        {
+          "t": 1232,
+          "type": "Turn"
+        },
+        {
+          "t": 1583,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "stop",
+          "stop",
+          "hold",
+          "your",
+          "position"
+        ],
+        "hypTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "stop",
+          "stop",
+          "hold",
+          "your",
+          "position"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "17",
+      "say": "Delta four, cross runway three one right at Kilo Echo.",
+      "style": "textbook",
+      "audioSec": 3.78,
+      "runAt": "2026-11-14T07:44:32.647Z",
+      "transcript": "delta 4 cross one way 3 1 right at kilo echo",
+      "latencyMs": 609.4,
+      "timings": {
+        "connectMs": 403.3,
+        "firstTextMs": 1531.7,
+        "streamMs": 3780.7,
+        "driftMs": 0.7,
+        "billedSessionSec": 5
+      },
+      "partials": 13,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3781,
+          "type": "Begin"
+        },
+        {
+          "t": -2711,
+          "type": "Turn"
+        },
+        {
+          "t": -2477,
+          "type": "Turn"
+        },
+        {
+          "t": -2249,
+          "type": "Turn"
+        },
+        {
+          "t": -1811,
+          "type": "Turn"
+        },
+        {
+          "t": -1569,
+          "type": "Turn"
+        },
+        {
+          "t": -1462,
+          "type": "Turn"
+        },
+        {
+          "t": -1068,
+          "type": "Turn"
+        },
+        {
+          "t": -699,
+          "type": "Turn"
+        },
+        {
+          "t": -365,
+          "type": "Turn"
+        },
+        {
+          "t": -197,
+          "type": "Turn"
+        },
+        {
+          "t": 56,
+          "type": "Turn"
+        },
+        {
+          "t": 233,
+          "type": "Turn"
+        },
+        {
+          "t": 233,
+          "type": "Turn"
+        },
+        {
+          "t": 234,
+          "type": "Turn"
+        },
+        {
+          "t": 325,
+          "type": "Turn"
+        },
+        {
+          "t": 609,
+          "type": "Turn"
+        },
+        {
+          "t": 946,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "cross",
+          "runway",
+          "3",
+          "1",
+          "right",
+          "at",
+          "kilo",
+          "echo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "cross",
+          "1",
+          "way",
+          "3",
+          "1",
+          "right",
+          "at",
+          "kilo",
+          "echo"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "18",
+      "say": "Swiss one seven heavy, go ahead and cross two two right at Yankee, then hold short of Bravo.",
+      "style": "loose",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:44:43.689Z",
+      "transcript": "swiss 17 heavy go ahead and cross 2-2 right at yankee then hold short of bravo",
+      "latencyMs": 587.7,
+      "timings": {
+        "connectMs": 433,
+        "firstTextMs": 1751.8,
+        "streamMs": 4981.7,
+        "driftMs": 1.7,
+        "billedSessionSec": 6
+      },
+      "partials": 21,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4982,
+          "type": "Begin"
+        },
+        {
+          "t": -3875,
+          "type": "Turn"
+        },
+        {
+          "t": -3230,
+          "type": "Turn"
+        },
+        {
+          "t": -3157,
+          "type": "Turn"
+        },
+        {
+          "t": -2878,
+          "type": "Turn"
+        },
+        {
+          "t": -2740,
+          "type": "Turn"
+        },
+        {
+          "t": -2706,
+          "type": "Turn"
+        },
+        {
+          "t": -2671,
+          "type": "Turn"
+        },
+        {
+          "t": -2603,
+          "type": "Turn"
+        },
+        {
+          "t": -2137,
+          "type": "Turn"
+        },
+        {
+          "t": -1708,
+          "type": "Turn"
+        },
+        {
+          "t": -1542,
+          "type": "Turn"
+        },
+        {
+          "t": -1386,
+          "type": "Turn"
+        },
+        {
+          "t": -1274,
+          "type": "Turn"
+        },
+        {
+          "t": -1041,
+          "type": "Turn"
+        },
+        {
+          "t": -899,
+          "type": "Turn"
+        },
+        {
+          "t": -666,
+          "type": "Turn"
+        },
+        {
+          "t": -192,
+          "type": "Turn"
+        },
+        {
+          "t": -114,
+          "type": "Turn"
+        },
+        {
+          "t": 91,
+          "type": "Turn"
+        },
+        {
+          "t": 157,
+          "type": "Turn"
+        },
+        {
+          "t": 196,
+          "type": "Turn"
+        },
+        {
+          "t": 295,
+          "type": "Turn"
+        },
+        {
+          "t": 588,
+          "type": "Turn"
+        },
+        {
+          "t": 939,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "swiss",
+          "1",
+          "7",
+          "heavy",
+          "go",
+          "ahead",
+          "and",
+          "cross",
+          "2",
+          "2",
+          "right",
+          "at",
+          "yankee",
+          "then",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "hypTokens": [
+          "swiss",
+          "1",
+          "7",
+          "heavy",
+          "go",
+          "ahead",
+          "and",
+          "cross",
+          "2",
+          "2",
+          "right",
+          "at",
+          "yankee",
+          "then",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 18,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "19",
+      "say": "Qatari seven zero one heavy, at Kilo Echo, cross three one right, then Kilo to three one left.",
+      "style": "loose",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:44:52.689Z",
+      "transcript": "qatari 701 heavy at kilo echo cross 3-1 right then kilo to 3-1 left",
+      "latencyMs": 622,
+      "timings": {
+        "connectMs": 529.8,
+        "firstTextMs": 1832.8,
+        "streamMs": 5759.2,
+        "driftMs": -0.8,
+        "billedSessionSec": 7
+      },
+      "partials": 23,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5759,
+          "type": "Begin"
+        },
+        {
+          "t": -4483,
+          "type": "Turn"
+        },
+        {
+          "t": -4348,
+          "type": "Turn"
+        },
+        {
+          "t": -4227,
+          "type": "Turn"
+        },
+        {
+          "t": -3926,
+          "type": "Turn"
+        },
+        {
+          "t": -3858,
+          "type": "Turn"
+        },
+        {
+          "t": -3689,
+          "type": "Turn"
+        },
+        {
+          "t": -3100,
+          "type": "Turn"
+        },
+        {
+          "t": -3087,
+          "type": "Turn"
+        },
+        {
+          "t": -2895,
+          "type": "Turn"
+        },
+        {
+          "t": -2744,
+          "type": "Turn"
+        },
+        {
+          "t": -2558,
+          "type": "Turn"
+        },
+        {
+          "t": -2480,
+          "type": "Turn"
+        },
+        {
+          "t": -2230,
+          "type": "Turn"
+        },
+        {
+          "t": -1797,
+          "type": "Turn"
+        },
+        {
+          "t": -1758,
+          "type": "Turn"
+        },
+        {
+          "t": -1515,
+          "type": "Turn"
+        },
+        {
+          "t": -1442,
+          "type": "Turn"
+        },
+        {
+          "t": -1299,
+          "type": "Turn"
+        },
+        {
+          "t": -1039,
+          "type": "Turn"
+        },
+        {
+          "t": -746,
+          "type": "Turn"
+        },
+        {
+          "t": -462,
+          "type": "Turn"
+        },
+        {
+          "t": -248,
+          "type": "Turn"
+        },
+        {
+          "t": 173,
+          "type": "Turn"
+        },
+        {
+          "t": 184,
+          "type": "Turn"
+        },
+        {
+          "t": 198,
+          "type": "Turn"
+        },
+        {
+          "t": 309,
+          "type": "Turn"
+        },
+        {
+          "t": 622,
+          "type": "Turn"
+        },
+        {
+          "t": 999,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "qatari",
+          "7",
+          "0",
+          "1",
+          "heavy",
+          "at",
+          "kilo",
+          "echo",
+          "cross",
+          "3",
+          "1",
+          "right",
+          "then",
+          "kilo",
+          "to",
+          "3",
+          "1",
+          "left"
+        ],
+        "hypTokens": [
+          "qatari",
+          "7",
+          "0",
+          "1",
+          "heavy",
+          "at",
+          "kilo",
+          "echo",
+          "cross",
+          "3",
+          "1",
+          "right",
+          "then",
+          "kilo",
+          "to",
+          "3",
+          "1",
+          "left"
+        ],
+        "wer": {
+          "refWords": 18,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "20",
+      "say": "Air France two three heavy, exit the line at the next left, Kilo Delta, and hold on the pad.",
+      "style": "textbook",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:45:00.941Z",
+      "transcript": "air france 2-3 heavy exit the line at the next left kilo delta and hold on the pod",
+      "latencyMs": 611.5,
+      "timings": {
+        "connectMs": 454.4,
+        "firstTextMs": 1888.9,
+        "streamMs": 4980.9,
+        "driftMs": 0.9,
+        "billedSessionSec": 6
+      },
+      "partials": 24,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4981,
+          "type": "Begin"
+        },
+        {
+          "t": -3528,
+          "type": "Turn"
+        },
+        {
+          "t": -3092,
+          "type": "Turn"
+        },
+        {
+          "t": -2719,
+          "type": "Turn"
+        },
+        {
+          "t": -2686,
+          "type": "Turn"
+        },
+        {
+          "t": -2652,
+          "type": "Turn"
+        },
+        {
+          "t": -2509,
+          "type": "Turn"
+        },
+        {
+          "t": -2278,
+          "type": "Turn"
+        },
+        {
+          "t": -2245,
+          "type": "Turn"
+        },
+        {
+          "t": -2103,
+          "type": "Turn"
+        },
+        {
+          "t": -1969,
+          "type": "Turn"
+        },
+        {
+          "t": -1931,
+          "type": "Turn"
+        },
+        {
+          "t": -1726,
+          "type": "Turn"
+        },
+        {
+          "t": -1558,
+          "type": "Turn"
+        },
+        {
+          "t": -1525,
+          "type": "Turn"
+        },
+        {
+          "t": -1342,
+          "type": "Turn"
+        },
+        {
+          "t": -996,
+          "type": "Turn"
+        },
+        {
+          "t": -931,
+          "type": "Turn"
+        },
+        {
+          "t": -703,
+          "type": "Turn"
+        },
+        {
+          "t": -601,
+          "type": "Turn"
+        },
+        {
+          "t": -296,
+          "type": "Turn"
+        },
+        {
+          "t": -249,
+          "type": "Turn"
+        },
+        {
+          "t": -225,
+          "type": "Turn"
+        },
+        {
+          "t": -189,
+          "type": "Turn"
+        },
+        {
+          "t": 271,
+          "type": "Turn"
+        },
+        {
+          "t": 282,
+          "type": "Turn"
+        },
+        {
+          "t": 611,
+          "type": "Turn"
+        },
+        {
+          "t": 962,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "air",
+          "france",
+          "2",
+          "3",
+          "heavy",
+          "exit",
+          "the",
+          "line",
+          "at",
+          "the",
+          "next",
+          "left",
+          "kilo",
+          "delta",
+          "and",
+          "hold",
+          "on",
+          "the",
+          "pad"
+        ],
+        "hypTokens": [
+          "air",
+          "france",
+          "2",
+          "3",
+          "heavy",
+          "exit",
+          "the",
+          "line",
+          "at",
+          "the",
+          "next",
+          "left",
+          "kilo",
+          "delta",
+          "and",
+          "hold",
+          "on",
+          "the",
+          "pod"
+        ],
+        "wer": {
+          "refWords": 19,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "21",
+      "say": "Delta twelve oh four, bad news, ground stop for Atlanta, take the next right at Kilo Charlie and head over to the penalty box.",
+      "style": "loose",
+      "audioSec": 7.26,
+      "runAt": "2026-11-14T07:45:24.549Z",
+      "transcript": "delta 1204 bad news ground stop for atlanta take the next ride at kilo charlie and head over to the penalty box",
+      "latencyMs": 573.1,
+      "timings": {
+        "connectMs": 489.8,
+        "firstTextMs": 1523.8,
+        "streamMs": 7261,
+        "driftMs": 1,
+        "billedSessionSec": 8
+      },
+      "partials": 25,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7261,
+          "type": "Begin"
+        },
+        {
+          "t": -6195,
+          "type": "Turn"
+        },
+        {
+          "t": -5993,
+          "type": "Turn"
+        },
+        {
+          "t": -5737,
+          "type": "Turn"
+        },
+        {
+          "t": -5381,
+          "type": "Turn"
+        },
+        {
+          "t": -5275,
+          "type": "Turn"
+        },
+        {
+          "t": -4448,
+          "type": "Turn"
+        },
+        {
+          "t": -4408,
+          "type": "Turn"
+        },
+        {
+          "t": -3679,
+          "type": "Turn"
+        },
+        {
+          "t": -3365,
+          "type": "Turn"
+        },
+        {
+          "t": -3283,
+          "type": "Turn"
+        },
+        {
+          "t": -3004,
+          "type": "Turn"
+        },
+        {
+          "t": -2969,
+          "type": "Turn"
+        },
+        {
+          "t": -2139,
+          "type": "Turn"
+        },
+        {
+          "t": -2069,
+          "type": "Turn"
+        },
+        {
+          "t": -1607,
+          "type": "Turn"
+        },
+        {
+          "t": -1352,
+          "type": "Turn"
+        },
+        {
+          "t": -1286,
+          "type": "Turn"
+        },
+        {
+          "t": -1182,
+          "type": "Turn"
+        },
+        {
+          "t": -1017,
+          "type": "Turn"
+        },
+        {
+          "t": -949,
+          "type": "Turn"
+        },
+        {
+          "t": -875,
+          "type": "Turn"
+        },
+        {
+          "t": -605,
+          "type": "Turn"
+        },
+        {
+          "t": -592,
+          "type": "Turn"
+        },
+        {
+          "t": -559,
+          "type": "Turn"
+        },
+        {
+          "t": -305,
+          "type": "Turn"
+        },
+        {
+          "t": 14,
+          "type": "Turn"
+        },
+        {
+          "t": 141,
+          "type": "Turn"
+        },
+        {
+          "t": 573,
+          "type": "Turn"
+        },
+        {
+          "t": 932,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "1",
+          "2",
+          "0",
+          "4",
+          "bad",
+          "news",
+          "ground",
+          "stop",
+          "for",
+          "atlanta",
+          "take",
+          "the",
+          "next",
+          "right",
+          "at",
+          "kilo",
+          "charlie",
+          "and",
+          "head",
+          "over",
+          "to",
+          "the",
+          "penalty",
+          "box"
+        ],
+        "hypTokens": [
+          "delta",
+          "1",
+          "2",
+          "0",
+          "4",
+          "bad",
+          "news",
+          "ground",
+          "stop",
+          "for",
+          "atlanta",
+          "take",
+          "the",
+          "next",
+          "ride",
+          "at",
+          "kilo",
+          "charlie",
+          "and",
+          "head",
+          "over",
+          "to",
+          "the",
+          "penalty",
+          "box"
+        ],
+        "wer": {
+          "refWords": 25,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "22",
+      "say": "JetBlue six one five, release time one four five two for you, taxi to the pad via Alpha, Kilo Kilo, and sit tight.",
+      "style": "loose",
+      "audioSec": 8.04,
+      "runAt": "2026-11-14T07:45:37.995Z",
+      "transcript": "jetblue 615 released time 1452 for you taxi to the pad via alpha kilo kilo and zip tie",
+      "latencyMs": 553.3,
+      "timings": {
+        "connectMs": 433.6,
+        "firstTextMs": 1513.3,
+        "streamMs": 8040.5,
+        "driftMs": 0.5,
+        "billedSessionSec": 9
+      },
+      "partials": 28,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8041,
+          "type": "Begin"
+        },
+        {
+          "t": -6930,
+          "type": "Turn"
+        },
+        {
+          "t": -6789,
+          "type": "Turn"
+        },
+        {
+          "t": -6527,
+          "type": "Turn"
+        },
+        {
+          "t": -6220,
+          "type": "Turn"
+        },
+        {
+          "t": -6159,
+          "type": "Turn"
+        },
+        {
+          "t": -5554,
+          "type": "Turn"
+        },
+        {
+          "t": -5341,
+          "type": "Turn"
+        },
+        {
+          "t": -5021,
+          "type": "Turn"
+        },
+        {
+          "t": -4608,
+          "type": "Turn"
+        },
+        {
+          "t": -4593,
+          "type": "Turn"
+        },
+        {
+          "t": -4462,
+          "type": "Turn"
+        },
+        {
+          "t": -4105,
+          "type": "Turn"
+        },
+        {
+          "t": -3702,
+          "type": "Turn"
+        },
+        {
+          "t": -3672,
+          "type": "Turn"
+        },
+        {
+          "t": -2863,
+          "type": "Turn"
+        },
+        {
+          "t": -2760,
+          "type": "Turn"
+        },
+        {
+          "t": -2619,
+          "type": "Turn"
+        },
+        {
+          "t": -2518,
+          "type": "Turn"
+        },
+        {
+          "t": -2137,
+          "type": "Turn"
+        },
+        {
+          "t": -2028,
+          "type": "Turn"
+        },
+        {
+          "t": -1655,
+          "type": "Turn"
+        },
+        {
+          "t": -1381,
+          "type": "Turn"
+        },
+        {
+          "t": -912,
+          "type": "Turn"
+        },
+        {
+          "t": -835,
+          "type": "Turn"
+        },
+        {
+          "t": -766,
+          "type": "Turn"
+        },
+        {
+          "t": -557,
+          "type": "Turn"
+        },
+        {
+          "t": -6,
+          "type": "Turn"
+        },
+        {
+          "t": 97,
+          "type": "Turn"
+        },
+        {
+          "t": 224,
+          "type": "Turn"
+        },
+        {
+          "t": 292,
+          "type": "Turn"
+        },
+        {
+          "t": 553,
+          "type": "Turn"
+        },
+        {
+          "t": 948,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "release",
+          "time",
+          "1",
+          "4",
+          "5",
+          "2",
+          "for",
+          "you",
+          "taxi",
+          "to",
+          "the",
+          "pad",
+          "via",
+          "alpha",
+          "kilo",
+          "kilo",
+          "and",
+          "sit",
+          "tight"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "released",
+          "time",
+          "1",
+          "4",
+          "5",
+          "2",
+          "for",
+          "you",
+          "taxi",
+          "to",
+          "the",
+          "pad",
+          "via",
+          "alpha",
+          "kilo",
+          "kilo",
+          "and",
+          "zip",
+          "tie"
+        ],
+        "wer": {
+          "refWords": 23,
+          "substitutions": 3,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "23",
+      "say": "Virgin three, roger, taxi to the penalty box via Kilo Foxtrot, Bravo, and let me know when your gate opens up.",
+      "style": "loose",
+      "audioSec": 7.62,
+      "runAt": "2026-11-14T07:45:47.432Z",
+      "transcript": "virgin 3 roger taxi to the penalty box via kilo foxtrot bravo let me know when your gate opens up",
+      "latencyMs": 657,
+      "timings": {
+        "connectMs": 343.5,
+        "firstTextMs": 1673.9,
+        "streamMs": 7621.1,
+        "driftMs": 1.1,
+        "billedSessionSec": 9
+      },
+      "partials": 27,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7621,
+          "type": "Begin"
+        },
+        {
+          "t": -6235,
+          "type": "Turn"
+        },
+        {
+          "t": -6115,
+          "type": "Turn"
+        },
+        {
+          "t": -5947,
+          "type": "Turn"
+        },
+        {
+          "t": -5521,
+          "type": "Turn"
+        },
+        {
+          "t": -5399,
+          "type": "Turn"
+        },
+        {
+          "t": -4503,
+          "type": "Turn"
+        },
+        {
+          "t": -4448,
+          "type": "Turn"
+        },
+        {
+          "t": -4128,
+          "type": "Turn"
+        },
+        {
+          "t": -4093,
+          "type": "Turn"
+        },
+        {
+          "t": -4052,
+          "type": "Turn"
+        },
+        {
+          "t": -3946,
+          "type": "Turn"
+        },
+        {
+          "t": -3748,
+          "type": "Turn"
+        },
+        {
+          "t": -3389,
+          "type": "Turn"
+        },
+        {
+          "t": -2989,
+          "type": "Turn"
+        },
+        {
+          "t": -2821,
+          "type": "Turn"
+        },
+        {
+          "t": -2593,
+          "type": "Turn"
+        },
+        {
+          "t": -2571,
+          "type": "Turn"
+        },
+        {
+          "t": -2503,
+          "type": "Turn"
+        },
+        {
+          "t": -1545,
+          "type": "Turn"
+        },
+        {
+          "t": -1283,
+          "type": "Turn"
+        },
+        {
+          "t": -1154,
+          "type": "Turn"
+        },
+        {
+          "t": -570,
+          "type": "Turn"
+        },
+        {
+          "t": -542,
+          "type": "Turn"
+        },
+        {
+          "t": -479,
+          "type": "Turn"
+        },
+        {
+          "t": -90,
+          "type": "Turn"
+        },
+        {
+          "t": 104,
+          "type": "Turn"
+        },
+        {
+          "t": 145,
+          "type": "Turn"
+        },
+        {
+          "t": 178,
+          "type": "Turn"
+        },
+        {
+          "t": 212,
+          "type": "Turn"
+        },
+        {
+          "t": 657,
+          "type": "Turn"
+        },
+        {
+          "t": 1078,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "virgin",
+          "3",
+          "roger",
+          "taxi",
+          "to",
+          "the",
+          "penalty",
+          "box",
+          "via",
+          "kilo",
+          "foxtrot",
+          "bravo",
+          "and",
+          "let",
+          "me",
+          "know",
+          "when",
+          "your",
+          "gate",
+          "opens",
+          "up"
+        ],
+        "hypTokens": [
+          "virgin",
+          "3",
+          "roger",
+          "taxi",
+          "to",
+          "the",
+          "penalty",
+          "box",
+          "via",
+          "kilo",
+          "foxtrot",
+          "bravo",
+          "let",
+          "me",
+          "know",
+          "when",
+          "your",
+          "gate",
+          "opens",
+          "up"
+        ],
+        "wer": {
+          "refWords": 21,
+          "substitutions": 0,
+          "deletions": 1,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "24",
+      "say": "Speedbird one seven five heavy, number two for departure, monitor tower one one niner point one.",
+      "style": "textbook",
+      "audioSec": 6.24,
+      "runAt": "2026-11-14T07:45:55.243Z",
+      "transcript": "speedbird 175 heavy number two for departure monitor tower 1191",
+      "latencyMs": 678.4,
+      "timings": {
+        "connectMs": 371.3,
+        "firstTextMs": 2001.4,
+        "streamMs": 6240.1,
+        "driftMs": 0.1,
+        "billedSessionSec": 7
+      },
+      "partials": 18,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6240,
+          "type": "Begin"
+        },
+        {
+          "t": -4983,
+          "type": "Turn"
+        },
+        {
+          "t": -4741,
+          "type": "Turn"
+        },
+        {
+          "t": -4239,
+          "type": "Turn"
+        },
+        {
+          "t": -4176,
+          "type": "Turn"
+        },
+        {
+          "t": -3874,
+          "type": "Turn"
+        },
+        {
+          "t": -3457,
+          "type": "Turn"
+        },
+        {
+          "t": -3388,
+          "type": "Turn"
+        },
+        {
+          "t": -3058,
+          "type": "Turn"
+        },
+        {
+          "t": -2867,
+          "type": "Turn"
+        },
+        {
+          "t": -2756,
+          "type": "Turn"
+        },
+        {
+          "t": -2565,
+          "type": "Turn"
+        },
+        {
+          "t": -1363,
+          "type": "Turn"
+        },
+        {
+          "t": -1300,
+          "type": "Turn"
+        },
+        {
+          "t": -1038,
+          "type": "Turn"
+        },
+        {
+          "t": -965,
+          "type": "Turn"
+        },
+        {
+          "t": -554,
+          "type": "Turn"
+        },
+        {
+          "t": -358,
+          "type": "Turn"
+        },
+        {
+          "t": 0,
+          "type": "Turn"
+        },
+        {
+          "t": 105,
+          "type": "Turn"
+        },
+        {
+          "t": 173,
+          "type": "Turn"
+        },
+        {
+          "t": 678,
+          "type": "Turn"
+        },
+        {
+          "t": 981,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "number",
+          "2",
+          "for",
+          "departure",
+          "monitor",
+          "tower",
+          "1",
+          "1",
+          "9",
+          "1"
+        ],
+        "hypTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "number",
+          "2",
+          "for",
+          "departure",
+          "monitor",
+          "tower",
+          "1",
+          "1",
+          "9",
+          "1"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "25",
+      "say": "Emirates two zero two heavy, contact ramp, so long.",
+      "style": "loose",
+      "audioSec": 4.02,
+      "runAt": "2026-11-14T07:46:01.135Z",
+      "transcript": "emirates 202 heavy contact ramp so long",
+      "latencyMs": 597.6,
+      "timings": {
+        "connectMs": 411.7,
+        "firstTextMs": 2082.5,
+        "streamMs": 4020.9,
+        "driftMs": 0.9,
+        "billedSessionSec": 5
+      },
+      "partials": 9,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4021,
+          "type": "Begin"
+        },
+        {
+          "t": -2557,
+          "type": "Turn"
+        },
+        {
+          "t": -2448,
+          "type": "Turn"
+        },
+        {
+          "t": -1938,
+          "type": "Turn"
+        },
+        {
+          "t": -1356,
+          "type": "Turn"
+        },
+        {
+          "t": -1305,
+          "type": "Turn"
+        },
+        {
+          "t": -957,
+          "type": "Turn"
+        },
+        {
+          "t": -746,
+          "type": "Turn"
+        },
+        {
+          "t": -609,
+          "type": "Turn"
+        },
+        {
+          "t": 86,
+          "type": "Turn"
+        },
+        {
+          "t": 192,
+          "type": "Turn"
+        },
+        {
+          "t": 241,
+          "type": "Turn"
+        },
+        {
+          "t": 598,
+          "type": "Turn"
+        },
+        {
+          "t": 1031,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "contact",
+          "ramp",
+          "so",
+          "long"
+        ],
+        "hypTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "contact",
+          "ramp",
+          "so",
+          "long"
+        ],
+        "wer": {
+          "refWords": 9,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "26",
+      "say": "Delta four, negative, hold short of Bravo, hold short Bravo.",
+      "style": "textbook",
+      "audioSec": 3.9,
+      "runAt": "2026-11-14T07:46:22.206Z",
+      "transcript": "delta four negative hold short of bravo hold short bravo",
+      "latencyMs": 596.6,
+      "timings": {
+        "connectMs": 439.4,
+        "firstTextMs": 1674.3,
+        "streamMs": 3901.1,
+        "driftMs": 1.1,
+        "billedSessionSec": 5
+      },
+      "partials": 11,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3901,
+          "type": "Begin"
+        },
+        {
+          "t": -2656,
+          "type": "Turn"
+        },
+        {
+          "t": -2299,
+          "type": "Turn"
+        },
+        {
+          "t": -2227,
+          "type": "Turn"
+        },
+        {
+          "t": -1432,
+          "type": "Turn"
+        },
+        {
+          "t": -1203,
+          "type": "Turn"
+        },
+        {
+          "t": -1093,
+          "type": "Turn"
+        },
+        {
+          "t": -1015,
+          "type": "Turn"
+        },
+        {
+          "t": -751,
+          "type": "Turn"
+        },
+        {
+          "t": -449,
+          "type": "Turn"
+        },
+        {
+          "t": -56,
+          "type": "Turn"
+        },
+        {
+          "t": 6,
+          "type": "Turn"
+        },
+        {
+          "t": 177,
+          "type": "Turn"
+        },
+        {
+          "t": 324,
+          "type": "Turn"
+        },
+        {
+          "t": 597,
+          "type": "Turn"
+        },
+        {
+          "t": 948,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "negative",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "negative",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "27",
+      "say": "Lufthansa four zero five heavy, negative, that's a right turn on Kilo Echo, right Kilo Echo.",
+      "style": "loose",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:46:36.800Z",
+      "transcript": "lufthansa 405 heavy negative that's a right turn on kilo echo right on kilo echo",
+      "latencyMs": 616.4,
+      "timings": {
+        "connectMs": 447.4,
+        "firstTextMs": 1996.6,
+        "streamMs": 5760.8,
+        "driftMs": 0.8,
+        "billedSessionSec": 7
+      },
+      "partials": 21,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5761,
+          "type": "Begin"
+        },
+        {
+          "t": -4242,
+          "type": "Turn"
+        },
+        {
+          "t": -4121,
+          "type": "Turn"
+        },
+        {
+          "t": -3928,
+          "type": "Turn"
+        },
+        {
+          "t": -3764,
+          "type": "Turn"
+        },
+        {
+          "t": -3522,
+          "type": "Turn"
+        },
+        {
+          "t": -3487,
+          "type": "Turn"
+        },
+        {
+          "t": -3094,
+          "type": "Turn"
+        },
+        {
+          "t": -2961,
+          "type": "Turn"
+        },
+        {
+          "t": -2582,
+          "type": "Turn"
+        },
+        {
+          "t": -2027,
+          "type": "Turn"
+        },
+        {
+          "t": -2024,
+          "type": "Turn"
+        },
+        {
+          "t": -2024,
+          "type": "Turn"
+        },
+        {
+          "t": -1871,
+          "type": "Turn"
+        },
+        {
+          "t": -1688,
+          "type": "Turn"
+        },
+        {
+          "t": -1126,
+          "type": "Turn"
+        },
+        {
+          "t": -1092,
+          "type": "Turn"
+        },
+        {
+          "t": -1055,
+          "type": "Turn"
+        },
+        {
+          "t": -681,
+          "type": "Turn"
+        },
+        {
+          "t": -304,
+          "type": "Turn"
+        },
+        {
+          "t": -166,
+          "type": "Turn"
+        },
+        {
+          "t": -69,
+          "type": "Turn"
+        },
+        {
+          "t": 178,
+          "type": "Turn"
+        },
+        {
+          "t": 208,
+          "type": "Turn"
+        },
+        {
+          "t": 341,
+          "type": "Turn"
+        },
+        {
+          "t": 616,
+          "type": "Turn"
+        },
+        {
+          "t": 968,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "negative",
+          "that's",
+          "a",
+          "right",
+          "turn",
+          "on",
+          "kilo",
+          "echo",
+          "right",
+          "kilo",
+          "echo"
+        ],
+        "hypTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "negative",
+          "that's",
+          "a",
+          "right",
+          "turn",
+          "on",
+          "kilo",
+          "echo",
+          "right",
+          "on",
+          "kilo",
+          "echo"
+        ],
+        "wer": {
+          "refWords": 16,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "28",
+      "say": "American one hundred, nope, departure runway is three one left, not right.",
+      "style": "loose",
+      "audioSec": 4.86,
+      "runAt": "2026-11-14T07:46:45.737Z",
+      "transcript": "american 100 nope departure runway is 3-1 left not right",
+      "latencyMs": 621.7,
+      "timings": {
+        "connectMs": 435.9,
+        "firstTextMs": 2074.7,
+        "streamMs": 4860.6,
+        "driftMs": 0.6,
+        "billedSessionSec": 6
+      },
+      "partials": 16,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4861,
+          "type": "Begin"
+        },
+        {
+          "t": -3700,
+          "type": "Turn"
+        },
+        {
+          "t": -3590,
+          "type": "Turn"
+        },
+        {
+          "t": -2786,
+          "type": "Turn"
+        },
+        {
+          "t": -2375,
+          "type": "Turn"
+        },
+        {
+          "t": -2012,
+          "type": "Turn"
+        },
+        {
+          "t": -1952,
+          "type": "Turn"
+        },
+        {
+          "t": -1683,
+          "type": "Turn"
+        },
+        {
+          "t": -1642,
+          "type": "Turn"
+        },
+        {
+          "t": -1273,
+          "type": "Turn"
+        },
+        {
+          "t": -1193,
+          "type": "Turn"
+        },
+        {
+          "t": -980,
+          "type": "Turn"
+        },
+        {
+          "t": -624,
+          "type": "Turn"
+        },
+        {
+          "t": -588,
+          "type": "Turn"
+        },
+        {
+          "t": -480,
+          "type": "Turn"
+        },
+        {
+          "t": -199,
+          "type": "Turn"
+        },
+        {
+          "t": 131,
+          "type": "Turn"
+        },
+        {
+          "t": 169,
+          "type": "Turn"
+        },
+        {
+          "t": 241,
+          "type": "Turn"
+        },
+        {
+          "t": 622,
+          "type": "Turn"
+        },
+        {
+          "t": 998,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "nope",
+          "departure",
+          "runway",
+          "is",
+          "3",
+          "1",
+          "left",
+          "not",
+          "right"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "nope",
+          "departure",
+          "runway",
+          "is",
+          "3",
+          "1",
+          "left",
+          "not",
+          "right"
+        ],
+        "wer": {
+          "refWords": 13,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "29",
+      "say": "Shamrock one zero four, negative, you've got them backwards, it's Alpha, Juliet, hold short Bravo.",
+      "style": "loose",
+      "audioSec": 6.54,
+      "runAt": "2026-11-14T07:46:56.337Z",
+      "transcript": "shamrock 104 negative you've got them backwards it's alpha juliet hold short bravo",
+      "latencyMs": 579.9,
+      "timings": {
+        "connectMs": 332.9,
+        "firstTextMs": 2293.4,
+        "streamMs": 6540.6,
+        "driftMs": 0.6,
+        "billedSessionSec": 7
+      },
+      "partials": 19,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6541,
+          "type": "Begin"
+        },
+        {
+          "t": -5366,
+          "type": "Turn"
+        },
+        {
+          "t": -4997,
+          "type": "Turn"
+        },
+        {
+          "t": -4247,
+          "type": "Turn"
+        },
+        {
+          "t": -4018,
+          "type": "Turn"
+        },
+        {
+          "t": -3119,
+          "type": "Turn"
+        },
+        {
+          "t": -3087,
+          "type": "Turn"
+        },
+        {
+          "t": -2893,
+          "type": "Turn"
+        },
+        {
+          "t": -2859,
+          "type": "Turn"
+        },
+        {
+          "t": -2678,
+          "type": "Turn"
+        },
+        {
+          "t": -2648,
+          "type": "Turn"
+        },
+        {
+          "t": -2414,
+          "type": "Turn"
+        },
+        {
+          "t": -2053,
+          "type": "Turn"
+        },
+        {
+          "t": -1786,
+          "type": "Turn"
+        },
+        {
+          "t": -1652,
+          "type": "Turn"
+        },
+        {
+          "t": -1527,
+          "type": "Turn"
+        },
+        {
+          "t": -798,
+          "type": "Turn"
+        },
+        {
+          "t": -698,
+          "type": "Turn"
+        },
+        {
+          "t": -78,
+          "type": "Turn"
+        },
+        {
+          "t": 178,
+          "type": "Turn"
+        },
+        {
+          "t": 190,
+          "type": "Turn"
+        },
+        {
+          "t": 319,
+          "type": "Turn"
+        },
+        {
+          "t": 580,
+          "type": "Turn"
+        },
+        {
+          "t": 929,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "negative",
+          "you've",
+          "got",
+          "them",
+          "backwards",
+          "it's",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "negative",
+          "you've",
+          "got",
+          "them",
+          "backwards",
+          "it's",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "30",
+      "say": "KLM six four four heavy, sorry, you got stepped on, go ahead and say again.",
+      "style": "loose",
+      "audioSec": 4.44,
+      "runAt": "2026-11-14T07:47:02.515Z",
+      "transcript": "klm644 heavy sorry you got stepped on go ahead and say it again",
+      "latencyMs": 565.1,
+      "timings": {
+        "connectMs": 504,
+        "firstTextMs": 2457.5,
+        "streamMs": 4441.2,
+        "driftMs": 1.2,
+        "billedSessionSec": 5
+      },
+      "partials": 15,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4441,
+          "type": "Begin"
+        },
+        {
+          "t": -3020,
+          "type": "Turn"
+        },
+        {
+          "t": -2818,
+          "type": "Turn"
+        },
+        {
+          "t": -2729,
+          "type": "Turn"
+        },
+        {
+          "t": -2521,
+          "type": "Turn"
+        },
+        {
+          "t": -2445,
+          "type": "Turn"
+        },
+        {
+          "t": -2196,
+          "type": "Turn"
+        },
+        {
+          "t": -1984,
+          "type": "Turn"
+        },
+        {
+          "t": -1727,
+          "type": "Turn"
+        },
+        {
+          "t": -1684,
+          "type": "Turn"
+        },
+        {
+          "t": -1368,
+          "type": "Turn"
+        },
+        {
+          "t": -1289,
+          "type": "Turn"
+        },
+        {
+          "t": -1170,
+          "type": "Turn"
+        },
+        {
+          "t": -909,
+          "type": "Turn"
+        },
+        {
+          "t": -676,
+          "type": "Turn"
+        },
+        {
+          "t": -581,
+          "type": "Turn"
+        },
+        {
+          "t": -542,
+          "type": "Turn"
+        },
+        {
+          "t": -438,
+          "type": "Turn"
+        },
+        {
+          "t": -138,
+          "type": "Turn"
+        },
+        {
+          "t": 32,
+          "type": "Turn"
+        },
+        {
+          "t": 65,
+          "type": "Turn"
+        },
+        {
+          "t": 132,
+          "type": "Turn"
+        },
+        {
+          "t": 565,
+          "type": "Turn"
+        },
+        {
+          "t": 916,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "klm",
+          "6",
+          "4",
+          "4",
+          "heavy",
+          "sorry",
+          "you",
+          "got",
+          "stepped",
+          "on",
+          "go",
+          "ahead",
+          "and",
+          "say",
+          "again"
+        ],
+        "hypTokens": [
+          "klm",
+          "6",
+          "4",
+          "4",
+          "heavy",
+          "sorry",
+          "you",
+          "got",
+          "stepped",
+          "on",
+          "go",
+          "ahead",
+          "and",
+          "say",
+          "it",
+          "again"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "31",
+      "say": "Aircraft calling Kennedy Ground, say again your callsign.",
+      "style": "textbook",
+      "audioSec": 3.6,
+      "runAt": "2026-11-14T07:47:22.916Z",
+      "transcript": "aircraft calling kennedy ground say again your call sign",
+      "latencyMs": 615.6,
+      "timings": {
+        "connectMs": 382.3,
+        "firstTextMs": 1849.9,
+        "streamMs": 3600.8,
+        "driftMs": 0.8,
+        "billedSessionSec": 5
+      },
+      "partials": 11,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3601,
+          "type": "Begin"
+        },
+        {
+          "t": -2395,
+          "type": "Turn"
+        },
+        {
+          "t": -2101,
+          "type": "Turn"
+        },
+        {
+          "t": -1751,
+          "type": "Turn"
+        },
+        {
+          "t": -1671,
+          "type": "Turn"
+        },
+        {
+          "t": -1512,
+          "type": "Turn"
+        },
+        {
+          "t": -1339,
+          "type": "Turn"
+        },
+        {
+          "t": -1124,
+          "type": "Turn"
+        },
+        {
+          "t": -478,
+          "type": "Turn"
+        },
+        {
+          "t": -415,
+          "type": "Turn"
+        },
+        {
+          "t": -69,
+          "type": "Turn"
+        },
+        {
+          "t": 65,
+          "type": "Turn"
+        },
+        {
+          "t": 165,
+          "type": "Turn"
+        },
+        {
+          "t": 242,
+          "type": "Turn"
+        },
+        {
+          "t": 616,
+          "type": "Turn"
+        },
+        {
+          "t": 967,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "aircraft",
+          "calling",
+          "kennedy",
+          "ground",
+          "say",
+          "again",
+          "your",
+          "callsign"
+        ],
+        "hypTokens": [
+          "aircraft",
+          "calling",
+          "kennedy",
+          "ground",
+          "say",
+          "again",
+          "your",
+          "callsign"
+        ],
+        "wer": {
+          "refWords": 8,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "32",
+      "say": "Brickyard thirty-five sixty, ground stop for Boston, expect about twenty minutes.",
+      "style": "textbook",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:47:37.844Z",
+      "transcript": "brickyard 3560 ground stop for boston expect 20 30 minutes",
+      "latencyMs": 672.7,
+      "timings": {
+        "connectMs": 421.6,
+        "firstTextMs": 2363.1,
+        "streamMs": 5762.3,
+        "driftMs": 2.3,
+        "billedSessionSec": 7
+      },
+      "partials": 12,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5762,
+          "type": "Begin"
+        },
+        {
+          "t": -4572,
+          "type": "Turn"
+        },
+        {
+          "t": -4322,
+          "type": "Turn"
+        },
+        {
+          "t": -3399,
+          "type": "Turn"
+        },
+        {
+          "t": -3358,
+          "type": "Turn"
+        },
+        {
+          "t": -3225,
+          "type": "Turn"
+        },
+        {
+          "t": -3062,
+          "type": "Turn"
+        },
+        {
+          "t": -2571,
+          "type": "Turn"
+        },
+        {
+          "t": -2325,
+          "type": "Turn"
+        },
+        {
+          "t": -2274,
+          "type": "Turn"
+        },
+        {
+          "t": -1915,
+          "type": "Turn"
+        },
+        {
+          "t": -976,
+          "type": "Turn"
+        },
+        {
+          "t": -86,
+          "type": "Turn"
+        },
+        {
+          "t": 121,
+          "type": "Turn"
+        },
+        {
+          "t": 235,
+          "type": "Turn"
+        },
+        {
+          "t": 673,
+          "type": "Turn"
+        },
+        {
+          "t": 986,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "brickyard",
+          "3",
+          "5",
+          "6",
+          "0",
+          "ground",
+          "stop",
+          "for",
+          "boston",
+          "expect",
+          "about",
+          "2",
+          "0",
+          "minutes"
+        ],
+        "hypTokens": [
+          "brickyard",
+          "3",
+          "5",
+          "6",
+          "0",
+          "ground",
+          "stop",
+          "for",
+          "boston",
+          "expect",
+          "2",
+          "0",
+          "3",
+          "0",
+          "minutes"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "33",
+      "say": "United fourteen sixteen, hold for release, expect one five minutes departure delay.",
+      "style": "textbook",
+      "audioSec": 5.1,
+      "runAt": "2026-11-14T07:47:46.967Z",
+      "transcript": "united 1416 hold for release expect 15 minutes departure delay",
+      "latencyMs": 598.7,
+      "timings": {
+        "connectMs": 409.5,
+        "firstTextMs": 1681.5,
+        "streamMs": 5100.3,
+        "driftMs": 0.3,
+        "billedSessionSec": 6
+      },
+      "partials": 14,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5100,
+          "type": "Begin"
+        },
+        {
+          "t": -3679,
+          "type": "Turn"
+        },
+        {
+          "t": -3419,
+          "type": "Turn"
+        },
+        {
+          "t": -3106,
+          "type": "Turn"
+        },
+        {
+          "t": -2861,
+          "type": "Turn"
+        },
+        {
+          "t": -2646,
+          "type": "Turn"
+        },
+        {
+          "t": -2409,
+          "type": "Turn"
+        },
+        {
+          "t": -2180,
+          "type": "Turn"
+        },
+        {
+          "t": -1602,
+          "type": "Turn"
+        },
+        {
+          "t": -1043,
+          "type": "Turn"
+        },
+        {
+          "t": -478,
+          "type": "Turn"
+        },
+        {
+          "t": 31,
+          "type": "Turn"
+        },
+        {
+          "t": 70,
+          "type": "Turn"
+        },
+        {
+          "t": 140,
+          "type": "Turn"
+        },
+        {
+          "t": 181,
+          "type": "Turn"
+        },
+        {
+          "t": 210,
+          "type": "Turn"
+        },
+        {
+          "t": 599,
+          "type": "Turn"
+        },
+        {
+          "t": 963,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "united",
+          "1",
+          "4",
+          "1",
+          "6",
+          "hold",
+          "for",
+          "release",
+          "expect",
+          "1",
+          "5",
+          "minutes",
+          "departure",
+          "delay"
+        ],
+        "hypTokens": [
+          "united",
+          "1",
+          "4",
+          "1",
+          "6",
+          "hold",
+          "for",
+          "release",
+          "expect",
+          "1",
+          "5",
+          "minutes",
+          "departure",
+          "delay"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "34",
+      "say": "JetBlue eleven twenty-three, give way to the Emirates heavy coming off Kilo Echo, then follow him on Alpha.",
+      "style": "loose",
+      "audioSec": 5.94,
+      "runAt": "2026-11-14T07:47:56.837Z",
+      "transcript": "jetblue 1123 give way to the emirates heavy coming off kilo echo then follow him on alpha",
+      "latencyMs": 582.2,
+      "timings": {
+        "connectMs": 370.9,
+        "firstTextMs": 1914.5,
+        "streamMs": 5940.7,
+        "driftMs": 0.7,
+        "billedSessionSec": 7
+      },
+      "partials": 23,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5941,
+          "type": "Begin"
+        },
+        {
+          "t": -4622,
+          "type": "Turn"
+        },
+        {
+          "t": -4406,
+          "type": "Turn"
+        },
+        {
+          "t": -4026,
+          "type": "Turn"
+        },
+        {
+          "t": -3956,
+          "type": "Turn"
+        },
+        {
+          "t": -3626,
+          "type": "Turn"
+        },
+        {
+          "t": -3550,
+          "type": "Turn"
+        },
+        {
+          "t": -3280,
+          "type": "Turn"
+        },
+        {
+          "t": -3203,
+          "type": "Turn"
+        },
+        {
+          "t": -3089,
+          "type": "Turn"
+        },
+        {
+          "t": -2843,
+          "type": "Turn"
+        },
+        {
+          "t": -2598,
+          "type": "Turn"
+        },
+        {
+          "t": -2423,
+          "type": "Turn"
+        },
+        {
+          "t": -2267,
+          "type": "Turn"
+        },
+        {
+          "t": -2104,
+          "type": "Turn"
+        },
+        {
+          "t": -1962,
+          "type": "Turn"
+        },
+        {
+          "t": -1860,
+          "type": "Turn"
+        },
+        {
+          "t": -1568,
+          "type": "Turn"
+        },
+        {
+          "t": -1444,
+          "type": "Turn"
+        },
+        {
+          "t": -1202,
+          "type": "Turn"
+        },
+        {
+          "t": -752,
+          "type": "Turn"
+        },
+        {
+          "t": -679,
+          "type": "Turn"
+        },
+        {
+          "t": -478,
+          "type": "Turn"
+        },
+        {
+          "t": -409,
+          "type": "Turn"
+        },
+        {
+          "t": -68,
+          "type": "Turn"
+        },
+        {
+          "t": 36,
+          "type": "Turn"
+        },
+        {
+          "t": 582,
+          "type": "Turn"
+        },
+        {
+          "t": 933,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "give",
+          "way",
+          "to",
+          "the",
+          "emirates",
+          "heavy",
+          "coming",
+          "off",
+          "kilo",
+          "echo",
+          "then",
+          "follow",
+          "him",
+          "on",
+          "alpha"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "give",
+          "way",
+          "to",
+          "the",
+          "emirates",
+          "heavy",
+          "coming",
+          "off",
+          "kilo",
+          "echo",
+          "then",
+          "follow",
+          "him",
+          "on",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    }
+  ]
+}

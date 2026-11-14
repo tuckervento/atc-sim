@@ -1,0 +1,4321 @@
+{
+  "candidate": "assemblyai-universal-3-6-pro",
+  "provider": "assemblyai",
+  "model": "universal-3-6-pro",
+  "pricing": {
+    "basis": "session",
+    "perMin": 0.007500000000000001,
+    "note": "$0.45/hr including keyterms, on session time"
+  },
+  "config": {
+    "vocabTerms": 87,
+    "speech_model": "universal-3-6-pro",
+    "min_turn_silence": 5000,
+    "max_turn_silence": 5000,
+    "endOfTurn": "ForceEndpoint"
+  },
+  "method": {
+    "chunkMs": 80,
+    "pacing": "chunk sent when its last sample would have been spoken (start + audio time of chunk end); tails < 20 ms merged into the previous chunk",
+    "session": "one fresh WebSocket session per clip, opened and configured before audio starts (connect time is not in latency)",
+    "latency": "performance.now() at final-transcript message arrival minus performance.now() just after the last audio chunk was handed to the socket; the end-of-turn signal is sent immediately after the last chunk",
+    "normalization": "stt/normalize.ts (lowercase, punctuation stripped, numbers to single digits, spelling equivalences)",
+    "wer": "corpus-level: total substitutions+deletions+insertions / total reference tokens; a line with no transcript counts as all deleted",
+    "criticalTokens": "results/stt/critical-tokens.json, matched by stt/critical.ts",
+    "p95": "nearest rank (ceil(0.95 n)-th smallest)"
+  },
+  "updatedAt": "2026-11-14T08:01:45.299Z",
+  "summary": {
+    "lines": 34,
+    "withFinal": 34,
+    "errors": [],
+    "lateText": [],
+    "latencyMs": {
+      "median": 120.4,
+      "p95": 213,
+      "min": 78.2,
+      "max": 222.4,
+      "withinBudget": 34
+    },
+    "firstTextMs": {
+      "median": 983.7
+    },
+    "wer": 0.014388489208633094,
+    "critical": {
+      "overall": 1,
+      "callsign": 1,
+      "runways": 1,
+      "taxiways": 1,
+      "holdShort": 1
+    },
+    "criticalCounts": {
+      "callsign": {
+        "expected": 33,
+        "found": 33
+      },
+      "runways": {
+        "expected": 11,
+        "found": 11
+      },
+      "taxiways": {
+        "expected": 35,
+        "found": 35
+      },
+      "holdShort": {
+        "expected": 16,
+        "found": 16
+      }
+    },
+    "linesAllCriticalCorrect": 34,
+    "audioSec": 206.22,
+    "billedSessionSec": 260,
+    "peakCostPerHr": {
+      "low": 0.225,
+      "high": 0.45,
+      "measured": 0.2836776258364853
+    }
+  },
+  "lines": [
+    {
+      "num": "01",
+      "say": "Delta four, runway three one left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.",
+      "style": "textbook",
+      "audioSec": 6.3,
+      "runAt": "2026-11-14T07:48:06.019Z",
+      "transcript": "Delta 4, runway 31 left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.",
+      "latencyMs": 90.1,
+      "timings": {
+        "connectMs": 446.7,
+        "firstTextMs": 982.8,
+        "streamMs": 6301.4,
+        "driftMs": 1.4,
+        "billedSessionSec": 8
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6302,
+          "type": "Begin"
+        },
+        {
+          "t": -5322,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -5319,
+          "type": "Turn"
+        },
+        {
+          "t": -3858,
+          "type": "Turn"
+        },
+        {
+          "t": -2653,
+          "type": "Turn"
+        },
+        {
+          "t": -1478,
+          "type": "Turn"
+        },
+        {
+          "t": -282,
+          "type": "Turn"
+        },
+        {
+          "t": 90,
+          "type": "Turn"
+        },
+        {
+          "t": 1567,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "02",
+      "say": "JetBlue eleven twenty-three, three one left, taxi via Alpha, Kilo Delta, hold short of Bravo and hold short of runway three one right.",
+      "style": "textbook",
+      "audioSec": 8.94,
+      "runAt": "2026-11-14T07:48:29.986Z",
+      "transcript": "JetBlue 1123, 31 left, taxi via Alpha, Kilo Delta, hold short of Bravo and hold short of runway 31 right.",
+      "latencyMs": 138.6,
+      "timings": {
+        "connectMs": 446.6,
+        "firstTextMs": 1044.4,
+        "streamMs": 8941.5,
+        "driftMs": 1.5,
+        "billedSessionSec": 11
+      },
+      "partials": 7,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8942,
+          "type": "Begin"
+        },
+        {
+          "t": -7898,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -7897,
+          "type": "Turn"
+        },
+        {
+          "t": -6680,
+          "type": "Turn"
+        },
+        {
+          "t": -5399,
+          "type": "Turn"
+        },
+        {
+          "t": -4200,
+          "type": "Turn"
+        },
+        {
+          "t": -2655,
+          "type": "Turn"
+        },
+        {
+          "t": -1383,
+          "type": "Turn"
+        },
+        {
+          "t": -203,
+          "type": "Turn"
+        },
+        {
+          "t": 139,
+          "type": "Turn"
+        },
+        {
+          "t": 1580,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "and",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "3",
+          "1",
+          "right"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "3",
+          "1",
+          "left",
+          "taxi",
+          "via",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "and",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "3",
+          "1",
+          "right"
+        ],
+        "wer": {
+          "refWords": 25,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "03",
+      "say": "American one hundred, okay, three one left, go ahead and take Alpha to Kilo Foxtrot, hold short three one right.",
+      "style": "loose",
+      "audioSec": 6.78,
+      "runAt": "2026-11-14T07:48:40.622Z",
+      "transcript": "American 100, okay, 31 left, go ahead and take Alpha to Kilo Foxtrot, hold short 31 right.",
+      "latencyMs": 148.6,
+      "timings": {
+        "connectMs": 516.9,
+        "firstTextMs": 1047.4,
+        "streamMs": 6780.5,
+        "driftMs": 0.5,
+        "billedSessionSec": 8
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6781,
+          "type": "Begin"
+        },
+        {
+          "t": -5733,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -5733,
+          "type": "Turn"
+        },
+        {
+          "t": -4342,
+          "type": "Turn"
+        },
+        {
+          "t": -2983,
+          "type": "Turn"
+        },
+        {
+          "t": -1733,
+          "type": "Turn"
+        },
+        {
+          "t": -521,
+          "type": "Turn"
+        },
+        {
+          "t": 149,
+          "type": "Turn"
+        },
+        {
+          "t": 1601,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "okay",
+          "3",
+          "1",
+          "left",
+          "go",
+          "ahead",
+          "and",
+          "take",
+          "alpha",
+          "to",
+          "kilo",
+          "foxtrot",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "okay",
+          "3",
+          "1",
+          "left",
+          "go",
+          "ahead",
+          "and",
+          "take",
+          "alpha",
+          "to",
+          "kilo",
+          "foxtrot",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right"
+        ],
+        "wer": {
+          "refWords": 21,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "04",
+      "say": "Shamrock one zero four, three one left, Alpha, Juliet, hold short Bravo.",
+      "style": "loose",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:48:48.481Z",
+      "transcript": "Shamrock 104, 31 left Alpha Juliet, hold short Bravo.",
+      "latencyMs": 95.3,
+      "timings": {
+        "connectMs": 406.9,
+        "firstTextMs": 981.2,
+        "streamMs": 4983,
+        "driftMs": 3,
+        "billedSessionSec": 7
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4983,
+          "type": "Begin"
+        },
+        {
+          "t": -4004,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -4002,
+          "type": "Turn"
+        },
+        {
+          "t": -2803,
+          "type": "Turn"
+        },
+        {
+          "t": -1579,
+          "type": "Turn"
+        },
+        {
+          "t": -402,
+          "type": "Turn"
+        },
+        {
+          "t": 95,
+          "type": "Turn"
+        },
+        {
+          "t": 1547,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 12,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "05",
+      "say": "Lufthansa four zero five heavy, left on Alpha, right Kilo Echo, three one left, hold short three one right, then hold short Kilo.",
+      "style": "loose",
+      "audioSec": 11.1,
+      "runAt": "2026-11-14T07:49:03.779Z",
+      "transcript": "Lufthansa 405 heavy, left on Alpha, right on Kilo Echo, uh, 31 left, hold short 31 right, then hold short Kilo.",
+      "latencyMs": 173.6,
+      "timings": {
+        "connectMs": 426.7,
+        "firstTextMs": 1060.7,
+        "streamMs": 11101.1,
+        "driftMs": 1.1,
+        "billedSessionSec": 13
+      },
+      "partials": 8,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -11101,
+          "type": "Begin"
+        },
+        {
+          "t": -10040,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -10040,
+          "type": "Turn"
+        },
+        {
+          "t": -8843,
+          "type": "Turn"
+        },
+        {
+          "t": -7646,
+          "type": "Turn"
+        },
+        {
+          "t": -6362,
+          "type": "Turn"
+        },
+        {
+          "t": -5085,
+          "type": "Turn"
+        },
+        {
+          "t": -3704,
+          "type": "Turn"
+        },
+        {
+          "t": -2117,
+          "type": "Turn"
+        },
+        {
+          "t": -925,
+          "type": "Turn"
+        },
+        {
+          "t": 174,
+          "type": "Turn"
+        },
+        {
+          "t": 1614,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "left",
+          "on",
+          "alpha",
+          "right",
+          "kilo",
+          "echo",
+          "3",
+          "1",
+          "left",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right",
+          "then",
+          "hold",
+          "short",
+          "kilo"
+        ],
+        "hypTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "left",
+          "on",
+          "alpha",
+          "right",
+          "on",
+          "kilo",
+          "echo",
+          "3",
+          "1",
+          "left",
+          "hold",
+          "short",
+          "3",
+          "1",
+          "right",
+          "then",
+          "hold",
+          "short",
+          "kilo"
+        ],
+        "wer": {
+          "refWords": 23,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "06",
+      "say": "Delta twenty-three forty, information Papa is current, altimeter two niner niner two, runway three one left, Alpha, Kilo Delta, hold short Bravo.",
+      "style": "textbook",
+      "audioSec": 11.34,
+      "runAt": "2026-11-14T07:49:17.171Z",
+      "transcript": "Delta 2340, information Papa is current altimeter 2992, runway 31 left, Alpha Kilo Delta, hold short Bravo.",
+      "latencyMs": 154.5,
+      "timings": {
+        "connectMs": 356.5,
+        "firstTextMs": 977.2,
+        "streamMs": 11341.3,
+        "driftMs": 1.3,
+        "billedSessionSec": 13
+      },
+      "partials": 9,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -11341,
+          "type": "Begin"
+        },
+        {
+          "t": -10364,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -10364,
+          "type": "Turn"
+        },
+        {
+          "t": -9145,
+          "type": "Turn"
+        },
+        {
+          "t": -7963,
+          "type": "Turn"
+        },
+        {
+          "t": -6742,
+          "type": "Turn"
+        },
+        {
+          "t": -5559,
+          "type": "Turn"
+        },
+        {
+          "t": -4360,
+          "type": "Turn"
+        },
+        {
+          "t": -3156,
+          "type": "Turn"
+        },
+        {
+          "t": -1962,
+          "type": "Turn"
+        },
+        {
+          "t": -764,
+          "type": "Turn"
+        },
+        {
+          "t": 155,
+          "type": "Turn"
+        },
+        {
+          "t": 1678,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "2",
+          "3",
+          "4",
+          "0",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "2",
+          "3",
+          "4",
+          "0",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2",
+          "runway",
+          "3",
+          "1",
+          "left",
+          "alpha",
+          "kilo",
+          "delta",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 24,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "07",
+      "say": "JetBlue six one five, Kennedy Ground, Oscar's old, information Papa is current, altimeter two niner niner two.",
+      "style": "loose",
+      "audioSec": 8.4,
+      "runAt": "2026-11-14T07:49:30.501Z",
+      "transcript": "JetBlue 615 Kennedy Ground, Oscar's old information, Papa is current, altimeter 29.92.",
+      "latencyMs": 120.4,
+      "timings": {
+        "connectMs": 435.1,
+        "firstTextMs": 983.7,
+        "streamMs": 8401.5,
+        "driftMs": 1.5,
+        "billedSessionSec": 10
+      },
+      "partials": 7,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8402,
+          "type": "Begin"
+        },
+        {
+          "t": -7418,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -7418,
+          "type": "Turn"
+        },
+        {
+          "t": -6222,
+          "type": "Turn"
+        },
+        {
+          "t": -5017,
+          "type": "Turn"
+        },
+        {
+          "t": -3822,
+          "type": "Turn"
+        },
+        {
+          "t": -2624,
+          "type": "Turn"
+        },
+        {
+          "t": -1285,
+          "type": "Turn"
+        },
+        {
+          "t": -48,
+          "type": "Turn"
+        },
+        {
+          "t": 120,
+          "type": "Turn"
+        },
+        {
+          "t": 1591,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "kennedy",
+          "ground",
+          "oscar's",
+          "old",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "kennedy",
+          "ground",
+          "oscar's",
+          "old",
+          "information",
+          "papa",
+          "is",
+          "current",
+          "altimeter",
+          "2",
+          "9",
+          "9",
+          "2"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "08",
+      "say": "Emirates two zero two heavy, taxi to the Terminal Four ramp via Kilo Echo, left on Alpha.",
+      "style": "textbook",
+      "audioSec": 6.54,
+      "runAt": "2026-11-14T07:49:41.430Z",
+      "transcript": "Emirates 202 Heavy, taxi to the Terminal 4 ramp via Kilo Echo left on Alpha.",
+      "latencyMs": 108.1,
+      "timings": {
+        "connectMs": 501.3,
+        "firstTextMs": 1027.6,
+        "streamMs": 6539.5,
+        "driftMs": -0.5,
+        "billedSessionSec": 8
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6540,
+          "type": "Begin"
+        },
+        {
+          "t": -5512,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -5512,
+          "type": "Turn"
+        },
+        {
+          "t": -4335,
+          "type": "Turn"
+        },
+        {
+          "t": -3158,
+          "type": "Turn"
+        },
+        {
+          "t": -1960,
+          "type": "Turn"
+        },
+        {
+          "t": -674,
+          "type": "Turn"
+        },
+        {
+          "t": 108,
+          "type": "Turn"
+        },
+        {
+          "t": 1560,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "taxi",
+          "to",
+          "the",
+          "terminal",
+          "4",
+          "ramp",
+          "via",
+          "kilo",
+          "echo",
+          "left",
+          "on",
+          "alpha"
+        ],
+        "hypTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "taxi",
+          "to",
+          "the",
+          "terminal",
+          "4",
+          "ramp",
+          "via",
+          "kilo",
+          "echo",
+          "left",
+          "on",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "09",
+      "say": "JetBlue three eighty-seven, alright, Kilo Foxtrot, right on Alpha into the ramp, and monitor ramp when you get there.",
+      "style": "loose",
+      "audioSec": 7.5,
+      "runAt": "2026-11-14T07:49:52.122Z",
+      "transcript": "JetBlue 387. All right, Kilo Foxtrot, right on Alpha into the ramp, and, uh, monitor ramp when you get there.",
+      "latencyMs": 212.7,
+      "timings": {
+        "connectMs": 362.7,
+        "firstTextMs": 998.9,
+        "streamMs": 7502.1,
+        "driftMs": 2.1,
+        "billedSessionSec": 9
+      },
+      "partials": 6,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7502,
+          "type": "Begin"
+        },
+        {
+          "t": -6503,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -6503,
+          "type": "Turn"
+        },
+        {
+          "t": -5303,
+          "type": "Turn"
+        },
+        {
+          "t": -4124,
+          "type": "Turn"
+        },
+        {
+          "t": -2910,
+          "type": "Turn"
+        },
+        {
+          "t": -1720,
+          "type": "Turn"
+        },
+        {
+          "t": -523,
+          "type": "Turn"
+        },
+        {
+          "t": 213,
+          "type": "Turn"
+        },
+        {
+          "t": 1660,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "3",
+          "8",
+          "7",
+          "alright",
+          "kilo",
+          "foxtrot",
+          "right",
+          "on",
+          "alpha",
+          "into",
+          "the",
+          "ramp",
+          "and",
+          "monitor",
+          "ramp",
+          "when",
+          "you",
+          "get",
+          "there"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "3",
+          "8",
+          "7",
+          "alright",
+          "kilo",
+          "foxtrot",
+          "right",
+          "on",
+          "alpha",
+          "into",
+          "the",
+          "ramp",
+          "and",
+          "monitor",
+          "ramp",
+          "when",
+          "you",
+          "get",
+          "there"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "10",
+      "say": "American one forty-two heavy, gonna be Kilo Delta, right on Bravo, left Hotel into Terminal Eight, hold short Alpha.",
+      "style": "loose",
+      "audioSec": 8.94,
+      "runAt": "2026-11-14T07:50:03.042Z",
+      "transcript": "American 142 Heavy, gonna be Kilo Delta right on Bravo left Hotel to Terminal 8, hold short Alpha.",
+      "latencyMs": 109.2,
+      "timings": {
+        "connectMs": 395.8,
+        "firstTextMs": 1042.7,
+        "streamMs": 8941.3,
+        "driftMs": 1.3,
+        "billedSessionSec": 11
+      },
+      "partials": 7,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8941,
+          "type": "Begin"
+        },
+        {
+          "t": -7899,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -7899,
+          "type": "Turn"
+        },
+        {
+          "t": -6593,
+          "type": "Turn"
+        },
+        {
+          "t": -4893,
+          "type": "Turn"
+        },
+        {
+          "t": -3720,
+          "type": "Turn"
+        },
+        {
+          "t": -2414,
+          "type": "Turn"
+        },
+        {
+          "t": -1317,
+          "type": "Turn"
+        },
+        {
+          "t": -99,
+          "type": "Turn"
+        },
+        {
+          "t": 109,
+          "type": "Turn"
+        },
+        {
+          "t": 1561,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "4",
+          "2",
+          "heavy",
+          "gonna",
+          "be",
+          "kilo",
+          "delta",
+          "right",
+          "on",
+          "bravo",
+          "left",
+          "hotel",
+          "into",
+          "terminal",
+          "8",
+          "hold",
+          "short",
+          "alpha"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "4",
+          "2",
+          "heavy",
+          "gonna",
+          "be",
+          "kilo",
+          "delta",
+          "right",
+          "on",
+          "bravo",
+          "left",
+          "hotel",
+          "to",
+          "terminal",
+          "8",
+          "hold",
+          "short",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 3,
+            "found": 3,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "11",
+      "say": "Alaska niner three, hold short of runway four right.",
+      "style": "textbook",
+      "audioSec": 3.06,
+      "runAt": "2026-11-14T07:50:09.995Z",
+      "transcript": "Alaska niner three, hold short of runway four right.",
+      "latencyMs": 171.2,
+      "timings": {
+        "connectMs": 415.7,
+        "firstTextMs": 988.9,
+        "streamMs": 3061.3,
+        "driftMs": 1.3,
+        "billedSessionSec": 5
+      },
+      "partials": 2,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3062,
+          "type": "Begin"
+        },
+        {
+          "t": -2073,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -2072,
+          "type": "Turn"
+        },
+        {
+          "t": -858,
+          "type": "Turn"
+        },
+        {
+          "t": 171,
+          "type": "Turn"
+        },
+        {
+          "t": 1669,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "alaska",
+          "9",
+          "3",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "4",
+          "right"
+        ],
+        "hypTokens": [
+          "alaska",
+          "9",
+          "3",
+          "hold",
+          "short",
+          "of",
+          "runway",
+          "4",
+          "right"
+        ],
+        "wer": {
+          "refWords": 9,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "12",
+      "say": "Delta four, actually, I need you to hold short of three one right, traffic on short final.",
+      "style": "loose",
+      "audioSec": 4.92,
+      "runAt": "2026-11-14T07:50:27.993Z",
+      "transcript": "Delta 4, actually I need you to hold short of 31 right, traffic on short final.",
+      "latencyMs": 135.8,
+      "timings": {
+        "connectMs": 335.3,
+        "firstTextMs": 978.2,
+        "streamMs": 4922.4,
+        "driftMs": 2.4,
+        "billedSessionSec": 6
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4922,
+          "type": "Begin"
+        },
+        {
+          "t": -3944,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -3944,
+          "type": "Turn"
+        },
+        {
+          "t": -2746,
+          "type": "Turn"
+        },
+        {
+          "t": -1529,
+          "type": "Turn"
+        },
+        {
+          "t": -342,
+          "type": "Turn"
+        },
+        {
+          "t": 136,
+          "type": "Turn"
+        },
+        {
+          "t": 1561,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "actually",
+          "i",
+          "need",
+          "you",
+          "to",
+          "hold",
+          "short",
+          "of",
+          "3",
+          "1",
+          "right",
+          "traffic",
+          "on",
+          "short",
+          "final"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "actually",
+          "i",
+          "need",
+          "you",
+          "to",
+          "hold",
+          "short",
+          "of",
+          "3",
+          "1",
+          "right",
+          "traffic",
+          "on",
+          "short",
+          "final"
+        ],
+        "wer": {
+          "refWords": 17,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "13",
+      "say": "Iberia six two six heavy, hold short of Bravo, you'll have a Delta seven sixty-seven passing left to right.",
+      "style": "loose",
+      "audioSec": 6.48,
+      "runAt": "2026-11-14T07:50:42.471Z",
+      "transcript": "Iberia 626 heavy, hold short of Bravo. You'll have a Delta 767 passing left to right.",
+      "latencyMs": 149,
+      "timings": {
+        "connectMs": 406.9,
+        "firstTextMs": 983.3,
+        "streamMs": 6481,
+        "driftMs": 1,
+        "billedSessionSec": 8
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6481,
+          "type": "Begin"
+        },
+        {
+          "t": -5502,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -5498,
+          "type": "Turn"
+        },
+        {
+          "t": -4301,
+          "type": "Turn"
+        },
+        {
+          "t": -3092,
+          "type": "Turn"
+        },
+        {
+          "t": -1899,
+          "type": "Turn"
+        },
+        {
+          "t": -655,
+          "type": "Turn"
+        },
+        {
+          "t": 149,
+          "type": "Turn"
+        },
+        {
+          "t": 1753,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "you'll",
+          "have",
+          "a",
+          "delta",
+          "7",
+          "6",
+          "7",
+          "passing",
+          "left",
+          "to",
+          "right"
+        ],
+        "hypTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "you'll",
+          "have",
+          "a",
+          "delta",
+          "7",
+          "6",
+          "7",
+          "passing",
+          "left",
+          "to",
+          "right"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "14",
+      "say": "JetBlue eleven twenty-three, hold position.",
+      "style": "textbook",
+      "audioSec": 3.42,
+      "runAt": "2026-11-14T07:50:48.972Z",
+      "transcript": "JetBlue 1123, hold position.",
+      "latencyMs": 78.2,
+      "timings": {
+        "connectMs": 370.6,
+        "firstTextMs": 1386.3,
+        "streamMs": 3422.3,
+        "driftMs": 2.3,
+        "billedSessionSec": 5
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3422,
+          "type": "Begin"
+        },
+        {
+          "t": -2040,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -2036,
+          "type": "Turn"
+        },
+        {
+          "t": -1640,
+          "type": "Turn"
+        },
+        {
+          "t": -431,
+          "type": "Turn"
+        },
+        {
+          "t": 78,
+          "type": "Turn"
+        },
+        {
+          "t": 1530,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "hold",
+          "position"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "hold",
+          "position"
+        ],
+        "wer": {
+          "refWords": 7,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "15",
+      "say": "Iberia six two six heavy, traffic's by, go ahead and continue, thanks for waiting.",
+      "style": "loose",
+      "audioSec": 4.44,
+      "runAt": "2026-11-14T07:50:59.692Z",
+      "transcript": "Iberia 626 heavy, traffic's by, go ahead and continue, thanks for waiting.",
+      "latencyMs": 148.3,
+      "timings": {
+        "connectMs": 460.6,
+        "firstTextMs": 997.3,
+        "streamMs": 4441.4,
+        "driftMs": 1.4,
+        "billedSessionSec": 6
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4442,
+          "type": "Begin"
+        },
+        {
+          "t": -3444,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -3444,
+          "type": "Turn"
+        },
+        {
+          "t": -2260,
+          "type": "Turn"
+        },
+        {
+          "t": -1062,
+          "type": "Turn"
+        },
+        {
+          "t": 148,
+          "type": "Turn"
+        },
+        {
+          "t": 1596,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "traffic's",
+          "by",
+          "go",
+          "ahead",
+          "and",
+          "continue",
+          "thanks",
+          "for",
+          "waiting"
+        ],
+        "hypTokens": [
+          "iberia",
+          "6",
+          "2",
+          "6",
+          "heavy",
+          "traffic's",
+          "by",
+          "go",
+          "ahead",
+          "and",
+          "continue",
+          "thanks",
+          "for",
+          "waiting"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "16",
+      "say": "Speedbird one seven five heavy, stop, stop, hold your position.",
+      "style": "loose",
+      "audioSec": 4.5,
+      "runAt": "2026-11-14T07:51:12.458Z",
+      "transcript": "Speedbird 175 heavy, stop, stop, hold your position.",
+      "latencyMs": 122.4,
+      "timings": {
+        "connectMs": 380.6,
+        "firstTextMs": 981.3,
+        "streamMs": 4500.6,
+        "driftMs": 0.6,
+        "billedSessionSec": 6
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4501,
+          "type": "Begin"
+        },
+        {
+          "t": -3520,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -3519,
+          "type": "Turn"
+        },
+        {
+          "t": -2318,
+          "type": "Turn"
+        },
+        {
+          "t": -1120,
+          "type": "Turn"
+        },
+        {
+          "t": 122,
+          "type": "Turn"
+        },
+        {
+          "t": 1575,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "stop",
+          "stop",
+          "hold",
+          "your",
+          "position"
+        ],
+        "hypTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "stop",
+          "stop",
+          "hold",
+          "your",
+          "position"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "17",
+      "say": "Delta four, cross runway three one right at Kilo Echo.",
+      "style": "textbook",
+      "audioSec": 3.78,
+      "runAt": "2026-11-14T07:51:27.968Z",
+      "transcript": "Delta 4, cross runway 31 right at Kilo Echo.",
+      "latencyMs": 156.3,
+      "timings": {
+        "connectMs": 390.2,
+        "firstTextMs": 986.2,
+        "streamMs": 3779.9,
+        "driftMs": -0.1,
+        "billedSessionSec": 5
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3780,
+          "type": "Begin"
+        },
+        {
+          "t": -2794,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -2794,
+          "type": "Turn"
+        },
+        {
+          "t": -1600,
+          "type": "Turn"
+        },
+        {
+          "t": -402,
+          "type": "Turn"
+        },
+        {
+          "t": 156,
+          "type": "Turn"
+        },
+        {
+          "t": 1605,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "cross",
+          "runway",
+          "3",
+          "1",
+          "right",
+          "at",
+          "kilo",
+          "echo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "cross",
+          "runway",
+          "3",
+          "1",
+          "right",
+          "at",
+          "kilo",
+          "echo"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "18",
+      "say": "Swiss one seven heavy, go ahead and cross two two right at Yankee, then hold short of Bravo.",
+      "style": "loose",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:51:41.839Z",
+      "transcript": "Swiss 17 Heavy, go ahead and cross 22 right at Yankee, then hold short of Bravo.",
+      "latencyMs": 111.8,
+      "timings": {
+        "connectMs": 413.7,
+        "firstTextMs": 983.1,
+        "streamMs": 4982,
+        "driftMs": 2,
+        "billedSessionSec": 7
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4982,
+          "type": "Begin"
+        },
+        {
+          "t": -3999,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -3999,
+          "type": "Turn"
+        },
+        {
+          "t": -2799,
+          "type": "Turn"
+        },
+        {
+          "t": -1570,
+          "type": "Turn"
+        },
+        {
+          "t": -394,
+          "type": "Turn"
+        },
+        {
+          "t": 112,
+          "type": "Turn"
+        },
+        {
+          "t": 1564,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "swiss",
+          "1",
+          "7",
+          "heavy",
+          "go",
+          "ahead",
+          "and",
+          "cross",
+          "2",
+          "2",
+          "right",
+          "at",
+          "yankee",
+          "then",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "hypTokens": [
+          "swiss",
+          "1",
+          "7",
+          "heavy",
+          "go",
+          "ahead",
+          "and",
+          "cross",
+          "2",
+          "2",
+          "right",
+          "at",
+          "yankee",
+          "then",
+          "hold",
+          "short",
+          "of",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 18,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "19",
+      "say": "Qatari seven zero one heavy, at Kilo Echo, cross three one right, then Kilo to three one left.",
+      "style": "loose",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:51:52.464Z",
+      "transcript": "Qatari 701 heavy at Kilo Echo, cross 31 right, then Kilo to 31 left.",
+      "latencyMs": 86.9,
+      "timings": {
+        "connectMs": 465.7,
+        "firstTextMs": 978.9,
+        "streamMs": 5760.2,
+        "driftMs": 0.2,
+        "billedSessionSec": 7
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5760,
+          "type": "Begin"
+        },
+        {
+          "t": -4781,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -4781,
+          "type": "Turn"
+        },
+        {
+          "t": -3581,
+          "type": "Turn"
+        },
+        {
+          "t": -2378,
+          "type": "Turn"
+        },
+        {
+          "t": -1160,
+          "type": "Turn"
+        },
+        {
+          "t": 18,
+          "type": "Turn"
+        },
+        {
+          "t": 87,
+          "type": "Turn"
+        },
+        {
+          "t": 1538,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "qatari",
+          "7",
+          "0",
+          "1",
+          "heavy",
+          "at",
+          "kilo",
+          "echo",
+          "cross",
+          "3",
+          "1",
+          "right",
+          "then",
+          "kilo",
+          "to",
+          "3",
+          "1",
+          "left"
+        ],
+        "hypTokens": [
+          "qatari",
+          "7",
+          "0",
+          "1",
+          "heavy",
+          "at",
+          "kilo",
+          "echo",
+          "cross",
+          "3",
+          "1",
+          "right",
+          "then",
+          "kilo",
+          "to",
+          "3",
+          "1",
+          "left"
+        ],
+        "wer": {
+          "refWords": 18,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "20",
+      "say": "Air France two three heavy, exit the line at the next left, Kilo Delta, and hold on the pad.",
+      "style": "textbook",
+      "audioSec": 4.98,
+      "runAt": "2026-11-14T07:52:01.283Z",
+      "transcript": "Air France 23 Heavy, exit the line at the next left kilo delta and hold on the pad.",
+      "latencyMs": 222.4,
+      "timings": {
+        "connectMs": 382.2,
+        "firstTextMs": 1219.7,
+        "streamMs": 4981.6,
+        "driftMs": 1.6,
+        "billedSessionSec": 7
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4982,
+          "type": "Begin"
+        },
+        {
+          "t": -3762,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -3762,
+          "type": "Turn"
+        },
+        {
+          "t": -3200,
+          "type": "Turn"
+        },
+        {
+          "t": -1974,
+          "type": "Turn"
+        },
+        {
+          "t": -791,
+          "type": "Turn"
+        },
+        {
+          "t": 222,
+          "type": "Turn"
+        },
+        {
+          "t": 1673,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "air",
+          "france",
+          "2",
+          "3",
+          "heavy",
+          "exit",
+          "the",
+          "line",
+          "at",
+          "the",
+          "next",
+          "left",
+          "kilo",
+          "delta",
+          "and",
+          "hold",
+          "on",
+          "the",
+          "pad"
+        ],
+        "hypTokens": [
+          "air",
+          "france",
+          "2",
+          "3",
+          "heavy",
+          "exit",
+          "the",
+          "line",
+          "at",
+          "the",
+          "next",
+          "left",
+          "kilo",
+          "delta",
+          "and",
+          "hold",
+          "on",
+          "the",
+          "pad"
+        ],
+        "wer": {
+          "refWords": 19,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "21",
+      "say": "Delta twelve oh four, bad news, ground stop for Atlanta, take the next right at Kilo Charlie and head over to the penalty box.",
+      "style": "loose",
+      "audioSec": 7.26,
+      "runAt": "2026-11-14T07:52:16.198Z",
+      "transcript": "Delta 1204, uh, bad news, ground stop for Atlanta. Take the next right at Kilo Charlie and head over to the penalty box.",
+      "latencyMs": 115.1,
+      "timings": {
+        "connectMs": 415.7,
+        "firstTextMs": 980.7,
+        "streamMs": 7261.5,
+        "driftMs": 1.5,
+        "billedSessionSec": 9
+      },
+      "partials": 6,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7262,
+          "type": "Begin"
+        },
+        {
+          "t": -6281,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -6281,
+          "type": "Turn"
+        },
+        {
+          "t": -5082,
+          "type": "Turn"
+        },
+        {
+          "t": -3876,
+          "type": "Turn"
+        },
+        {
+          "t": -2522,
+          "type": "Turn"
+        },
+        {
+          "t": -1241,
+          "type": "Turn"
+        },
+        {
+          "t": -38,
+          "type": "Turn"
+        },
+        {
+          "t": 115,
+          "type": "Turn"
+        },
+        {
+          "t": 1566,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "1",
+          "2",
+          "0",
+          "4",
+          "bad",
+          "news",
+          "ground",
+          "stop",
+          "for",
+          "atlanta",
+          "take",
+          "the",
+          "next",
+          "right",
+          "at",
+          "kilo",
+          "charlie",
+          "and",
+          "head",
+          "over",
+          "to",
+          "the",
+          "penalty",
+          "box"
+        ],
+        "hypTokens": [
+          "delta",
+          "1",
+          "2",
+          "0",
+          "4",
+          "bad",
+          "news",
+          "ground",
+          "stop",
+          "for",
+          "atlanta",
+          "take",
+          "the",
+          "next",
+          "right",
+          "at",
+          "kilo",
+          "charlie",
+          "and",
+          "head",
+          "over",
+          "to",
+          "the",
+          "penalty",
+          "box"
+        ],
+        "wer": {
+          "refWords": 25,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "22",
+      "say": "JetBlue six one five, release time one four five two for you, taxi to the pad via Alpha, Kilo Kilo, and sit tight.",
+      "style": "loose",
+      "audioSec": 8.04,
+      "runAt": "2026-11-14T07:52:33.281Z",
+      "transcript": "JetBlue 615, release time 1452 for you. Taxi to the pad via Alpha, Kilo, Kilo, and sit tight.",
+      "latencyMs": 201.8,
+      "timings": {
+        "connectMs": 362,
+        "firstTextMs": 989.8,
+        "streamMs": 8041.5,
+        "driftMs": 1.5,
+        "billedSessionSec": 10
+      },
+      "partials": 6,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -8042,
+          "type": "Begin"
+        },
+        {
+          "t": -7052,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -7052,
+          "type": "Turn"
+        },
+        {
+          "t": -5785,
+          "type": "Turn"
+        },
+        {
+          "t": -4581,
+          "type": "Turn"
+        },
+        {
+          "t": -3462,
+          "type": "Turn"
+        },
+        {
+          "t": -2241,
+          "type": "Turn"
+        },
+        {
+          "t": -1034,
+          "type": "Turn"
+        },
+        {
+          "t": 202,
+          "type": "Turn"
+        },
+        {
+          "t": 1635,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "release",
+          "time",
+          "1",
+          "4",
+          "5",
+          "2",
+          "for",
+          "you",
+          "taxi",
+          "to",
+          "the",
+          "pad",
+          "via",
+          "alpha",
+          "kilo",
+          "kilo",
+          "and",
+          "sit",
+          "tight"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "6",
+          "1",
+          "5",
+          "release",
+          "time",
+          "1",
+          "4",
+          "5",
+          "2",
+          "for",
+          "you",
+          "taxi",
+          "to",
+          "the",
+          "pad",
+          "via",
+          "alpha",
+          "kilo",
+          "kilo",
+          "and",
+          "sit",
+          "tight"
+        ],
+        "wer": {
+          "refWords": 23,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "23",
+      "say": "Virgin three, roger, taxi to the penalty box via Kilo Foxtrot, Bravo, and let me know when your gate opens up.",
+      "style": "loose",
+      "audioSec": 7.62,
+      "runAt": "2026-11-14T07:52:45.592Z",
+      "transcript": "Virgin 3, roger. Taxi to the penalty box via Kilo Foxtrot Bravo. Let me know when your gate opens up.",
+      "latencyMs": 148.8,
+      "timings": {
+        "connectMs": 421.7,
+        "firstTextMs": 1062.5,
+        "streamMs": 7620.3,
+        "driftMs": 0.3,
+        "billedSessionSec": 9
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -7621,
+          "type": "Begin"
+        },
+        {
+          "t": -6558,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -6558,
+          "type": "Turn"
+        },
+        {
+          "t": -4633,
+          "type": "Turn"
+        },
+        {
+          "t": -3405,
+          "type": "Turn"
+        },
+        {
+          "t": -1984,
+          "type": "Turn"
+        },
+        {
+          "t": -791,
+          "type": "Turn"
+        },
+        {
+          "t": 149,
+          "type": "Turn"
+        },
+        {
+          "t": 1615,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "virgin",
+          "3",
+          "roger",
+          "taxi",
+          "to",
+          "the",
+          "penalty",
+          "box",
+          "via",
+          "kilo",
+          "foxtrot",
+          "bravo",
+          "and",
+          "let",
+          "me",
+          "know",
+          "when",
+          "your",
+          "gate",
+          "opens",
+          "up"
+        ],
+        "hypTokens": [
+          "virgin",
+          "3",
+          "roger",
+          "taxi",
+          "to",
+          "the",
+          "penalty",
+          "box",
+          "via",
+          "kilo",
+          "foxtrot",
+          "bravo",
+          "let",
+          "me",
+          "know",
+          "when",
+          "your",
+          "gate",
+          "opens",
+          "up"
+        ],
+        "wer": {
+          "refWords": 21,
+          "substitutions": 0,
+          "deletions": 1,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "24",
+      "say": "Speedbird one seven five heavy, number two for departure, monitor tower one one niner point one.",
+      "style": "textbook",
+      "audioSec": 6.24,
+      "runAt": "2026-11-14T07:52:53.986Z",
+      "transcript": "Speedbird 175 heavy, number 2 for departure. Monitor tower 119.1.",
+      "latencyMs": 98.7,
+      "timings": {
+        "connectMs": 414.2,
+        "firstTextMs": 979.2,
+        "streamMs": 6240.2,
+        "driftMs": 0.2,
+        "billedSessionSec": 8
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6240,
+          "type": "Begin"
+        },
+        {
+          "t": -5261,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -5261,
+          "type": "Turn"
+        },
+        {
+          "t": -4059,
+          "type": "Turn"
+        },
+        {
+          "t": -2865,
+          "type": "Turn"
+        },
+        {
+          "t": -1659,
+          "type": "Turn"
+        },
+        {
+          "t": -462,
+          "type": "Turn"
+        },
+        {
+          "t": 99,
+          "type": "Turn"
+        },
+        {
+          "t": 1584,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "number",
+          "2",
+          "for",
+          "departure",
+          "monitor",
+          "tower",
+          "1",
+          "1",
+          "9",
+          "1"
+        ],
+        "hypTokens": [
+          "speedbird",
+          "1",
+          "7",
+          "5",
+          "heavy",
+          "number",
+          "2",
+          "for",
+          "departure",
+          "monitor",
+          "tower",
+          "1",
+          "1",
+          "9",
+          "1"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "25",
+      "say": "Emirates two zero two heavy, contact ramp, so long.",
+      "style": "loose",
+      "audioSec": 4.02,
+      "runAt": "2026-11-14T07:53:01.232Z",
+      "transcript": "Emirates 202 heavy contact ramp, so long.",
+      "latencyMs": 101.9,
+      "timings": {
+        "connectMs": 357.7,
+        "firstTextMs": 977.6,
+        "streamMs": 4021.8,
+        "driftMs": 1.8,
+        "billedSessionSec": 6
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4022,
+          "type": "Begin"
+        },
+        {
+          "t": -3044,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -3044,
+          "type": "Turn"
+        },
+        {
+          "t": -1817,
+          "type": "Turn"
+        },
+        {
+          "t": -560,
+          "type": "Turn"
+        },
+        {
+          "t": 102,
+          "type": "Turn"
+        },
+        {
+          "t": 1555,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "contact",
+          "ramp",
+          "so",
+          "long"
+        ],
+        "hypTokens": [
+          "emirates",
+          "2",
+          "0",
+          "2",
+          "heavy",
+          "contact",
+          "ramp",
+          "so",
+          "long"
+        ],
+        "wer": {
+          "refWords": 9,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "26",
+      "say": "Delta four, negative, hold short of Bravo, hold short Bravo.",
+      "style": "textbook",
+      "audioSec": 3.9,
+      "runAt": "2026-11-14T07:53:13.893Z",
+      "transcript": "Delta 4 negative, hold short of Bravo, hold short Bravo.",
+      "latencyMs": 143.4,
+      "timings": {
+        "connectMs": 434.8,
+        "firstTextMs": 987.3,
+        "streamMs": 3902,
+        "driftMs": 2,
+        "billedSessionSec": 5
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3902,
+          "type": "Begin"
+        },
+        {
+          "t": -2915,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -2915,
+          "type": "Turn"
+        },
+        {
+          "t": -1642,
+          "type": "Turn"
+        },
+        {
+          "t": -331,
+          "type": "Turn"
+        },
+        {
+          "t": 143,
+          "type": "Turn"
+        },
+        {
+          "t": 1549,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "delta",
+          "4",
+          "negative",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "delta",
+          "4",
+          "negative",
+          "hold",
+          "short",
+          "of",
+          "bravo",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 10,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "27",
+      "say": "Lufthansa four zero five heavy, negative, that's a right turn on Kilo Echo, right Kilo Echo.",
+      "style": "loose",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:53:32.026Z",
+      "transcript": "Lufthansa 405 Heavy, negative. That's a right turn on Kilo Echo, right on Kilo Echo.",
+      "latencyMs": 104.8,
+      "timings": {
+        "connectMs": 414.2,
+        "firstTextMs": 981.8,
+        "streamMs": 5761.7,
+        "driftMs": 1.7,
+        "billedSessionSec": 7
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5762,
+          "type": "Begin"
+        },
+        {
+          "t": -4784,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -4780,
+          "type": "Turn"
+        },
+        {
+          "t": -3583,
+          "type": "Turn"
+        },
+        {
+          "t": -2381,
+          "type": "Turn"
+        },
+        {
+          "t": -1180,
+          "type": "Turn"
+        },
+        {
+          "t": 20,
+          "type": "Turn"
+        },
+        {
+          "t": 105,
+          "type": "Turn"
+        },
+        {
+          "t": 1556,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "negative",
+          "that's",
+          "a",
+          "right",
+          "turn",
+          "on",
+          "kilo",
+          "echo",
+          "right",
+          "kilo",
+          "echo"
+        ],
+        "hypTokens": [
+          "lufthansa",
+          "4",
+          "0",
+          "5",
+          "heavy",
+          "negative",
+          "that's",
+          "a",
+          "right",
+          "turn",
+          "on",
+          "kilo",
+          "echo",
+          "right",
+          "on",
+          "kilo",
+          "echo"
+        ],
+        "wer": {
+          "refWords": 16,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "28",
+      "say": "American one hundred, nope, departure runway is three one left, not right.",
+      "style": "loose",
+      "audioSec": 4.86,
+      "runAt": "2026-11-14T07:53:43.853Z",
+      "transcript": "American 100— nope, departure runway is 31 left, not right.",
+      "latencyMs": 109.2,
+      "timings": {
+        "connectMs": 350.2,
+        "firstTextMs": 980.1,
+        "streamMs": 4861.4,
+        "driftMs": 1.4,
+        "billedSessionSec": 6
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4861,
+          "type": "Begin"
+        },
+        {
+          "t": -3881,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -3881,
+          "type": "Turn"
+        },
+        {
+          "t": -2655,
+          "type": "Turn"
+        },
+        {
+          "t": -1431,
+          "type": "Turn"
+        },
+        {
+          "t": -280,
+          "type": "Turn"
+        },
+        {
+          "t": 109,
+          "type": "Turn"
+        },
+        {
+          "t": 1557,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "nope",
+          "departure",
+          "runway",
+          "is",
+          "3",
+          "1",
+          "left",
+          "not",
+          "right"
+        ],
+        "hypTokens": [
+          "american",
+          "1",
+          "0",
+          "0",
+          "nope",
+          "departure",
+          "runway",
+          "is",
+          "3",
+          "1",
+          "left",
+          "not",
+          "right"
+        ],
+        "wer": {
+          "refWords": 13,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "29",
+      "say": "Shamrock one zero four, negative, you've got them backwards, it's Alpha, Juliet, hold short Bravo.",
+      "style": "loose",
+      "audioSec": 6.54,
+      "runAt": "2026-11-14T07:53:55.465Z",
+      "transcript": "Shamrock 104 negative, you've got them backwards. It's Alpha Juliet, hold short Bravo.",
+      "latencyMs": 213,
+      "timings": {
+        "connectMs": 386.4,
+        "firstTextMs": 1058.5,
+        "streamMs": 6542.5,
+        "driftMs": 2.5,
+        "billedSessionSec": 8
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -6543,
+          "type": "Begin"
+        },
+        {
+          "t": -5484,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -5484,
+          "type": "Turn"
+        },
+        {
+          "t": -4201,
+          "type": "Turn"
+        },
+        {
+          "t": -2852,
+          "type": "Turn"
+        },
+        {
+          "t": -1563,
+          "type": "Turn"
+        },
+        {
+          "t": -283,
+          "type": "Turn"
+        },
+        {
+          "t": 213,
+          "type": "Turn"
+        },
+        {
+          "t": 1724,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "negative",
+          "you've",
+          "got",
+          "them",
+          "backwards",
+          "it's",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "hypTokens": [
+          "shamrock",
+          "1",
+          "0",
+          "4",
+          "negative",
+          "you've",
+          "got",
+          "them",
+          "backwards",
+          "it's",
+          "alpha",
+          "juliet",
+          "hold",
+          "short",
+          "bravo"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "30",
+      "say": "KLM six four four heavy, sorry, you got stepped on, go ahead and say again.",
+      "style": "loose",
+      "audioSec": 4.44,
+      "runAt": "2026-11-14T07:54:02.781Z",
+      "transcript": "KLM 644 Heavy, sorry, you got stepped on. Go ahead and say it again.",
+      "latencyMs": 148.5,
+      "timings": {
+        "connectMs": 393.4,
+        "firstTextMs": 1073.1,
+        "streamMs": 4440.6,
+        "driftMs": 0.6,
+        "billedSessionSec": 6
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -4441,
+          "type": "Begin"
+        },
+        {
+          "t": -3368,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -3367,
+          "type": "Turn"
+        },
+        {
+          "t": -1985,
+          "type": "Turn"
+        },
+        {
+          "t": -663,
+          "type": "Turn"
+        },
+        {
+          "t": 149,
+          "type": "Turn"
+        },
+        {
+          "t": 1599,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "klm",
+          "6",
+          "4",
+          "4",
+          "heavy",
+          "sorry",
+          "you",
+          "got",
+          "stepped",
+          "on",
+          "go",
+          "ahead",
+          "and",
+          "say",
+          "again"
+        ],
+        "hypTokens": [
+          "klm",
+          "6",
+          "4",
+          "4",
+          "heavy",
+          "sorry",
+          "you",
+          "got",
+          "stepped",
+          "on",
+          "go",
+          "ahead",
+          "and",
+          "say",
+          "it",
+          "again"
+        ],
+        "wer": {
+          "refWords": 15,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "31",
+      "say": "Aircraft calling Kennedy Ground, say again your callsign.",
+      "style": "textbook",
+      "audioSec": 3.6,
+      "runAt": "2026-11-14T07:54:14.648Z",
+      "transcript": "Aircraft calling Kennedy Ground, say again your call sign.",
+      "latencyMs": 110.3,
+      "timings": {
+        "connectMs": 422.6,
+        "firstTextMs": 985.5,
+        "streamMs": 3601.9,
+        "driftMs": 1.9,
+        "billedSessionSec": 5
+      },
+      "partials": 3,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -3602,
+          "type": "Begin"
+        },
+        {
+          "t": -2617,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -2616,
+          "type": "Turn"
+        },
+        {
+          "t": -1421,
+          "type": "Turn"
+        },
+        {
+          "t": -220,
+          "type": "Turn"
+        },
+        {
+          "t": 110,
+          "type": "Turn"
+        },
+        {
+          "t": 1562,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "aircraft",
+          "calling",
+          "kennedy",
+          "ground",
+          "say",
+          "again",
+          "your",
+          "callsign"
+        ],
+        "hypTokens": [
+          "aircraft",
+          "calling",
+          "kennedy",
+          "ground",
+          "say",
+          "again",
+          "your",
+          "callsign"
+        ],
+        "wer": {
+          "refWords": 8,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "32",
+      "say": "Brickyard thirty-five sixty, ground stop for Boston, expect about twenty minutes.",
+      "style": "textbook",
+      "audioSec": 5.76,
+      "runAt": "2026-11-14T07:54:33.079Z",
+      "transcript": "Brickyard 3560, ground stop for Boston, expect 20-30 minutes.",
+      "latencyMs": 87.7,
+      "timings": {
+        "connectMs": 402.2,
+        "firstTextMs": 976.4,
+        "streamMs": 5761.7,
+        "driftMs": 1.7,
+        "billedSessionSec": 7
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5762,
+          "type": "Begin"
+        },
+        {
+          "t": -4785,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -4785,
+          "type": "Turn"
+        },
+        {
+          "t": -3581,
+          "type": "Turn"
+        },
+        {
+          "t": -2383,
+          "type": "Turn"
+        },
+        {
+          "t": -1183,
+          "type": "Turn"
+        },
+        {
+          "t": 44,
+          "type": "Turn"
+        },
+        {
+          "t": 88,
+          "type": "Turn"
+        },
+        {
+          "t": 1540,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "brickyard",
+          "3",
+          "5",
+          "6",
+          "0",
+          "ground",
+          "stop",
+          "for",
+          "boston",
+          "expect",
+          "about",
+          "2",
+          "0",
+          "minutes"
+        ],
+        "hypTokens": [
+          "brickyard",
+          "3",
+          "5",
+          "6",
+          "0",
+          "ground",
+          "stop",
+          "for",
+          "boston",
+          "expect",
+          "2",
+          "0",
+          "3",
+          "0",
+          "minutes"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 2,
+          "deletions": 0,
+          "insertions": 1
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "33",
+      "say": "United fourteen sixteen, hold for release, expect one five minutes departure delay.",
+      "style": "textbook",
+      "audioSec": 5.1,
+      "runAt": "2026-11-14T07:54:45.059Z",
+      "transcript": "United 1416, hold for release. Expect 15 minutes departure delay.",
+      "latencyMs": 98.5,
+      "timings": {
+        "connectMs": 356.1,
+        "firstTextMs": 979.1,
+        "streamMs": 5101.1,
+        "driftMs": 1.1,
+        "billedSessionSec": 7
+      },
+      "partials": 4,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5101,
+          "type": "Begin"
+        },
+        {
+          "t": -4122,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -4122,
+          "type": "Turn"
+        },
+        {
+          "t": -2921,
+          "type": "Turn"
+        },
+        {
+          "t": -1724,
+          "type": "Turn"
+        },
+        {
+          "t": -501,
+          "type": "Turn"
+        },
+        {
+          "t": 99,
+          "type": "Turn"
+        },
+        {
+          "t": 1548,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "united",
+          "1",
+          "4",
+          "1",
+          "6",
+          "hold",
+          "for",
+          "release",
+          "expect",
+          "1",
+          "5",
+          "minutes",
+          "departure",
+          "delay"
+        ],
+        "hypTokens": [
+          "united",
+          "1",
+          "4",
+          "1",
+          "6",
+          "hold",
+          "for",
+          "release",
+          "expect",
+          "1",
+          "5",
+          "minutes",
+          "departure",
+          "delay"
+        ],
+        "wer": {
+          "refWords": 14,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    },
+    {
+      "num": "34",
+      "say": "JetBlue eleven twenty-three, give way to the Emirates heavy coming off Kilo Echo, then follow him on Alpha.",
+      "style": "loose",
+      "audioSec": 5.94,
+      "runAt": "2026-11-14T07:54:55.693Z",
+      "transcript": "JetBlue 1123, give way to the Emirates heavy coming off Kilo Echo, then follow him on Alpha.",
+      "latencyMs": 85.2,
+      "timings": {
+        "connectMs": 363.9,
+        "firstTextMs": 976.7,
+        "streamMs": 5941.3,
+        "driftMs": 1.3,
+        "billedSessionSec": 7
+      },
+      "partials": 5,
+      "error": null,
+      "lateText": null,
+      "notes": [],
+      "trace": [
+        {
+          "t": -5941,
+          "type": "Begin"
+        },
+        {
+          "t": -4965,
+          "type": "SpeechStarted"
+        },
+        {
+          "t": -4965,
+          "type": "Turn"
+        },
+        {
+          "t": -3572,
+          "type": "Turn"
+        },
+        {
+          "t": -2405,
+          "type": "Turn"
+        },
+        {
+          "t": -1184,
+          "type": "Turn"
+        },
+        {
+          "t": -1,
+          "type": "Turn"
+        },
+        {
+          "t": 85,
+          "type": "Turn"
+        },
+        {
+          "t": 1537,
+          "type": "Termination"
+        }
+      ],
+      "score": {
+        "refTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "give",
+          "way",
+          "to",
+          "the",
+          "emirates",
+          "heavy",
+          "coming",
+          "off",
+          "kilo",
+          "echo",
+          "then",
+          "follow",
+          "him",
+          "on",
+          "alpha"
+        ],
+        "hypTokens": [
+          "jetblue",
+          "1",
+          "1",
+          "2",
+          "3",
+          "give",
+          "way",
+          "to",
+          "the",
+          "emirates",
+          "heavy",
+          "coming",
+          "off",
+          "kilo",
+          "echo",
+          "then",
+          "follow",
+          "him",
+          "on",
+          "alpha"
+        ],
+        "wer": {
+          "refWords": 20,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "critical": {
+          "callsign": {
+            "expected": 1,
+            "found": 1,
+            "missed": []
+          },
+          "runways": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          },
+          "taxiways": {
+            "expected": 2,
+            "found": 2,
+            "missed": []
+          },
+          "holdShort": {
+            "expected": 0,
+            "found": 0,
+            "missed": []
+          }
+        },
+        "allCriticalCorrect": true
+      }
+    }
+  ]
+}
