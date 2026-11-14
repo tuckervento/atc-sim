@@ -1,10 +1,10 @@
 # STATUS
 
-_Last updated: 2026-11-14 (0.2 closed after Q's spot-check)_
+_Last updated: 2026-11-14 (parallel cycle 2: 1.2, 1.4, 0.3, 0.5 dispatched)_
 
 ## Snapshot
 
-4 of 20 tasks done (0.1, 0.2, 1.1, 1.3). Nothing in progress or blocked. Next up: 1.2.
+4 of 20 tasks done (0.1, 0.2, 1.1, 1.3). 1.2, 1.4, 0.3 and 0.5 in progress in parallel (Q-directed parallel cycle 2).
 
 ## Completed
 
@@ -27,6 +27,11 @@ _Last updated: 2026-11-14 (0.2 closed after Q's spot-check)_
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
+
+- 1.2 — Command format and terse-syntax parser. Plan approved 2026-11-14; dispatched to a subagent.
+- 1.4 — Airport format, loader and validator. Plan approved 2026-11-14; dispatched to a subagent.
+- 0.3 — Speech-to-text bake-off. Plan approved 2026-11-14; dispatched to a subagent.
+- 0.5 — Voice bake-off; Q listens. Plan approved 2026-11-14; dispatched to a subagent. Ends with a hand-off to Q (listening verdict).
 
 ## Blocked
 
@@ -94,6 +99,15 @@ _Last updated: 2026-11-14 (0.2 closed after Q's spot-check)_
     - Arrival examples now read "clear of three one left at Kilo Echo".
     - Crossing examples now read "cross four left at Juliet". The NTSB report AIR-24-01 calls B/A → J, crossing 4L, the standard route to 31L.
   - **1.4 / 1.5 closures:** model taxiway closures as data (closed segments in the overrides file). Defer the "no southbound turns from NB onto A" restriction; it needs a turn-restriction concept in the format.
+- 2026-11-14 — **Parallel cycle 2.** Q directed 1.2, 1.4, 0.3 and 0.5 to run at once with parallel subagents (Opus). Each owns a separate set of paths (recorded in `~/.claude/plans/zany-snacking-llama.md`). 0.3 and 0.5 write their doc sections as drafts in `spikes/voice-loop/results/`, which I merge into `docs/spikes/voice-loop.md`, so they never edit the same file.
+- 2026-11-14 — **Import convention: relative imports name the `.ts` file** (`./route.ts`). `tsconfig.base.json` gained `allowImportingTsExtensions` and `resolveJsonModule`. So `tools/` scripts run with plain `node` (Node 26's built-in type stripping, no `tsx`), the same code works in Vite and Vitest, and tests can import `data/airports/*.json` (with `with { type: "json" }`). Verified:
+  - A scratchpad `.ts` importing `.ts` and `.json` ran under Node (exit 0).
+  - Root typecheck and test still exit 0.
+- 2026-11-14 — **Spike package set up centrally for 0.3 and 0.5:**
+  - Added `ws` (dependency) and `@types/ws` (dev), for provider WebSockets that need auth headers.
+  - Added scripts `stt-bench` → `node stt-bench.ts` and `tts-bench` → `node tts-bench.ts`.
+  - Spike typecheck exits 0, and check-keys still shows 6 OK, exit 0.
+  - Agents don't edit the spike's `package.json`.
 
 ## Next Up
 

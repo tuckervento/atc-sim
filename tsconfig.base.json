@@ -17,6 +17,12 @@
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
 
+    // Relative imports name the .ts file (`./route.ts`), so the same code runs under Vite,
+    // Vitest and Node's built-in type stripping (tools/ scripts). JSON imports let tests load
+    // data/airports/*.json without fs.
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+
     "skipLibCheck": true,
     "noEmit": true,
     "types": []
