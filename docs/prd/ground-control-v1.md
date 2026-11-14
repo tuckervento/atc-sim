@@ -69,7 +69,7 @@ These follow from Q's stated goals. **[Proposal]**
 
 ### 4.1 Session setup
 Before a session the player picks: **[Proposal]** unless marked
-- **Runway configuration.** Fixed for the whole session and defined in data. v1 ships one: **land 31R, depart 31L**. **[Q]** I believe this is one of JFK's common setups. **[Unverified]** A second configuration, the 4s, is a stretch goal (§3).
+- **Runway configuration.** Fixed for the whole session and defined in data. v1 ships one: **land 31L and 31R, depart 31L**. **[Q]** (31L arrivals added 2026-11-14.) This is JFK's most-used configuration (verified in task 1.3, `docs/research/airport-data.md` §4.1). A second configuration, the 4s, is a stretch goal (§3).
 - **Traffic level: light, moderate, busy or peak.** It sets how fast arrivals and departures appear. **[Q]** for "peak" as the top level.
 - **Pilot error rate**, low by default.
 
@@ -83,12 +83,12 @@ During a session the player can pause, which stops the simulation and all audio.
 5. If the player forgets the handoff, the pilot calls after about 30 seconds of holding short, sounding a little impatient ("Ground, Delta four, *still* holding short three one left"). **[Q]**
 
 ### 4.3 Arrivals
-1. Tower lands the aircraft. After it leaves the runway, the pilot calls the player, e.g. *"Ground, Emirates two zero two heavy, clear of three one right at Kilo Echo."* **[Q]**
+1. Tower lands the aircraft. After it leaves the runway, the pilot calls the player, e.g. *"Ground, Emirates two zero two heavy, clear of three one left at Kilo Echo."* **[Q]**
 2. The player taxis it to the ramp entrance for its terminal and hands it to ramp ("monitor ramp"). **[Q]** (The ramp entrance as the handoff point is **[Proposal]**.)
 3. The simulated ramp controller taxis it to its gate, drawn on the map. **Scoring point:** the arrival counts when it reaches its gate. **[Q]**
 4. If the ramp lane is jammed, the arrival waits on the player's taxiway until it clears, so ramp congestion spills onto the player. **[Proposal]**
 5. **No gate yet.** At busy and peak levels, an arrival's gate may be occupied or not yet assigned. **[Q]**
-   - The pilot says so when calling in ("...clear of three one right at Kilo Echo, our gate's still occupied"), and the player parks it somewhere to wait. **[Proposal]**
+   - The pilot says so when calling in ("...clear of three one left at Kilo Echo, our gate's still occupied"), and the player parks it somewhere to wait. **[Proposal]**
    - When the gate opens, the pilot calls back ready to taxi to the ramp. **[Proposal]**
 
 ### 4.4 Delays and holding
@@ -142,7 +142,7 @@ So both directions happen: ATC tells pilots about traffic-flow delays, and pilot
   - There's one request key, not one per runway. **[Proposal]**
   - The player selects an aircraft with the mouse (its strip or its label on the map) and presses the key. **[Proposal]**
   - The request is for the next runway crossing on that aircraft's route. If it has no route yet, it's for the next runway ahead of it. **[Proposal]**
-  - After a short pause, tower answers by voice: approved ("cross three one right at Kilo Echo approved"), or "hold, traffic on final" with a callback once it's clear. **[Q]** for "tower answers after a beat."
+  - After a short pause, tower answers by voice: approved ("cross four left at Juliet approved"), or "hold, traffic on final" with a callback once it's clear. **[Q]** for "tower answers after a beat."
   - The player then passes the crossing clearance to the pilot by voice. **[Q]**
 - Tower speaks in its own distinct voice through the same one-speaker-at-a-time scheduler as the pilots (§4.7). Its lines are labeled as the tower line in the radio log. **[Proposal]**
 - **Unauthorized crossing:** the player tells an aircraft to cross a runway without a current tower approval. It's counted in the stats whether or not anything happens. **[Q]**
@@ -203,7 +203,7 @@ Q picked layout **C** (map, flight strips, status bar and radio log), with the r
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ ATIS O ▸ │ 14:37Z │ 31L DEP · 31R ARR │ TWR: cross 31R @ KE… │ DEP 12 ARR 15 │
+│ ATIS O ▸ │ 14:37Z │ 31L DEP/ARR · 31R ARR │ TWR: cross 4L @ J… │ DEP 12 ARR 15 │
 ├──────────────────────────────────────────────┬───────────────────────┤
 │                                              │ DEPARTURES            │
 │        top-down JFK map                      │ ▌DAL4  B739 31L       │
@@ -321,7 +321,7 @@ Natural phrasing for all of these. **[Q]** for natural phrasing; the list is **[
 | C2 | Taxi to ramp/terminal via route | "Emirates two zero two heavy, left on Bravo, Kilo Echo to the ramp" | Must |
 | C3 | Hold short of (taxiway or runway) | "...hold short of three one right" | Must |
 | C4 | Hold position / continue taxi | "JetBlue eleven twenty three, hold position" | Must |
-| C5 | Cross runway (after tower approval) | "Delta four, cross three one right at Kilo Echo" | Must |
+| C5 | Cross runway (after tower approval) | "Delta four, cross four left at Juliet" | Must |
 | C6 | Send to holding pad / penalty box, including out of the departure line | "Air France two three, exit the line at Kilo Delta, hold on the pad" | Must |
 | C7 | Handoff | "monitor tower", "contact ramp" | Must |
 | C8 | Correction of a readback | "negative, hold short Bravo" | Must |
@@ -371,7 +371,8 @@ If C11 is cut, the player can get the same result with C3, C4 and re-routing. **
 
 ### 8.4 Simulated tower
 **[Proposal]**
-- Lands arrivals on the arrival runway at a rate set by the traffic level, sends them off at an exit, and has them call the player.
+- Lands arrivals on the arrival runways at a rate set by the traffic level, sends them off at an exit, and has them call the player.
+- On a runway used for both arrivals and departures (31L in the 31s), interleaves landings and takeoffs.
 - Takes departures from the hold-short line in order and launches them at realistic spacing.
 - Launches a plane only inside its release window, and gives a later time to one that misses it (§4.4). **[Q]** for "won't launch early."
 - Approves or holds crossing requests based on runway traffic, and calls back when a held request becomes possible.
@@ -516,7 +517,7 @@ Resolved:
 | Player is ground only; ramp and tower are simulated | Q (pushback out); Proposal (tower) |
 | Planes drawn all the way to and from gates | Q |
 | Departure check-in from the ramp lane, with ATIS | Q |
-| Start with land 31R / depart 31L; the 4s (land 4L, depart 4R) are a stretch goal | Q |
+| Start with land 31L and 31R / depart 31L; the 4s (land 4L, depart 4R) are a stretch goal | Q |
 | The game recognizes player-caused delay; missed release windows always reported; delay in the score later | Q |
 | Ramp gate holds triggered by backups, including ones the player caused | Q |
 | Traffic levels top out at "peak" | Q |

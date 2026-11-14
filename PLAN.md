@@ -205,7 +205,7 @@ Phase 1's scoring-path, rule-check and soak tests pass.
   - Scope: `tools/import-airport.ts` (approach per 1.3's decision) produces
     `data/airports/KJFK.json`. `data/airports/KJFK.overrides.json` holds the hand-curated parts:
     missing names, pads, penalty box, departure lines and exits, the 31s configuration (land
-    31R, depart 31L), and terminal and airline assignments.
+    31L and 31R, depart 31L), and terminal and airline assignments.
   - Depends on: 1.3, 1.4
   - Acceptance: `npm run validate-airport -- KJFK` passes. Tests confirm runways 4L/22R, 4R/22L,
     13L/31R and 13R/31L exist with correct hold-shorts. A route "A then right on KE" from a
