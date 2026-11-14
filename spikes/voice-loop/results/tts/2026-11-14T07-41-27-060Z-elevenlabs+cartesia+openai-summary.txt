@@ -1,0 +1,68 @@
+Voices: time to first audio (request sent → first audio bytes), timing + voice lines at the chosen speed
+| Provider   | Model                 | First audio median | p95    | n  | Usable voices (now / catalog) | Rate control (verified)    | Accents | $/hr at peak | Paraphrase         |
+|------------|-----------------------|--------------------|--------|----|-------------------------------|----------------------------|---------|--------------|--------------------|
+| elevenlabs | eleven_flash_v2_5     | 173 ms             | 225 ms | 31 | 9 / 4289                      | y (×1.2 → 1.27× faster)    | y       | $1.26        | n/a (verbatim API) |
+| cartesia   | sonic-3.6             | 150 ms             | 364 ms | 31 | 202 / 202                     | weak (×1.5 → 1.03× faster) | y       | $1.20–$2.05  | n/a (verbatim API) |
+| openai     | gpt-realtime-2.1-mini | 449 ms             | 932 ms | 31 | 10 / 10                       | y (×1.3 → 1.53× faster)    | n       | $0.78        | 7/49 lines changed |
+
+Speaking rate (primary voice, calibration lines). Q's controller cadence: median 165 wpm, middle half 145–195, pooled 167 (34 recordings)
+| Provider                   | Speed | n | Median wpm | Speech-time speedup vs ×1 | vs Q's median | Chosen |
+|----------------------------|-------|---|------------|---------------------------|---------------|--------|
+| elevenlabs                 | ×0.9  | 6 | 175        | 0.89×                     | +6%           | ◀      |
+| elevenlabs                 | ×1    | 6 | 198        | 1.00×                     | +20%          |        |
+| elevenlabs                 | ×1.1  | 6 | 211        | 1.04×                     | +28%          |        |
+| elevenlabs                 | ×1.2  | 6 | 251        | 1.27×                     | +52%          |        |
+| elevenlabs eleven_v4_turbo | ×1    | 2 | 163        | 1.00×                     |               |        |
+| elevenlabs eleven_v4_turbo | ×1.2  | 2 | 160        | 0.98×                     |               |        |
+| cartesia                   | ×1    | 6 | 147        | 1.00×                     | -11%          |        |
+| cartesia                   | ×1.25 | 6 | 148        | 1.00×                     | -10%          | ◀      |
+| cartesia                   | ×1.5  | 6 | 147        | 1.03×                     | -11%          |        |
+| cartesia sonic-3           | ×1    | 2 | 180        | 1.00×                     |               |        |
+| cartesia sonic-3           | ×1.3  | 2 | 227        | 1.15×                     |               |        |
+| openai                     | ×1    | 6 | 134        | 1.00×                     | -19%          |        |
+| openai                     | ×1.15 | 6 | 178        | 1.27×                     | +8%           | ◀      |
+| openai                     | ×1.3  | 6 | 202        | 1.53×                     | +22%          |        |
+
+Time to first audio by voice (in-stats lines)
+| Provider   | Voice                                      | n  | Median | p95     | Min    | Max     | Median wpm | New connections |
+|------------|--------------------------------------------|----|--------|---------|--------|---------|------------|-----------------|
+| elevenlabs | Eric                                       | 15 | 173 ms | 229 ms  | 149 ms | 229 ms  | 188        | 0               |
+| elevenlabs | Chris                                      | 4  | 172 ms | 177 ms  | 168 ms | 177 ms  | 159        | 0               |
+| elevenlabs | Roger                                      | 4  | 170 ms | 184 ms  | 161 ms | 184 ms  | 137        | 0               |
+| elevenlabs | Bella                                      | 4  | 164 ms | 187 ms  | 152 ms | 187 ms  | 127        | 0               |
+| elevenlabs | Daniel                                     | 4  | 169 ms | 181 ms  | 168 ms | 181 ms  | 105        | 0               |
+| elevenlabs | (warm-up, not in stats)                    | 1  | 269 ms |         |        |         |            | 0               |
+| cartesia   | Derrick                                    | 15 | 152 ms | 448 ms  | 125 ms | 448 ms  | 155        | 0               |
+| cartesia   | Wyatt                                      | 4  | 150 ms | 201 ms  | 145 ms | 201 ms  | 144        | 0               |
+| cartesia   | Samantha                                   | 4  | 135 ms | 342 ms  | 134 ms | 342 ms  | 137        | 0               |
+| cartesia   | Gary                                       | 4  | 136 ms | 354 ms  | 135 ms | 354 ms  | 139        | 0               |
+| cartesia   | Sebastian                                  | 4  | 142 ms | 226 ms  | 128 ms | 226 ms  | 153        | 0               |
+| cartesia   | (warm-up, not in stats)                    | 1  | 143 ms |         |        |         |            | 0               |
+| openai     | cedar                                      | 15 | 482 ms | 1067 ms | 445 ms | 1067 ms | 171        | n/a             |
+| openai     | marin                                      | 4  | 402 ms | 454 ms  | 392 ms | 454 ms  | 166        | n/a             |
+| openai     | ash                                        | 4  | 347 ms | 449 ms  | 332 ms | 449 ms  | 143        | n/a             |
+| openai     | echo                                       | 4  | 357 ms | 406 ms  | 326 ms | 406 ms  | 138        | n/a             |
+| openai     | cedar + German accent instruction          | 4  | 389 ms | 407 ms  | 384 ms | 407 ms  | 152        | n/a             |
+| openai     | (session setup: connect → session.updated) | 8  | 368 ms | 475 ms  | 314 ms | 475 ms  |            |                 |
+| openai     | (primary, reasoning effort default)        | 15 | 571 ms | 873 ms  | 407 ms | 873 ms  |            |                 |
+
+OpenAI paraphrasing (its transcript of what it said vs the input line; words normalized for case, punctuation, hyphens)
+  effort none (main run): 7/49 lines changed
+  effort default: 0/15 lines changed
+  edits seen (all OpenAI lines incl. calibration): niner→nine ×9
+
+Catalog
+  elevenlabs: 9 usable now, 4289 in catalog, of 12546 English voices. Criteria: labels: language en; age young|middle_aged; use case conversational|informative_educational; descriptive calm|casual|chill|classy|confident|crisp|formal|neutral|professional|relaxed|serious|deep|mature|pleasant
+    accents: y. Usable premade voices cover accents: american, british. Shared Voice Library counts are English voices per accent label (GET /v1/shared-voices?language=en&accent=...). Library voices need a paid plan for API use (HTTP 402 on this key).
+    counts: british 1504, irish 103, scottish 60, australian 393, indian 1177, south african 133, german 94, french 48, spanish 85, italian 20, dutch 30, swedish 30, arabic 52, nigerian 211, premade:australian 1, premade:british 4
+    examples: Red - Informative (british, male, young); Agita - Natural & Conversational (irish, female, middle_aged); Angus - Calm & Measured (scottish, male, middle_aged); Lachlan - Warm Australian Narrator (australian, male, young); Sadhosh - Meditation (indian, male, middle_aged); Keithon Barker - Ads (south african, male, young); Micha Frey - Warm (german, male, middle_aged); Bert - Narration (french, male, young)
+  cartesia: 202 usable now, 202 in catalog, of 359 English voices. Criteria: tagline + description contain one of [calm, clear, steady, confident, professional, composed, measured, crisp, precise, poised, authoritative, authority, reliable, dependable, polished, seasoned, firm, articulate, formal, neutral, balanced, relaxed, laidback, laid-back, easygoing, conversational, casual] and none of [child, children, kid, kids, teen, teenage, teenager, elderly, grandma, grandpa, grandmother, grandfather, whisper, whispering, whispery, asmr, meditation, sleepy, character, cartoon, villain, pirate, wizard, broadway, cheerleader, enthusiastic, energetic, hyped, bubbly, cheerful, playful, sassy, sultry, seductive, flirty, sad, scared, surprised, disgusted, angry, yelling, dramatic, emotive, cute, giggly, excited, lively, upbeat]
+    accents: y. Counts are usable voices by native accent, excluding en-US (GET /voices?language=en, accents[].is_native). Voices native in another language that list an English locale speak English with that accent; the TTS request also takes a top-level `accent` field.
+    counts: en-GB british 23, en-AU australian 7, en-ZA south-african 9, en-CA canadian-english 5, en-SG singaporean 4, canadian-french (native fr-CA, speaks English) 1, standard-hindi (native hi-IN, speaks English) 2, standard-german (native de-DE, speaks English) 1, colombian (native es-CO, speaks English) 1, telangana (native te-IN, speaks English) 1, en-IE irish 2, en-NZ new-zealand 2, en-IN indian-english 1, castilian (native es-ES, speaks English) 1, istanbul (native tr-TR, speaks English) 1, parisian (native fr-FR, speaks English) 1, khaleeji (native ar-SA, speaks English) 1, southern-vietnamese (native vi-VN, speaks English) 1, camba (native es-BO, speaks English) 1
+    examples: Archie — Approachable Mate (en-GB british); Arlo — Service Specialist (en-AU australian); Zander — Composed Advisor (en-ZA south-african); Harlow — Warm Support (en-CA canadian-english); Justin — Logistics Liaison (en-SG singaporean); Josette — Frontline Helper (canadian-french (native fr-CA, speaks English)); Rohan — Steady Communicator (standard-hindi (native hi-IN, speaks English)); Sebastian — Orator (standard-german (native de-DE, speaks English))
+  openai: 10 usable now, 10 in catalog, of 10 English voices. Criteria: 10 built-in voices; no metadata to filter on, so all count as candidates
+    accents: n. No accent field or accent metadata for realtime voices. The bench tries one accent by instruction (undocumented).
+
+Failures: 0
+
+Estimated spend this run: elevenlabs $0.201, cartesia $0.301, openai $0.173; total $0.675

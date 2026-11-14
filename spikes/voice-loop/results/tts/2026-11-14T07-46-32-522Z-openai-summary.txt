@@ -1,0 +1,32 @@
+Voices: time to first audio (request sent → first audio bytes), timing + voice lines at the chosen speed
+| Provider | Model                 | First audio median | p95    | n  | Usable voices (now / catalog) | Rate control (verified) | Accents | $/hr at peak | Paraphrase         |
+|----------|-----------------------|--------------------|--------|----|-------------------------------|-------------------------|---------|--------------|--------------------|
+| openai   | gpt-realtime-2.1-mini | 469 ms             | 725 ms | 31 | 10 / 10                       | not checked             | n       | $0.78        | 6/31 lines changed |
+
+Speaking rate (primary voice, calibration lines). Q's controller cadence: median 165 wpm, middle half 145–195, pooled 167 (34 recordings)
+| Provider | Speed | n | Median wpm | Speech-time speedup vs ×1 | vs Q's median | Chosen |
+|----------|-------|---|------------|---------------------------|---------------|--------|
+
+Time to first audio by voice (in-stats lines)
+| Provider | Voice                                      | n  | Median | p95    | Min    | Max    | Median wpm | New connections |
+|----------|--------------------------------------------|----|--------|--------|--------|--------|------------|-----------------|
+| openai   | cedar                                      | 15 | 471 ms | 612 ms | 447 ms | 612 ms | 176        | n/a             |
+| openai   | marin                                      | 4  | 477 ms | 738 ms | 446 ms | 738 ms | 173        | n/a             |
+| openai   | ash                                        | 4  | 582 ms | 725 ms | 470 ms | 725 ms | 142        | n/a             |
+| openai   | echo                                       | 4  | 384 ms | 413 ms | 372 ms | 413 ms | 154        | n/a             |
+| openai   | cedar + German accent instruction          | 4  | 330 ms | 442 ms | 311 ms | 442 ms | 171        | n/a             |
+| openai   | (session setup: connect → session.updated) | 6  | 355 ms | 459 ms | 319 ms | 459 ms |            |                 |
+| openai   | (primary, reasoning effort default)        | 15 | 544 ms | 830 ms | 395 ms | 830 ms |            |                 |
+
+OpenAI paraphrasing (its transcript of what it said vs the input line; words normalized for case, punctuation, hyphens)
+  effort none (main run): 6/31 lines changed; server echoed reasoning {"effort":"none"}; reasoning tokens per line median 0
+  effort default: 2/15 lines changed; server echoed reasoning null; reasoning tokens per line median 29
+  edits seen (all OpenAI lines incl. calibration): niner→nine ×10
+
+Catalog
+  openai: 10 usable now, 10 in catalog, of 10 English voices. Criteria: 10 built-in voices; no metadata to filter on, so all count as candidates
+    accents: n. No accent field or accent metadata for realtime voices. The bench tries one accent by instruction (undocumented).
+
+Failures: 0
+
+Estimated spend this run: openai $0.121; total $0.121

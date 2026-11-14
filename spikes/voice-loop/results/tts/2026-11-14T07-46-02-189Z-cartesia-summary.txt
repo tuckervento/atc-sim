@@ -1,0 +1,30 @@
+Voices: time to first audio (request sent → first audio bytes), timing + voice lines at the chosen speed
+| Provider | Model     | First audio median | p95    | n  | Usable voices (now / catalog) | Rate control (verified) | Accents | $/hr at peak | Paraphrase         |
+|----------|-----------|--------------------|--------|----|-------------------------------|-------------------------|---------|--------------|--------------------|
+| cartesia | sonic-3.6 | 278 ms             | 369 ms | 31 | 202 / 202                     | not checked             | y       | $1.20–$2.05  | n/a (verbatim API) |
+
+Speaking rate (primary voice, calibration lines). Q's controller cadence: median 165 wpm, middle half 145–195, pooled 167 (34 recordings)
+| Provider         | Speed | n | Median wpm | Speech-time speedup vs ×1 | vs Q's median | Chosen |
+|------------------|-------|---|------------|---------------------------|---------------|--------|
+| cartesia sonic-3 | ×1    | 2 | 156        | 1.00×                     |               |        |
+| cartesia sonic-3 | ×1.3  | 2 | 198        | 1.25×                     |               |        |
+
+Time to first audio by voice (in-stats lines)
+| Provider | Voice                   | n  | Median | p95    | Min    | Max    | Median wpm | New connections |
+|----------|-------------------------|----|--------|--------|--------|--------|------------|-----------------|
+| cartesia | Derrick                 | 15 | 277 ms | 375 ms | 139 ms | 375 ms | 151        | 0               |
+| cartesia | Wyatt                   | 4  | 335 ms | 366 ms | 154 ms | 366 ms | 143        | 0               |
+| cartesia | Samantha                | 4  | 304 ms | 329 ms | 136 ms | 329 ms | 138        | 0               |
+| cartesia | Gary                    | 4  | 133 ms | 330 ms | 128 ms | 330 ms | 141        | 0               |
+| cartesia | Sebastian               | 4  | 208 ms | 292 ms | 150 ms | 292 ms | 157        | 0               |
+| cartesia | (warm-up, not in stats) | 1  | 138 ms |        |        |        |            | 0               |
+
+Catalog
+  cartesia: 202 usable now, 202 in catalog, of 359 English voices. Criteria: tagline + description contain one of [calm, clear, steady, confident, professional, composed, measured, crisp, precise, poised, authoritative, authority, reliable, dependable, polished, seasoned, firm, articulate, formal, neutral, balanced, relaxed, laidback, laid-back, easygoing, conversational, casual] and none of [child, children, kid, kids, teen, teenage, teenager, elderly, grandma, grandpa, grandmother, grandfather, whisper, whispering, whispery, asmr, meditation, sleepy, character, cartoon, villain, pirate, wizard, broadway, cheerleader, enthusiastic, energetic, hyped, bubbly, cheerful, playful, sassy, sultry, seductive, flirty, sad, scared, surprised, disgusted, angry, yelling, dramatic, emotive, cute, giggly, excited, lively, upbeat]
+    accents: y. Counts are usable voices by native accent, excluding en-US (GET /voices?language=en, accents[].is_native). Voices native in another language that list an English locale speak English with that accent; the TTS request also takes a top-level `accent` field.
+    counts: en-GB british 23, en-AU australian 7, en-ZA south-african 9, en-CA canadian-english 5, en-SG singaporean 4, canadian-french (native fr-CA, speaks English) 1, standard-hindi (native hi-IN, speaks English) 2, standard-german (native de-DE, speaks English) 1, colombian (native es-CO, speaks English) 1, telangana (native te-IN, speaks English) 1, en-IE irish 2, en-NZ new-zealand 2, en-IN indian-english 1, castilian (native es-ES, speaks English) 1, istanbul (native tr-TR, speaks English) 1, parisian (native fr-FR, speaks English) 1, khaleeji (native ar-SA, speaks English) 1, southern-vietnamese (native vi-VN, speaks English) 1, camba (native es-BO, speaks English) 1
+    examples: Archie — Approachable Mate (en-GB british); Arlo — Service Specialist (en-AU australian); Zander — Composed Advisor (en-ZA south-african); Harlow — Warm Support (en-CA canadian-english); Justin — Logistics Liaison (en-SG singaporean); Josette — Frontline Helper (canadian-french (native fr-CA, speaks English)); Rohan — Steady Communicator (standard-hindi (native hi-IN, speaks English)); Sebastian — Orator (standard-german (native de-DE, speaks English))
+
+Failures: 0
+
+Estimated spend this run: cartesia $0.204; total $0.204

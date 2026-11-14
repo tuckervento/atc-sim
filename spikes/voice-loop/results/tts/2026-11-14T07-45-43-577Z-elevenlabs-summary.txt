@@ -1,0 +1,30 @@
+Voices: time to first audio (request sent → first audio bytes), timing + voice lines at the chosen speed
+| Provider   | Model             | First audio median | p95    | n  | Usable voices (now / catalog) | Rate control (verified) | Accents | $/hr at peak | Paraphrase         |
+|------------|-------------------|--------------------|--------|----|-------------------------------|-------------------------|---------|--------------|--------------------|
+| elevenlabs | eleven_flash_v2_5 | 191 ms             | 252 ms | 31 | 9 / 4289                      | not checked             | y       | $1.26        | n/a (verbatim API) |
+
+Speaking rate (primary voice, calibration lines). Q's controller cadence: median 165 wpm, middle half 145–195, pooled 167 (34 recordings)
+| Provider                   | Speed | n | Median wpm | Speech-time speedup vs ×1 | vs Q's median | Chosen |
+|----------------------------|-------|---|------------|---------------------------|---------------|--------|
+| elevenlabs eleven_v4_turbo | ×1    | 2 | 159        | 1.00×                     |               |        |
+| elevenlabs eleven_v4_turbo | ×1.2  | 2 | 159        | 0.96×                     |               |        |
+
+Time to first audio by voice (in-stats lines)
+| Provider   | Voice                   | n  | Median | p95    | Min    | Max    | Median wpm | New connections |
+|------------|-------------------------|----|--------|--------|--------|--------|------------|-----------------|
+| elevenlabs | Eric                    | 15 | 187 ms | 252 ms | 169 ms | 252 ms | 185        | 0               |
+| elevenlabs | Chris                   | 4  | 191 ms | 250 ms | 170 ms | 250 ms | 169        | 0               |
+| elevenlabs | Roger                   | 4  | 172 ms | 199 ms | 170 ms | 199 ms | 139        | 0               |
+| elevenlabs | Bella                   | 4  | 191 ms | 201 ms | 188 ms | 201 ms | 131        | 0               |
+| elevenlabs | Daniel                  | 4  | 194 ms | 410 ms | 179 ms | 410 ms | 115        | 0               |
+| elevenlabs | (warm-up, not in stats) | 1  | 221 ms |        |        |        |            | 0               |
+
+Catalog
+  elevenlabs: 9 usable now, 4289 in catalog, of 12546 English voices. Criteria: labels: language en; age young|middle_aged; use case conversational|informative_educational; descriptive calm|casual|chill|classy|confident|crisp|formal|neutral|professional|relaxed|serious|deep|mature|pleasant
+    accents: y. Usable premade voices cover accents: american, british. Shared Voice Library counts are English voices per accent label (GET /v1/shared-voices?language=en&accent=...). Library voices need a paid plan for API use (HTTP 402 on this key).
+    counts: british 1504, irish 103, scottish 60, australian 393, indian 1177, south african 133, german 94, french 48, spanish 85, italian 20, dutch 30, swedish 30, arabic 52, nigerian 211, premade:australian 1, premade:british 4
+    examples: Red - Informative (british, male, young); Agita - Natural & Conversational (irish, female, middle_aged); Angus - Calm & Measured (scottish, male, middle_aged); Lachlan - Warm Australian Narrator (australian, male, young); Sadhosh - Meditation (indian, male, middle_aged); Keithon Barker - Ads (south african, male, young); Micha Frey - Warm (german, male, middle_aged); Bert - Narration (french, male, young)
+
+Failures: 0
+
+Estimated spend this run: elevenlabs $0.121; total $0.121
