@@ -159,10 +159,10 @@ _Last updated: 2026-11-14 (cycle 2 closed: Q's voice verdict recorded, 0.5 done;
     - Add a `default` configuration field?
     - Gates must sit on ramp lanes. Does that hold for every JFK parking area, e.g. the South Hardstand?
 - 2026-11-14 — **0.3 findings and choices:**
-  - **Recommendation for 0.6:** Deepgram Nova-3 (median 124 ms, p95 357 ms, WER 3.4%, 100% critical tokens, $0.18–$0.27/hr) and AssemblyAI Universal-3.6 Pro (median 120 ms, p95 213 ms, WER 1.4%, 100% critical tokens, $0.23–$0.45/hr). They're the only two within the 0.3 s budget.
+  - **Recommendation for 0.6:** Deepgram Nova-3 (median 124 ms, p95 357 ms, WER 2.3% after the reference edit (3.4% before), 100% critical tokens, $0.18–$0.27/hr) and AssemblyAI Universal-3.6 Pro (median 120 ms, p95 213 ms, WER 0.2% after the reference edit (1.4% before), 100% critical tokens, $0.23–$0.45/hr). They're the only two within the 0.3 s budget.
   - **Rejected:**
     - OpenAI's two models: 565–634 ms medians.
-    - Deepgram Flux: 374 ms, 9.4% WER, weak on callsigns.
+    - Deepgram Flux: 374 ms, 8.2% WER (re-scored), weak on callsigns.
     - AssemblyAI Universal-Streaming English: 616 ms, weaker on runways.
   - **How each end of turn is signalled:**
     - Universal-Streaming English needs `Terminate`, not `ForceEndpoint`; ForceEndpoint cut off the last word.
@@ -207,6 +207,17 @@ _Last updated: 2026-11-14 (cycle 2 closed: Q's voice verdict recorded, 0.5 done;
       - A `taxi` can only go to a runway, `ramp`, `pad` or `penalty`.
     - The PRD doesn't mention either yet.
     - Not built. Where it goes is Q's call. I recommend folding it into 1.5, since the real locations arrive with the JFK data.
+- 2026-11-14 — **Script reference edited and 0.3 re-scored**, as Q agreed:
+  - The `say` text of 05, 10, 27, 30 and 32 now matches what Q recorded: "right on Kilo Echo", "to Terminal Eight", "say it again" and "expect twenty thirty minutes". Line 32's readback became "twenty to thirty minutes".
+  - Line 10 was a judgment call. 4 of the 6 candidates heard "to", including the two most accurate; Universal-Streaming English heard "into".
+  - Verified:
+    - The script still parses (34 lines).
+    - `stt-bench --rescore` exited 0, with no API calls (the spend total stayed $0.230).
+    - In every results file, only `say`, `score`, `summary` and `updatedAt` changed, and only on those 5 lines.
+    - Critical tokens and latency are identical.
+  - New WER: Universal-3.6 Pro 0.2%, gpt-transcribe 0.7%, gpt-live-transcribe 1.4%, Nova-3 2.3%, Universal-Streaming English 4.1%, Flux 8.2%.
+  - Not re-scored: Flux's no-padding first pass, kept for history.
+  - **For 0.4:** line 32 now states a delay range, but 1.2's `delay N` takes one number. 0.4 decides: score the lower bound, or add a range form.
 
 ## Next Up
 

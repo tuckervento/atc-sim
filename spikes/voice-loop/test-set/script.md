@@ -10,6 +10,8 @@ Tasks 0.3 (speech-to-text) and 0.4 (interpreter) score against this file.
   previous, out-of-date letter.
 - **Phrasing mix:** 13 textbook lines and 21 loose ones ("go ahead and…", dropped words,
   reordered routes, fillers). PRD §6.1 makes natural phrasing the goal.
+- **Edited after recording (2026-11-14):** the `say` text of 05, 10, 27, 30 and 32 now matches
+  what Q actually said, found in 0.3. Line 32's readback changed to match its new delay.
 
 ## Coverage checklist
 
@@ -159,7 +161,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - types: C1
 - style: loose
 - context: Departure. Pilot: "Ground, Lufthansa four zero five heavy, ready to taxi, information Papa."
-- say: Lufthansa four zero five heavy, left on Alpha, right Kilo Echo, three one left, hold short three one right, then hold short Kilo.
+- say: Lufthansa four zero five heavy, left on Alpha, right on Kilo Echo, three one left, hold short three one right, then hold short Kilo.
 - readback: Left Alpha, right Kilo Echo, three one left, hold short three one right, then Kilo, Lufthansa four zero five heavy.
 - expected: TODO(0.4)
 
@@ -199,7 +201,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - types: C2
 - style: loose
 - context: Arrival for Terminal Eight. Pilot: "Ground, American one forty-two heavy, clear of three one right at Kilo Delta."
-- say: American one forty-two heavy, gonna be Kilo Delta, right on Bravo, left Hotel into Terminal Eight, hold short Alpha.
+- say: American one forty-two heavy, gonna be Kilo Delta, right on Bravo, left Hotel to Terminal Eight, hold short Alpha.
 - readback: Kilo Delta, right Bravo, left Hotel, hold short Alpha, American one forty-two heavy.
 - expected: TODO(0.4)
 
@@ -335,7 +337,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - types: C8
 - style: loose
 - context: Wrong readback of 05, with the wrong turn direction. Pilot: "Left Alpha, left Kilo Echo, three one left, hold short three one right, then Kilo, Lufthansa four zero five heavy."
-- say: Lufthansa four zero five heavy, negative, that's a right turn on Kilo Echo, right Kilo Echo.
+- say: Lufthansa four zero five heavy, negative, that's a right turn on Kilo Echo, right on Kilo Echo.
 - readback: Right on Kilo Echo, Lufthansa four zero five heavy.
 - expected: TODO(0.4)
 
@@ -359,7 +361,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - types: C10
 - style: loose
 - context: Two aircraft transmitted at once. Only "KLM six four four heavy" was readable.
-- say: KLM six four four heavy, sorry, you got stepped on, go ahead and say again.
+- say: KLM six four four heavy, sorry, you got stepped on, go ahead and say it again.
 - readback: Ground, KLM six four four heavy, Terminal Four, ready to taxi with Papa.
 - expected: TODO(0.4)
 
@@ -375,8 +377,8 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - types: C12
 - style: textbook
 - context: Brickyard thirty-five sixty, bound for Boston, is taxiing on Alpha when a ground stop for Boston comes in.
-- say: Brickyard thirty-five sixty, ground stop for Boston, expect about twenty minutes.
-- readback: Ground stop Boston, twenty minutes, Brickyard thirty-five sixty.
+- say: Brickyard thirty-five sixty, ground stop for Boston, expect twenty thirty minutes.
+- readback: Ground stop Boston, twenty to thirty minutes, Brickyard thirty-five sixty.
 - expected: TODO(0.4)
 
 ### 33

@@ -197,7 +197,7 @@ All read 2026-11-14.
 
 ## Speech-to-text
 
-_Task 0.3. Run 2026-11-14 on Q's 34 recordings. Draft for `docs/spikes/voice-loop.md` § Speech-to-text._
+_Task 0.3. Run 2026-11-14 on Q's 34 recordings. WER re-scored the same day, after five reference lines were corrected to what Q said (see [error patterns](#notable-error-patterns)); latency and critical tokens didn't change. Raw results: `spikes/voice-loop/results/stt/`._
 
 ### Results
 
@@ -205,13 +205,13 @@ Each candidate streamed all 34 lines at real-time pace, using the shared vocabul
 
 | Candidate | Latency median | Latency p95 | ≤ 300 ms | WER | Critical tokens | Lines with every critical token right | $/hr at peak |
 |---|---|---|---|---|---|---|---|
-| OpenAI `gpt-live-transcribe` | 565 ms | 836 ms | 0/34 | 2.7% | 98.9% | 33/34 | $0.51 |
-| OpenAI `gpt-transcribe` | 634 ms | 812 ms | 0/34 | 2.0% | 98.9% | 33/34 | $0.13 |
-| **Deepgram Nova-3** | **124 ms** | 357 ms | 32/34 | 3.4% | **100%** | **34/34** | $0.18 promo / $0.27 list |
-| Deepgram Flux, 500 ms silence pad | 374 ms | 540 ms | 0/34 | 9.4% | 88.4% | 26/34 | $0.23 promo / $0.27 list |
-| _Flux, no pad (first pass; transcripts cut short)_ | _130 ms_ | _211 ms_ | _34/34_ | _11.7%_ | _83.2%_ | _22/34_ | _same_ |
-| AssemblyAI Universal-Streaming English | 616 ms | 749 ms | 0/34 | 5.0% | 95.8% | 31/34 | $0.10–$0.19 (measured sessions: $0.11) |
-| **AssemblyAI Universal-3.6 Pro** | **120 ms** | **213 ms** | **34/34** | **1.4%** | **100%** | **34/34** | $0.23–$0.45 (measured sessions: $0.28) |
+| OpenAI `gpt-live-transcribe` | 565 ms | 836 ms | 0/34 | 1.4% | 98.9% | 33/34 | $0.51 |
+| OpenAI `gpt-transcribe` | 634 ms | 812 ms | 0/34 | 0.7% | 98.9% | 33/34 | $0.13 |
+| **Deepgram Nova-3** | **124 ms** | 357 ms | 32/34 | 2.3% | **100%** | **34/34** | $0.18 promo / $0.27 list |
+| Deepgram Flux, 500 ms silence pad | 374 ms | 540 ms | 0/34 | 8.2% | 88.4% | 26/34 | $0.23 promo / $0.27 list |
+| _Flux, no pad (first pass; transcripts cut short)_ | _130 ms_ | _211 ms_ | _34/34_ | _11.7% (original reference; not re-scored)_ | _83.2%_ | _22/34_ | _same_ |
+| AssemblyAI Universal-Streaming English | 616 ms | 749 ms | 0/34 | 4.1% | 95.8% | 31/34 | $0.10–$0.19 (measured sessions: $0.11) |
+| **AssemblyAI Universal-3.6 Pro** | **120 ms** | **213 ms** | **34/34** | **0.2%** | **100%** | **34/34** | $0.23–$0.45 (measured sessions: $0.28) |
 
 Critical tokens by category, found / annotated:
 
@@ -227,7 +227,7 @@ Critical tokens by category, found / annotated:
 **Recommendation for 0.6: take Deepgram Nova-3 and AssemblyAI Universal-3.6 Pro into the live loop.** They're the only two that meet the 0.3 s budget at the median, and both got every critical token right on all 34 lines.
 - **Universal-3.6 Pro** is the slightly stronger result:
   - every line within budget, with the tightest tail (p95 213 ms, worst 222 ms)
-  - the lowest WER (1.4%), essentially at the 1.3% floor set by where Q's reading differed from the script (see error patterns)
+  - the lowest WER (0.2%)
 - **Nova-3** is cheaper, bills plainly on audio sent, and has no session-rate limit in the way:
   - median 124 ms
   - 2 lines over budget: 357 ms, and a lone 761 ms
@@ -290,7 +290,10 @@ Outside the two Flux rows, every one of these is a mishearing ("sit tight" → "
   - 30: "say **it** again"
   - 32: "expect twenty thirty minutes" for "expect about twenty minutes"
 
-  Taking the best of the six transcripts on every line gives a WER floor of 1.3% (7 of 556 tokens), which every candidate's WER includes. Critical tokens aren't affected. The reference wasn't edited.
+  Before the edit, taking the best of the six transcripts on every line gave a WER floor of 1.3% (7 of 556 tokens), which every candidate's WER included. Critical tokens weren't affected.
+  **The reference was edited on 2026-11-14 to match Q's wording** (Q agreed), and every candidate was re-scored from its saved transcripts. The pre-edit WERs were 1.4–2.4 points higher; they're in commit 213117a.
+  - Line 10: the candidates split between "to" (4 of 6, including the two most accurate) and "into" (Universal-Streaming English), so the reference now says "to". Q can confirm by playing `test-set/audio/10.webm`.
+  - Line 32: Q said a range, so its readback became "twenty to thirty minutes". 1.2's `delay N` takes one number, so 0.4 must decide how to express it: score the lower bound, or add a range form to 1.2.
 - **Callsigns.** Nova-3 and both AssemblyAI models got 33/33.
   - OpenAI missed one each:
     - `gpt-live-transcribe`: "Qatary seven zero one"

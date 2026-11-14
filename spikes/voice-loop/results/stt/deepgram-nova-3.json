@@ -26,7 +26,7 @@
     "criticalTokens": "results/stt/critical-tokens.json, matched by stt/critical.ts",
     "p95": "nearest rank (ceil(0.95 n)-th smallest)"
   },
-  "updatedAt": "2026-11-14T08:01:45.292Z",
+  "updatedAt": "2026-11-14T14:20:59.857Z",
   "summary": {
     "lines": 34,
     "withFinal": 34,
@@ -42,7 +42,7 @@
     "firstTextMs": {
       "median": 1145.5
     },
-    "wer": 0.0341726618705036,
+    "wer": 0.023214285714285715,
     "critical": {
       "overall": 1,
       "callsign": 1,
@@ -606,7 +606,7 @@
     },
     {
       "num": "05",
-      "say": "Lufthansa four zero five heavy, left on Alpha, right Kilo Echo, three one left, hold short three one right, then hold short Kilo.",
+      "say": "Lufthansa four zero five heavy, left on Alpha, right on Kilo Echo, three one left, hold short three one right, then hold short Kilo.",
       "style": "loose",
       "audioSec": 11.1,
       "runAt": "2026-11-14T07:41:57.787Z",
@@ -688,6 +688,7 @@
           "on",
           "alpha",
           "right",
+          "on",
           "kilo",
           "echo",
           "3",
@@ -731,10 +732,10 @@
           "kilo"
         ],
         "wer": {
-          "refWords": 23,
+          "refWords": 24,
           "substitutions": 0,
           "deletions": 0,
-          "insertions": 2
+          "insertions": 1
         },
         "critical": {
           "callsign": {
@@ -1340,7 +1341,7 @@
     },
     {
       "num": "10",
-      "say": "American one forty-two heavy, gonna be Kilo Delta, right on Bravo, left Hotel into Terminal Eight, hold short Alpha.",
+      "say": "American one forty-two heavy, gonna be Kilo Delta, right on Bravo, left Hotel to Terminal Eight, hold short Alpha.",
       "style": "loose",
       "audioSec": 8.94,
       "runAt": "2026-11-14T07:42:49.297Z",
@@ -1427,7 +1428,7 @@
           "bravo",
           "left",
           "hotel",
-          "into",
+          "to",
           "terminal",
           "8",
           "hold",
@@ -3397,7 +3398,7 @@
     },
     {
       "num": "27",
-      "say": "Lufthansa four zero five heavy, negative, that's a right turn on Kilo Echo, right Kilo Echo.",
+      "say": "Lufthansa four zero five heavy, negative, that's a right turn on Kilo Echo, right on Kilo Echo.",
       "style": "loose",
       "audioSec": 5.76,
       "runAt": "2026-11-14T07:44:46.667Z",
@@ -3468,6 +3469,7 @@
           "kilo",
           "echo",
           "right",
+          "on",
           "kilo",
           "echo"
         ],
@@ -3491,10 +3493,10 @@
           "echo"
         ],
         "wer": {
-          "refWords": 16,
+          "refWords": 17,
           "substitutions": 0,
           "deletions": 0,
-          "insertions": 1
+          "insertions": 0
         },
         "critical": {
           "callsign": {
@@ -3753,7 +3755,7 @@
     },
     {
       "num": "30",
-      "say": "KLM six four four heavy, sorry, you got stepped on, go ahead and say again.",
+      "say": "KLM six four four heavy, sorry, you got stepped on, go ahead and say it again.",
       "style": "loose",
       "audioSec": 4.44,
       "runAt": "2026-11-14T07:45:07.301Z",
@@ -3816,6 +3818,7 @@
           "ahead",
           "and",
           "say",
+          "it",
           "again"
         ],
         "hypTokens": [
@@ -3837,10 +3840,10 @@
           "again"
         ],
         "wer": {
-          "refWords": 15,
+          "refWords": 16,
           "substitutions": 0,
           "deletions": 0,
-          "insertions": 1
+          "insertions": 0
         },
         "critical": {
           "callsign": {
@@ -3971,7 +3974,7 @@
     },
     {
       "num": "32",
-      "say": "Brickyard thirty-five sixty, ground stop for Boston, expect about twenty minutes.",
+      "say": "Brickyard thirty-five sixty, ground stop for Boston, expect twenty thirty minutes.",
       "style": "textbook",
       "audioSec": 5.76,
       "runAt": "2026-11-14T07:45:20.018Z",
@@ -4042,8 +4045,9 @@
           "for",
           "boston",
           "expect",
-          "about",
           "2",
+          "0",
+          "3",
           "0",
           "minutes"
         ],
@@ -4065,10 +4069,10 @@
           "minutes"
         ],
         "wer": {
-          "refWords": 14,
-          "substitutions": 2,
+          "refWords": 15,
+          "substitutions": 0,
           "deletions": 0,
-          "insertions": 1
+          "insertions": 0
         },
         "critical": {
           "callsign": {
