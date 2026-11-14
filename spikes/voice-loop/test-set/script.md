@@ -131,7 +131,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Departure. Pilot: "Ground, Delta four, taxiing out of the Terminal Four ramp, information Papa."
 - say: Delta four, runway three one left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.
 - readback: Three one left, Alpha, right Kilo Echo, hold short Bravo, Delta four.
-- expected: TODO(0.4)
+- expected: DAL4 taxi 31L via A R:KE hs B
 
 ### 02
 - types: C1
@@ -139,7 +139,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Departure. Pilot: "Ground, JetBlue eleven twenty-three, out of the Terminal Five ramp, information Papa."
 - say: JetBlue eleven twenty-three, three one left, taxi via Alpha, Kilo Delta, hold short of Bravo and hold short of runway three one right.
 - readback: Three one left, Alpha, Kilo Delta, hold short Bravo and three one right, JetBlue eleven twenty-three.
-- expected: TODO(0.4)
+- expected: JBU1123 taxi 31L via A KD hs B 31R
 
 ### 03
 - types: C1
@@ -147,7 +147,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Departure. Pilot: "Ground, American one hundred, Terminal Eight, ready to taxi with Papa."
 - say: American one hundred, okay, three one left, go ahead and take Alpha to Kilo Foxtrot, hold short three one right.
 - readback: Three one left, Alpha, Kilo Foxtrot, hold short three one right, American one hundred.
-- expected: TODO(0.4)
+- expected: AAL100 taxi 31L via A KF hs 31R
 
 ### 04
 - types: C1
@@ -155,7 +155,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Departure. Pilot: "Ground, Shamrock one zero four, Terminal Five, information Papa."
 - say: Shamrock one zero four, three one left, Alpha, Juliet, hold short Bravo.
 - readback: Three one left, Alpha, Juliet, hold short Bravo, Shamrock one zero four.
-- expected: TODO(0.4)
+- expected: EIN104 taxi 31L via A J hs B
 
 ### 05
 - types: C1
@@ -163,7 +163,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Departure. Pilot: "Ground, Lufthansa four zero five heavy, ready to taxi, information Papa."
 - say: Lufthansa four zero five heavy, left on Alpha, right on Kilo Echo, three one left, hold short three one right, then hold short Kilo.
 - readback: Left Alpha, right Kilo Echo, three one left, hold short three one right, then Kilo, Lufthansa four zero five heavy.
-- expected: TODO(0.4)
+- expected: DLH405 taxi 31L via L:A R:KE hs 31R K
 
 ### 06
 - types: C1, C9
@@ -171,7 +171,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Departure reporting the out-of-date ATIS. Pilot: "Ground, Delta twenty-three forty, taxiing out of the Terminal Four ramp, with Oscar."
 - say: Delta twenty-three forty, information Papa is current, altimeter two niner niner two, runway three one left, Alpha, Kilo Delta, hold short Bravo.
 - readback: Papa, two niner niner two, three one left, Alpha, Kilo Delta, hold short Bravo, Delta twenty-three forty.
-- expected: TODO(0.4)
+- expected: DAL2340 atis P alt 2992, taxi 31L via A KD hs B
 
 ### 07
 - types: C9
@@ -179,7 +179,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Departure reporting the out-of-date ATIS. Pilot: "Ground, JetBlue six one five, Terminal Five, ready to taxi, information Oscar."
 - say: JetBlue six one five, Kennedy Ground, Oscar's old, information Papa is current, altimeter two niner niner two.
 - readback: Copy Papa, two niner niner two, JetBlue six one five.
-- expected: TODO(0.4)
+- expected: JBU615 atis P alt 2992
 
 ### 08
 - types: C2
@@ -187,7 +187,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Arrival for Terminal Four. Pilot: "Ground, Emirates two zero two heavy, clear of three one right at Kilo Echo."
 - say: Emirates two zero two heavy, taxi to the Terminal Four ramp via Kilo Echo, left on Alpha.
 - readback: Terminal Four ramp via Kilo Echo, left Alpha, Emirates two zero two heavy.
-- expected: TODO(0.4)
+- expected: UAE202 taxi ramp T4 via KE L:A
 
 ### 09
 - types: C2, C7
@@ -195,7 +195,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Arrival for Terminal Five. Pilot: "Ground, JetBlue three eighty-seven, clear three one right at Kilo Foxtrot."
 - say: JetBlue three eighty-seven, alright, Kilo Foxtrot, right on Alpha into the ramp, and monitor ramp when you get there.
 - readback: Kilo Foxtrot, right Alpha to the ramp, monitor ramp, JetBlue three eighty-seven.
-- expected: TODO(0.4)
+- expected: JBU387 taxi ramp via KF R:A, monitor ramp
 
 ### 10
 - types: C2
@@ -203,7 +203,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Arrival for Terminal Eight. Pilot: "Ground, American one forty-two heavy, clear of three one right at Kilo Delta."
 - say: American one forty-two heavy, gonna be Kilo Delta, right on Bravo, left Hotel to Terminal Eight, hold short Alpha.
 - readback: Kilo Delta, right Bravo, left Hotel, hold short Alpha, American one forty-two heavy.
-- expected: TODO(0.4)
+- expected: AAL142 taxi ramp T8 via KD R:B L:H hs A
 
 ### 11
 - types: C3
@@ -211,7 +211,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Alaska niner three is taxiing toward runway four right. It's inactive in this configuration, but every runway still needs a crossing clearance.
 - say: Alaska niner three, hold short of runway four right.
 - readback: Hold short four right, Alaska niner three.
-- expected: TODO(0.4)
+- expected: ASA93 hs 4R
 
 ### 12
 - types: C3
@@ -219,7 +219,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Delta four (after 01 and 26) has been told to continue past Bravo on Kilo Echo. It's approaching runway three one right, with an arrival on short final.
 - say: Delta four, actually, I need you to hold short of three one right, traffic on short final.
 - readback: Holding short three one right, Delta four.
-- expected: TODO(0.4)
+- expected: DAL4 hs 31R
 
 ### 13
 - types: C3
@@ -227,7 +227,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Departure approaching Bravo while a Delta Boeing 767 taxis along Bravo. The "Delta seven sixty-seven" isn't the addressee.
 - say: Iberia six two six heavy, hold short of Bravo, you'll have a Delta seven sixty-seven passing left to right.
 - readback: Hold short Bravo, Iberia six two six heavy.
-- expected: TODO(0.4)
+- expected: IBE626 hs B
 
 ### 14
 - types: C4
@@ -235,7 +235,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: JetBlue eleven twenty-three (02) taxiing on Alpha.
 - say: JetBlue eleven twenty-three, hold position.
 - readback: Holding position, JetBlue eleven twenty-three.
-- expected: TODO(0.4)
+- expected: JBU1123 hold
 
 ### 15
 - types: C4
@@ -243,7 +243,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Iberia six two six heavy (13) holding short of Bravo. The Delta has passed.
 - say: Iberia six two six heavy, traffic's by, go ahead and continue, thanks for waiting.
 - readback: Continuing, Iberia six two six heavy.
-- expected: TODO(0.4)
+- expected: IBE626 continue
 
 ### 16
 - types: C4
@@ -251,7 +251,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Speedbird one seven five heavy taxiing on Kilo. The aircraft ahead has stopped suddenly.
 - say: Speedbird one seven five heavy, stop, stop, hold your position.
 - readback: Holding position, Speedbird one seven five heavy.
-- expected: TODO(0.4)
+- expected: BAW175 hold
 
 ### 17
 - types: C5
@@ -259,7 +259,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Delta four (12) holding short of runway three one right on Kilo Echo. Tower: "Cross three one right at Kilo Echo approved."
 - say: Delta four, cross runway three one right at Kilo Echo.
 - readback: Cross three one right at Kilo Echo, Delta four.
-- expected: TODO(0.4)
+- expected: DAL4 cross 31R at KE
 
 ### 18
 - types: C5, C3
@@ -267,7 +267,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Arrival holding short of runway two two right on Yankee. Tower approved the crossing.
 - say: Swiss one seven heavy, go ahead and cross two two right at Yankee, then hold short of Bravo.
 - readback: Cross two two right at Yankee, hold short Bravo, Swiss one seven heavy.
-- expected: TODO(0.4)
+- expected: SWR17 cross 22R at Y, hs B
 
 ### 19
 - types: C5, C1
@@ -275,7 +275,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Departure for three one left holding short of runway three one right on Kilo Echo. Tower approved the crossing.
 - say: Qatari seven zero one heavy, at Kilo Echo, cross three one right, then Kilo to three one left.
 - readback: Cross three one right at Kilo Echo, Kilo to three one left, Qatari seven zero one heavy.
-- expected: TODO(0.4)
+- expected: QTR701 cross 31R at KE, taxi 31L via K
 
 ### 20
 - types: C6
@@ -283,7 +283,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Air France two three heavy is in the three one left departure line on Kilo, but its release time is still twenty minutes away.
 - say: Air France two three heavy, exit the line at the next left, Kilo Delta, and hold on the pad.
 - readback: Exit left at Kilo Delta, hold on the pad, Air France two three heavy.
-- expected: TODO(0.4)
+- expected: AFR23 taxi pad via L:KD
 
 ### 21
 - types: C12, C6
@@ -291,7 +291,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Delta twelve oh four, bound for Atlanta, is in the three one left departure line on Kilo when a ground stop for Atlanta comes in.
 - say: Delta twelve oh four, bad news, ground stop for Atlanta, take the next right at Kilo Charlie and head over to the penalty box.
 - readback: Ground stop Atlanta, right Kilo Charlie to the penalty box, Delta twelve oh four.
-- expected: TODO(0.4)
+- expected: DAL1204 ground-stop ATL, taxi penalty via R:KC
 
 ### 22
 - types: C12, C6
@@ -299,7 +299,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: JetBlue six one five (07) has a release time of 1452, well in the future.
 - say: JetBlue six one five, release time one four five two for you, taxi to the pad via Alpha, Kilo Kilo, and sit tight.
 - readback: Fourteen fifty-two release, pad via Alpha, Kilo Kilo, JetBlue six one five.
-- expected: TODO(0.4)
+- expected: JBU615 release 1452, taxi pad via A KK
 
 ### 23
 - types: C6
@@ -307,7 +307,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Arrival whose gate is occupied. Pilot: "Ground, Virgin three, clear of three one right at Kilo Foxtrot, our gate's still occupied."
 - say: Virgin three, roger, taxi to the penalty box via Kilo Foxtrot, Bravo, and let me know when your gate opens up.
 - readback: Penalty box via Kilo Foxtrot, Bravo, Virgin three.
-- expected: TODO(0.4)
+- expected: VIR3 taxi penalty via KF B
 
 ### 24
 - types: C7
@@ -315,7 +315,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Speedbird one seven five heavy (16) at the runway three one left hold-short line, second in line.
 - say: Speedbird one seven five heavy, number two for departure, monitor tower one one niner point one.
 - readback: Monitor tower one one niner point one, Speedbird one seven five heavy.
-- expected: TODO(0.4)
+- expected: BAW175 monitor tower 119.1
 
 ### 25
 - types: C7
@@ -323,7 +323,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Emirates two zero two heavy (08) at the Terminal Four ramp entrance.
 - say: Emirates two zero two heavy, contact ramp, so long.
 - readback: Over to ramp, so long, Emirates two zero two heavy.
-- expected: TODO(0.4)
+- expected: UAE202 contact ramp
 
 ### 26
 - types: C8
@@ -331,7 +331,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Wrong readback of 01, leaving out the hold-short. Pilot: "Three one left, Alpha, right Kilo Echo, Delta four."
 - say: Delta four, negative, hold short of Bravo, hold short Bravo.
 - readback: Hold short Bravo, Delta four.
-- expected: TODO(0.4)
+- expected: DAL4 neg hs B
 
 ### 27
 - types: C8
@@ -339,7 +339,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Wrong readback of 05, with the wrong turn direction. Pilot: "Left Alpha, left Kilo Echo, three one left, hold short three one right, then Kilo, Lufthansa four zero five heavy."
 - say: Lufthansa four zero five heavy, negative, that's a right turn on Kilo Echo, right on Kilo Echo.
 - readback: Right on Kilo Echo, Lufthansa four zero five heavy.
-- expected: TODO(0.4)
+- expected: DLH405 neg turn R:KE
 
 ### 28
 - types: C8
@@ -347,7 +347,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Wrong readback of 03, with the wrong runway. Pilot: "Three one right, Alpha, Kilo Foxtrot, hold short three one right, American one hundred."
 - say: American one hundred, nope, departure runway is three one left, not right.
 - readback: Three one left, American one hundred.
-- expected: TODO(0.4)
+- expected: AAL100 neg to 31L
 
 ### 29
 - types: C8
@@ -355,7 +355,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Wrong readback of 04, with Alpha and Bravo swapped. Pilot: "Three one left, Bravo, Juliet, hold short Alpha, Shamrock one zero four."
 - say: Shamrock one zero four, negative, you've got them backwards, it's Alpha, Juliet, hold short Bravo.
 - readback: Alpha, Juliet, hold short Bravo, Shamrock one zero four.
-- expected: TODO(0.4)
+- expected: EIN104 neg via A J hs B
 
 ### 30
 - types: C10
@@ -363,7 +363,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Two aircraft transmitted at once. Only "KLM six four four heavy" was readable.
 - say: KLM six four four heavy, sorry, you got stepped on, go ahead and say it again.
 - readback: Ground, KLM six four four heavy, Terminal Four, ready to taxi with Papa.
-- expected: TODO(0.4)
+- expected: KLM644 say-again
 
 ### 31
 - types: C10
@@ -371,7 +371,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: A pilot called, but the callsign was unreadable: "Ground, [unreadable], clear of three one right at Kilo Foxtrot."
 - say: Aircraft calling Kennedy Ground, say again your callsign.
 - readback: Ground, Aeromexico four zero niner, clear of three one right at Kilo Foxtrot.
-- expected: TODO(0.4)
+- expected: ? say-again
 
 ### 32
 - types: C12
@@ -379,7 +379,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Brickyard thirty-five sixty, bound for Boston, is taxiing on Alpha when a ground stop for Boston comes in.
 - say: Brickyard thirty-five sixty, ground stop for Boston, expect twenty thirty minutes.
 - readback: Ground stop Boston, twenty to thirty minutes, Brickyard thirty-five sixty.
-- expected: TODO(0.4)
+- expected: RPA3560 ground-stop BOS, delay 20
 
 ### 33
 - types: C12
@@ -387,7 +387,7 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: United fourteen sixteen has called ready to taxi. Traffic management has it on hold for release.
 - say: United fourteen sixteen, hold for release, expect one five minutes departure delay.
 - readback: Hold for release, one five minutes, United fourteen sixteen.
-- expected: TODO(0.4)
+- expected: UAL1416 hold-for-release, delay 15
 
 ### 34
 - types: C11
@@ -395,4 +395,4 @@ American one hundred in 03 and 28; Shamrock in 04 and 29; Lufthansa in 05 and 27
 - context: Optional C11 line; 0.4 may skip it. JetBlue eleven twenty-three (02) is on Alpha, and Emirates two zero two heavy (08) is turning from Kilo Echo onto Alpha.
 - say: JetBlue eleven twenty-three, give way to the Emirates heavy coming off Kilo Echo, then follow him on Alpha.
 - readback: Give way to the Emirates, then follow him on Alpha, JetBlue eleven twenty-three.
-- expected: TODO(0.4)
+- expected: UNSCORED (C11 has no command)
