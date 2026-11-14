@@ -1,0 +1,3492 @@
+{
+  "runner": "gpt-6-luna.prompt.terse-answer",
+  "provider": "openai",
+  "model": "gpt-6-luna",
+  "approach": "prompt",
+  "input": "perturbed",
+  "pricing": {
+    "input": 0.1,
+    "cacheRead": 0.01,
+    "cacheWrite": 0.125,
+    "output": 0.5,
+    "source": "docs/spikes/voice-loop.md § Shortlist and developers.openai.com/api/docs/models/gpt-6-luna (2026-11-14); 30-minute cache writes"
+  },
+  "config": {
+    "model": "gpt-6-luna",
+    "api": "responses",
+    "reasoning_effort": "none",
+    "max_output_tokens": 1024,
+    "text_format": "none: terse syntax text, parsed with parseTerse (extra experiment)",
+    "store": false,
+    "cache": "prompt_cache_options.mode explicit, breakpoint on the static developer block (30 min)",
+    "tools": [],
+    "promptSha": "316711f1884f",
+    "schemaSha": "37544dc147c5",
+    "toolsSha": null
+  },
+  "method": {
+    "latency": "performance.now() from just before each request to the parsed response (non-streaming); a tools sample sums every request plus local tool time",
+    "connections": "Node fetch (undici) keep-alive; new connections counted from the undici:client:connected diagnostics channel. Samples where any request opened a connection are 'cold' and left out of the latency stats",
+    "warmup": "one unscored request (line 01, perfect text) per runner and input before the samples, to open the connection, compile any schema grammar and write the prompt cache",
+    "order": "for each repeat, every selected line in script order; requests one at a time",
+    "repeats": 3,
+    "budgetMs": 400,
+    "p95": "nearest rank (ceil(0.95 n)-th smallest)",
+    "scoring": "interp/score.ts: exact match after folding hold-shorts that follow a taxi into it; per-field over lines where either side has the field",
+    "shape": "interp/shape.ts: exact keys and formats per src/sim/commands.ts, plus a terse round trip through parseTerse",
+    "cost": "USD from each request's measured usage at the runner's pricing; $/hr = 450 x mean per transmission"
+  },
+  "updatedAt": "2026-11-14T15:54:10.569Z",
+  "warmups": [
+    {
+      "runAt": "2026-11-14T15:53:29.411Z",
+      "num": "01",
+      "result": {
+        "calls": [
+          {
+            "ms": 639.986791000003,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1604,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 17
+            },
+            "usage": {
+              "input_tokens": 3564,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 17,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3581
+            },
+            "stopReason": "completed",
+            "serverMs": 577,
+            "toolCalls": [],
+            "text": "DAL4 taxi 31L via A R:KE hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 639.986791000003,
+        "toolTrace": [],
+        "rawText": "DAL4 taxi 31L via A R:KE hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL4",
+          "instructions": [
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "runway",
+                "name": "31L"
+              },
+              "via": [
+                {
+                  "taxiway": "A",
+                  "turn": null
+                },
+                {
+                  "taxiway": "KE",
+                  "turn": "right"
+                }
+              ],
+              "holdShort": [
+                {
+                  "kind": "taxiway",
+                  "name": "B"
+                }
+              ]
+            }
+          ]
+        },
+        "error": null
+      }
+    }
+  ],
+  "samples": [
+    {
+      "num": "01",
+      "repeat": 1,
+      "transcript": "Delta for, runway three one left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.",
+      "expected": "DAL4 taxi 31L via A R:KE hs B",
+      "runAt": "2026-11-14T15:53:30.137Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 723.2684169999993,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1604,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 17
+            },
+            "usage": {
+              "input_tokens": 3564,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 17,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3581
+            },
+            "stopReason": "completed",
+            "serverMs": 638,
+            "toolCalls": [],
+            "text": "DAL4 taxi 31L via A R:KE hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 723.2684169999993,
+        "toolTrace": [],
+        "rawText": "DAL4 taxi 31L via A R:KE hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL4",
+          "instructions": [
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "runway",
+                "name": "31L"
+              },
+              "via": [
+                {
+                  "taxiway": "A",
+                  "turn": null
+                },
+                {
+                  "taxiway": "KE",
+                  "turn": "right"
+                }
+              ],
+              "holdShort": [
+                {
+                  "kind": "taxiway",
+                  "name": "B"
+                }
+              ]
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "DAL4 taxi 31L via A R:KE hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": true,
+          "holdShorts": true,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "01",
+      "repeat": 2,
+      "transcript": "Delta for, runway three one left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.",
+      "expected": "DAL4 taxi 31L via A R:KE hs B",
+      "runAt": "2026-11-14T15:53:40.868Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 652.6405420000083,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1604,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 17
+            },
+            "usage": {
+              "input_tokens": 3564,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 17,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3581
+            },
+            "stopReason": "completed",
+            "serverMs": 587,
+            "toolCalls": [],
+            "text": "DAL4 taxi 31L via A R:KE hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 652.6405420000083,
+        "toolTrace": [],
+        "rawText": "DAL4 taxi 31L via A R:KE hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL4",
+          "instructions": [
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "runway",
+                "name": "31L"
+              },
+              "via": [
+                {
+                  "taxiway": "A",
+                  "turn": null
+                },
+                {
+                  "taxiway": "KE",
+                  "turn": "right"
+                }
+              ],
+              "holdShort": [
+                {
+                  "kind": "taxiway",
+                  "name": "B"
+                }
+              ]
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "DAL4 taxi 31L via A R:KE hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": true,
+          "holdShorts": true,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "01",
+      "repeat": 3,
+      "transcript": "Delta for, runway three one left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.",
+      "expected": "DAL4 taxi 31L via A R:KE hs B",
+      "runAt": "2026-11-14T15:53:50.410Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 1161.7262499999924,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1604,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 17
+            },
+            "usage": {
+              "input_tokens": 3564,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 17,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3581
+            },
+            "stopReason": "completed",
+            "serverMs": 493,
+            "toolCalls": [],
+            "text": "DAL4 taxi 31L via A R:KE hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 1161.7262499999924,
+        "toolTrace": [],
+        "rawText": "DAL4 taxi 31L via A R:KE hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL4",
+          "instructions": [
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "runway",
+                "name": "31L"
+              },
+              "via": [
+                {
+                  "taxiway": "A",
+                  "turn": null
+                },
+                {
+                  "taxiway": "KE",
+                  "turn": "right"
+                }
+              ],
+              "holdShort": [
+                {
+                  "kind": "taxiway",
+                  "name": "B"
+                }
+              ]
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "DAL4 taxi 31L via A R:KE hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": true,
+          "holdShorts": true,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "05",
+      "repeat": 1,
+      "transcript": "The tons are four zero five heavy, left on Alpha, right on Kilo Echo, three one left, hold short three one right, then hold short Kilo.",
+      "expected": "DLH405 taxi 31L via L:A R:KE hs 31R K",
+      "runAt": "2026-11-14T15:53:31.464Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 1321.5821250000008,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1615,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 23
+            },
+            "usage": {
+              "input_tokens": 3575,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 23,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3598
+            },
+            "stopReason": "completed",
+            "serverMs": 1250,
+            "toolCalls": [],
+            "text": "DLH405 taxi 31L via L: A R:KE hs 31R K",
+            "error": null
+          }
+        ],
+        "totalMs": 1321.5821250000008,
+        "toolTrace": [],
+        "rawText": "DLH405 taxi 31L via L: A R:KE hs 31R K",
+        "parsed": null,
+        "error": "terse answer doesn't parse: expected taxiway after 'L:' in 'L:'"
+      },
+      "answerTerse": null,
+      "invalidReason": "terse answer doesn't parse: expected taxiway after 'L:' in 'L:'",
+      "score": {
+        "valid": false,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": false,
+          "types": false,
+          "destination": false,
+          "route": false,
+          "turns": false,
+          "holdShorts": false,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "05",
+      "repeat": 2,
+      "transcript": "The tons are four zero five heavy, left on Alpha, right on Kilo Echo, three one left, hold short three one right, then hold short Kilo.",
+      "expected": "DLH405 taxi 31L via L:A R:KE hs 31R K",
+      "runAt": "2026-11-14T15:53:41.899Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 1029.9431659999973,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1615,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 23
+            },
+            "usage": {
+              "input_tokens": 3575,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 23,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3598
+            },
+            "stopReason": "completed",
+            "serverMs": 889,
+            "toolCalls": [],
+            "text": "DLH405 taxi 31L via L: A R:KE hs 31R K",
+            "error": null
+          }
+        ],
+        "totalMs": 1029.9431659999973,
+        "toolTrace": [],
+        "rawText": "DLH405 taxi 31L via L: A R:KE hs 31R K",
+        "parsed": null,
+        "error": "terse answer doesn't parse: expected taxiway after 'L:' in 'L:'"
+      },
+      "answerTerse": null,
+      "invalidReason": "terse answer doesn't parse: expected taxiway after 'L:' in 'L:'",
+      "score": {
+        "valid": false,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": false,
+          "types": false,
+          "destination": false,
+          "route": false,
+          "turns": false,
+          "holdShorts": false,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "05",
+      "repeat": 3,
+      "transcript": "The tons are four zero five heavy, left on Alpha, right on Kilo Echo, three one left, hold short three one right, then hold short Kilo.",
+      "expected": "DLH405 taxi 31L via L:A R:KE hs 31R K",
+      "runAt": "2026-11-14T15:53:51.381Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 962.3161660000042,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1615,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 23
+            },
+            "usage": {
+              "input_tokens": 3575,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 23,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3598
+            },
+            "stopReason": "completed",
+            "serverMs": 675,
+            "toolCalls": [],
+            "text": "DLH405 taxi 31L via L: A R:KE hs 31R K",
+            "error": null
+          }
+        ],
+        "totalMs": 962.3161660000042,
+        "toolTrace": [],
+        "rawText": "DLH405 taxi 31L via L: A R:KE hs 31R K",
+        "parsed": null,
+        "error": "terse answer doesn't parse: expected taxiway after 'L:' in 'L:'"
+      },
+      "answerTerse": null,
+      "invalidReason": "terse answer doesn't parse: expected taxiway after 'L:' in 'L:'",
+      "score": {
+        "valid": false,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": false,
+          "types": false,
+          "destination": false,
+          "route": false,
+          "turns": false,
+          "holdShorts": false,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "06",
+      "repeat": 1,
+      "transcript": "Delta thirty twenty-three forty, information Papa is current, altimeter two niner niner two, runway three one left, Alpha, Kilo Delta, hold short Bravo.",
+      "expected": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+      "runAt": "2026-11-14T15:53:32.777Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 1309.706707999998,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1616,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 24
+            },
+            "usage": {
+              "input_tokens": 3576,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 24,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3600
+            },
+            "stopReason": "completed",
+            "serverMs": 1241,
+            "toolCalls": [],
+            "text": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 1309.706707999998,
+        "toolTrace": [],
+        "rawText": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL2340",
+          "instructions": [
+            {
+              "type": "atis",
+              "letter": "P",
+              "altimeter": "2992"
+            },
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "runway",
+                "name": "31L"
+              },
+              "via": [
+                {
+                  "taxiway": "A",
+                  "turn": null
+                },
+                {
+                  "taxiway": "KD",
+                  "turn": null
+                }
+              ],
+              "holdShort": [
+                {
+                  "kind": "taxiway",
+                  "name": "B"
+                }
+              ]
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": null,
+          "other": true
+        },
+        "other": {
+          "atisLetter": true,
+          "altimeter": true,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "06",
+      "repeat": 2,
+      "transcript": "Delta thirty twenty-three forty, information Papa is current, altimeter two niner niner two, runway three one left, Alpha, Kilo Delta, hold short Bravo.",
+      "expected": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+      "runAt": "2026-11-14T15:53:42.730Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 827.5719170000084,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1616,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 24
+            },
+            "usage": {
+              "input_tokens": 3576,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 24,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3600
+            },
+            "stopReason": "completed",
+            "serverMs": 756,
+            "toolCalls": [],
+            "text": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 827.5719170000084,
+        "toolTrace": [],
+        "rawText": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL2340",
+          "instructions": [
+            {
+              "type": "atis",
+              "letter": "P",
+              "altimeter": "2992"
+            },
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "runway",
+                "name": "31L"
+              },
+              "via": [
+                {
+                  "taxiway": "A",
+                  "turn": null
+                },
+                {
+                  "taxiway": "KD",
+                  "turn": null
+                }
+              ],
+              "holdShort": [
+                {
+                  "kind": "taxiway",
+                  "name": "B"
+                }
+              ]
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": null,
+          "other": true
+        },
+        "other": {
+          "atisLetter": true,
+          "altimeter": true,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "06",
+      "repeat": 3,
+      "transcript": "Delta thirty twenty-three forty, information Papa is current, altimeter two niner niner two, runway three one left, Alpha, Kilo Delta, hold short Bravo.",
+      "expected": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+      "runAt": "2026-11-14T15:53:52.132Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 746.0706659999996,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1616,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 24
+            },
+            "usage": {
+              "input_tokens": 3576,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 24,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3600
+            },
+            "stopReason": "completed",
+            "serverMs": 680,
+            "toolCalls": [],
+            "text": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 746.0706659999996,
+        "toolTrace": [],
+        "rawText": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL2340",
+          "instructions": [
+            {
+              "type": "atis",
+              "letter": "P",
+              "altimeter": "2992"
+            },
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "runway",
+                "name": "31L"
+              },
+              "via": [
+                {
+                  "taxiway": "A",
+                  "turn": null
+                },
+                {
+                  "taxiway": "KD",
+                  "turn": null
+                }
+              ],
+              "holdShort": [
+                {
+                  "kind": "taxiway",
+                  "name": "B"
+                }
+              ]
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "DAL2340 atis P alt 2992, taxi 31L via A KD hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": null,
+          "other": true
+        },
+        "other": {
+          "atisLetter": true,
+          "altimeter": true,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "09",
+      "repeat": 1,
+      "transcript": "JetBlue three eighty-seven, alright, Kilo Foxtrot, red on Alpha into the ramp, and monitor right when you get there.",
+      "expected": "JBU387 taxi ramp via KF R:A, monitor ramp",
+      "runAt": "2026-11-14T15:53:33.566Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 786.697874999998,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1610,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 19
+            },
+            "usage": {
+              "input_tokens": 3570,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 19,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3589
+            },
+            "stopReason": "completed",
+            "serverMs": 732,
+            "toolCalls": [],
+            "text": "JBU387 taxi T5 via L:KF R:A, monitor ramp",
+            "error": null
+          }
+        ],
+        "totalMs": 786.697874999998,
+        "toolTrace": [],
+        "rawText": "JBU387 taxi T5 via L:KF R:A, monitor ramp",
+        "parsed": null,
+        "error": "terse answer doesn't parse: expected runway, 'ramp', 'pad' or 'penalty' after 'taxi', got 'T5'"
+      },
+      "answerTerse": null,
+      "invalidReason": "terse answer doesn't parse: expected runway, 'ramp', 'pad' or 'penalty' after 'taxi', got 'T5'",
+      "score": {
+        "valid": false,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": false,
+          "types": false,
+          "destination": false,
+          "route": false,
+          "turns": false,
+          "holdShorts": null,
+          "crossings": null,
+          "other": false
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": false,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "09",
+      "repeat": 2,
+      "transcript": "JetBlue three eighty-seven, alright, Kilo Foxtrot, red on Alpha into the ramp, and monitor right when you get there.",
+      "expected": "JBU387 taxi ramp via KF R:A, monitor ramp",
+      "runAt": "2026-11-14T15:53:43.401Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 666.2032920000056,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1610,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 17
+            },
+            "usage": {
+              "input_tokens": 3570,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 17,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3587
+            },
+            "stopReason": "completed",
+            "serverMs": 529,
+            "toolCalls": [],
+            "text": "JBU387 taxi T5 via KF R:A, monitor ramp",
+            "error": null
+          }
+        ],
+        "totalMs": 666.2032920000056,
+        "toolTrace": [],
+        "rawText": "JBU387 taxi T5 via KF R:A, monitor ramp",
+        "parsed": null,
+        "error": "terse answer doesn't parse: expected runway, 'ramp', 'pad' or 'penalty' after 'taxi', got 'T5'"
+      },
+      "answerTerse": null,
+      "invalidReason": "terse answer doesn't parse: expected runway, 'ramp', 'pad' or 'penalty' after 'taxi', got 'T5'",
+      "score": {
+        "valid": false,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": false,
+          "types": false,
+          "destination": false,
+          "route": false,
+          "turns": false,
+          "holdShorts": null,
+          "crossings": null,
+          "other": false
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": false,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "09",
+      "repeat": 3,
+      "transcript": "JetBlue three eighty-seven, alright, Kilo Foxtrot, red on Alpha into the ramp, and monitor right when you get there.",
+      "expected": "JBU387 taxi ramp via KF R:A, monitor ramp",
+      "runAt": "2026-11-14T15:53:52.806Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 668.1406660000066,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1610,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 16
+            },
+            "usage": {
+              "input_tokens": 3570,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 16,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3586
+            },
+            "stopReason": "completed",
+            "serverMs": 579,
+            "toolCalls": [],
+            "text": "JBU387 taxi ramp via KF R:A, monitor ramp",
+            "error": null
+          }
+        ],
+        "totalMs": 668.1406660000066,
+        "toolTrace": [],
+        "rawText": "JBU387 taxi ramp via KF R:A, monitor ramp",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "JBU387",
+          "instructions": [
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "ramp",
+                "name": null
+              },
+              "via": [
+                {
+                  "taxiway": "KF",
+                  "turn": null
+                },
+                {
+                  "taxiway": "A",
+                  "turn": "right"
+                }
+              ],
+              "holdShort": []
+            },
+            {
+              "type": "handoff",
+              "mode": "monitor",
+              "facility": "ramp",
+              "frequency": null
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "JBU387 taxi ramp via KF R:A, monitor ramp",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": true,
+          "holdShorts": null,
+          "crossings": null,
+          "other": true
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": true,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "11",
+      "repeat": 1,
+      "transcript": "Alaska men are three, hold short of runway four right.",
+      "expected": "ASA93 hs 4R",
+      "runAt": "2026-11-14T15:53:34.211Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 640.2959169999958,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1594,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 10
+            },
+            "usage": {
+              "input_tokens": 3554,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 10,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3564
+            },
+            "stopReason": "completed",
+            "serverMs": 565,
+            "toolCalls": [],
+            "text": "ASA93 hs 4R",
+            "error": null
+          }
+        ],
+        "totalMs": 640.2959169999958,
+        "toolTrace": [],
+        "rawText": "ASA93 hs 4R",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "ASA93",
+          "instructions": [
+            {
+              "type": "hold-short",
+              "target": {
+                "kind": "runway",
+                "name": "4R"
+              }
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "ASA93 hs 4R",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "11",
+      "repeat": 2,
+      "transcript": "Alaska men are three, hold short of runway four right.",
+      "expected": "ASA93 hs 4R",
+      "runAt": "2026-11-14T15:53:44.058Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 651.5859159999964,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1594,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 10
+            },
+            "usage": {
+              "input_tokens": 3554,
+              "input_tokens_details": {
+                "cached_tokens": 1960,
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_30m_tokens": 0,
+                  "ttl_12h_tokens": 0
+                }
+              },
+              "output_tokens": 10,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3564
+            },
+            "stopReason": "completed",
+            "serverMs": 566,
+            "toolCalls": [],
+            "text": "ASA93 hs 4R",
+            "error": null
+          }
+        ],
+        "totalMs": 651.5859159999964,
+        "toolTrace": [],
+        "rawText": "ASA93 hs 4R",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "ASA93",
+          "instructions": [
+            {
+              "type": "hold-short",
+              "target": {
+                "kind": "runway",
+                "name": "4R"
+              }
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "ASA93 hs 4R",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "11",
+      "repeat": 3,
+      "transcript": "Alaska men are three, hold short of runway four right.",
+      "expected": "ASA93 hs 4R",
+      "runAt": "2026-11-14T15:53:53.435Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 626.2068340000114,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1594,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 10
+            },
+            "usage": {
+              "input_tokens": 3554,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 10,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3564
+            },
+            "stopReason": "completed",
+            "serverMs": 492,
+            "toolCalls": [],
+            "text": "ASA93 hs 4R",
+            "error": null
+          }
+        ],
+        "totalMs": 626.2068340000114,
+        "toolTrace": [],
+        "rawText": "ASA93 hs 4R",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "ASA93",
+          "instructions": [
+            {
+              "type": "hold-short",
+              "target": {
+                "kind": "runway",
+                "name": "4R"
+              }
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "ASA93 hs 4R",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "13",
+      "repeat": 1,
+      "transcript": "Iberia has six twenty six heavy, hold short of Bravo, you'll have a Delta seven sixty-seven passing left to right.",
+      "expected": "IBE626 hs B",
+      "runAt": "2026-11-14T15:53:34.783Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 568.398583000002,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1607,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 8
+            },
+            "usage": {
+              "input_tokens": 3567,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 8,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3575
+            },
+            "stopReason": "completed",
+            "serverMs": 504,
+            "toolCalls": [],
+            "text": "IBE626 hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 568.398583000002,
+        "toolTrace": [],
+        "rawText": "IBE626 hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "IBE626",
+          "instructions": [
+            {
+              "type": "hold-short",
+              "target": {
+                "kind": "taxiway",
+                "name": "B"
+              }
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "IBE626 hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "13",
+      "repeat": 2,
+      "transcript": "Iberia has six twenty six heavy, hold short of Bravo, you'll have a Delta seven sixty-seven passing left to right.",
+      "expected": "IBE626 hs B",
+      "runAt": "2026-11-14T15:53:44.693Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 631.0509160000074,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1607,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 8
+            },
+            "usage": {
+              "input_tokens": 3567,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 8,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3575
+            },
+            "stopReason": "completed",
+            "serverMs": 555,
+            "toolCalls": [],
+            "text": "IBE626 hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 631.0509160000074,
+        "toolTrace": [],
+        "rawText": "IBE626 hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "IBE626",
+          "instructions": [
+            {
+              "type": "hold-short",
+              "target": {
+                "kind": "taxiway",
+                "name": "B"
+              }
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "IBE626 hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "13",
+      "repeat": 3,
+      "transcript": "Iberia has six twenty six heavy, hold short of Bravo, you'll have a Delta seven sixty-seven passing left to right.",
+      "expected": "IBE626 hs B",
+      "runAt": "2026-11-14T15:53:54.020Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 579.4205420000071,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1607,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 8
+            },
+            "usage": {
+              "input_tokens": 3567,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 8,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3575
+            },
+            "stopReason": "completed",
+            "serverMs": 519,
+            "toolCalls": [],
+            "text": "IBE626 hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 579.4205420000071,
+        "toolTrace": [],
+        "rawText": "IBE626 hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "IBE626",
+          "instructions": [
+            {
+              "type": "hold-short",
+              "target": {
+                "kind": "taxiway",
+                "name": "B"
+              }
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "IBE626 hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "16",
+      "repeat": 1,
+      "transcript": "Speedbird one seven five heavy, stop, stop hold short.",
+      "expected": "BAW175 hold",
+      "runAt": "2026-11-14T15:53:35.518Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 732.7620420000021,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1607,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 13
+            },
+            "usage": {
+              "input_tokens": 3567,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 13,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3580
+            },
+            "stopReason": "completed",
+            "serverMs": 664,
+            "toolCalls": [],
+            "text": "BAW175 hold short of BAW175",
+            "error": null
+          }
+        ],
+        "totalMs": 732.7620420000021,
+        "toolTrace": [],
+        "rawText": "BAW175 hold short of BAW175",
+        "parsed": null,
+        "error": "terse answer doesn't parse: unexpected 'short' after 'hold'"
+      },
+      "answerTerse": null,
+      "invalidReason": "terse answer doesn't parse: unexpected 'short' after 'hold'",
+      "score": {
+        "valid": false,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": false,
+          "types": false,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": null,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "16",
+      "repeat": 2,
+      "transcript": "Speedbird one seven five heavy, stop, stop hold short.",
+      "expected": "BAW175 hold",
+      "runAt": "2026-11-14T15:53:45.352Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 653.1897089999984,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1607,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 8
+            },
+            "usage": {
+              "input_tokens": 3567,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 8,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3575
+            },
+            "stopReason": "completed",
+            "serverMs": 526,
+            "toolCalls": [],
+            "text": "BAW175 hold",
+            "error": null
+          }
+        ],
+        "totalMs": 653.1897089999984,
+        "toolTrace": [],
+        "rawText": "BAW175 hold",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "BAW175",
+          "instructions": [
+            {
+              "type": "hold-position"
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "BAW175 hold",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": null,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "16",
+      "repeat": 3,
+      "transcript": "Speedbird one seven five heavy, stop, stop hold short.",
+      "expected": "BAW175 hold",
+      "runAt": "2026-11-14T15:53:54.598Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 571.9448749999865,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1607,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 8
+            },
+            "usage": {
+              "input_tokens": 3567,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 8,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3575
+            },
+            "stopReason": "completed",
+            "serverMs": 508,
+            "toolCalls": [],
+            "text": "BAW175 hold",
+            "error": null
+          }
+        ],
+        "totalMs": 571.9448749999865,
+        "toolTrace": [],
+        "rawText": "BAW175 hold",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "BAW175",
+          "instructions": [
+            {
+              "type": "hold-position"
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "BAW175 hold",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": null,
+          "crossings": null,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "17",
+      "repeat": 1,
+      "transcript": "Delta four, cross one way three one right at Kilo Echo.",
+      "expected": "DAL4 cross 31R at KE",
+      "runAt": "2026-11-14T15:53:36.258Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 733.7140000000072,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1621,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 12
+            },
+            "usage": {
+              "input_tokens": 3581,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 12,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3593
+            },
+            "stopReason": "completed",
+            "serverMs": 550,
+            "toolCalls": [],
+            "text": "DAL4 cross 31R at KE",
+            "error": null
+          }
+        ],
+        "totalMs": 733.7140000000072,
+        "toolTrace": [],
+        "rawText": "DAL4 cross 31R at KE",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL4",
+          "instructions": [
+            {
+              "type": "cross",
+              "runways": [
+                "31R"
+              ],
+              "at": "KE"
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "DAL4 cross 31R at KE",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": null,
+          "crossings": true,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "17",
+      "repeat": 2,
+      "transcript": "Delta four, cross one way three one right at Kilo Echo.",
+      "expected": "DAL4 cross 31R at KE",
+      "runAt": "2026-11-14T15:53:46.093Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 735.9115840000013,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1621,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 12
+            },
+            "usage": {
+              "input_tokens": 3581,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 12,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3593
+            },
+            "stopReason": "completed",
+            "serverMs": 573,
+            "toolCalls": [],
+            "text": "DAL4 cross 31R at KE",
+            "error": null
+          }
+        ],
+        "totalMs": 735.9115840000013,
+        "toolTrace": [],
+        "rawText": "DAL4 cross 31R at KE",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL4",
+          "instructions": [
+            {
+              "type": "cross",
+              "runways": [
+                "31R"
+              ],
+              "at": "KE"
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "DAL4 cross 31R at KE",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": null,
+          "crossings": true,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "17",
+      "repeat": 3,
+      "transcript": "Delta four, cross one way three one right at Kilo Echo.",
+      "expected": "DAL4 cross 31R at KE",
+      "runAt": "2026-11-14T15:53:55.280Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 677.643790999995,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1621,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 12
+            },
+            "usage": {
+              "input_tokens": 3581,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 12,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3593
+            },
+            "stopReason": "completed",
+            "serverMs": 608,
+            "toolCalls": [],
+            "text": "DAL4 cross 31R at KE",
+            "error": null
+          }
+        ],
+        "totalMs": 677.643790999995,
+        "toolTrace": [],
+        "rawText": "DAL4 cross 31R at KE",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL4",
+          "instructions": [
+            {
+              "type": "cross",
+              "runways": [
+                "31R"
+              ],
+              "at": "KE"
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "DAL4 cross 31R at KE",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": null,
+          "crossings": true,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "18",
+      "repeat": 1,
+      "transcript": "Swiss won seven hui, go ahead and cross two two right at Yankee, then old short of Bravo.",
+      "expected": "SWR17 cross 22R at Y, hs B",
+      "runAt": "2026-11-14T15:53:36.923Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 660.2428330000112,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1602,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 16
+            },
+            "usage": {
+              "input_tokens": 3562,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 16,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3578
+            },
+            "stopReason": "completed",
+            "serverMs": 578,
+            "toolCalls": [],
+            "text": "SWR17 cross 22R at Y, hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 660.2428330000112,
+        "toolTrace": [],
+        "rawText": "SWR17 cross 22R at Y, hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "SWR17",
+          "instructions": [
+            {
+              "type": "cross",
+              "runways": [
+                "22R"
+              ],
+              "at": "Y"
+            },
+            {
+              "type": "hold-short",
+              "target": {
+                "kind": "taxiway",
+                "name": "B"
+              }
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "SWR17 cross 22R at Y, hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": true,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "18",
+      "repeat": 2,
+      "transcript": "Swiss won seven hui, go ahead and cross two two right at Yankee, then old short of Bravo.",
+      "expected": "SWR17 cross 22R at Y, hs B",
+      "runAt": "2026-11-14T15:53:46.703Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 605.3657499999972,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1602,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 16
+            },
+            "usage": {
+              "input_tokens": 3562,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 16,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3578
+            },
+            "stopReason": "completed",
+            "serverMs": 536,
+            "toolCalls": [],
+            "text": "SWR17 cross 22R at Y, hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 605.3657499999972,
+        "toolTrace": [],
+        "rawText": "SWR17 cross 22R at Y, hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "SWR17",
+          "instructions": [
+            {
+              "type": "cross",
+              "runways": [
+                "22R"
+              ],
+              "at": "Y"
+            },
+            {
+              "type": "hold-short",
+              "target": {
+                "kind": "taxiway",
+                "name": "B"
+              }
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "SWR17 cross 22R at Y, hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": true,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "18",
+      "repeat": 3,
+      "transcript": "Swiss won seven hui, go ahead and cross two two right at Yankee, then old short of Bravo.",
+      "expected": "SWR17 cross 22R at Y, hs B",
+      "runAt": "2026-11-14T15:53:55.872Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 588.0743749999965,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1602,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 16
+            },
+            "usage": {
+              "input_tokens": 3562,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 16,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3578
+            },
+            "stopReason": "completed",
+            "serverMs": 520,
+            "toolCalls": [],
+            "text": "SWR17 cross 22R at Y, hs B",
+            "error": null
+          }
+        ],
+        "totalMs": 588.0743749999965,
+        "toolTrace": [],
+        "rawText": "SWR17 cross 22R at Y, hs B",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "SWR17",
+          "instructions": [
+            {
+              "type": "cross",
+              "runways": [
+                "22R"
+              ],
+              "at": "Y"
+            },
+            {
+              "type": "hold-short",
+              "target": {
+                "kind": "taxiway",
+                "name": "B"
+              }
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "SWR17 cross 22R at Y, hs B",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": null,
+          "route": null,
+          "turns": null,
+          "holdShorts": true,
+          "crossings": true,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "19",
+      "repeat": 1,
+      "transcript": "Qatary seven zero one heavy, at Kilo Echo, cross three one right, then Kilo to three one left.",
+      "expected": "QTR701 cross 31R at KE, taxi 31L via K",
+      "runAt": "2026-11-14T15:53:38.352Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 1425.1315409999952,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1607,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 25
+            },
+            "usage": {
+              "input_tokens": 3567,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 25,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3592
+            },
+            "stopReason": "completed",
+            "serverMs": 745,
+            "toolCalls": [],
+            "text": "QTR701 cross 31R at KE, taxi 31L via K, hs 31L",
+            "error": null
+          }
+        ],
+        "totalMs": 1425.1315409999952,
+        "toolTrace": [],
+        "rawText": "QTR701 cross 31R at KE, taxi 31L via K, hs 31L",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "QTR701",
+          "instructions": [
+            {
+              "type": "cross",
+              "runways": [
+                "31R"
+              ],
+              "at": "KE"
+            },
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "runway",
+                "name": "31L"
+              },
+              "via": [
+                {
+                  "taxiway": "K",
+                  "turn": null
+                }
+              ],
+              "holdShort": []
+            },
+            {
+              "type": "hold-short",
+              "target": {
+                "kind": "runway",
+                "name": "31L"
+              }
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "QTR701 cross 31R at KE, taxi 31L via K, hs 31L",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": true,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": null,
+          "holdShorts": false,
+          "crossings": true,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "19",
+      "repeat": 2,
+      "transcript": "Qatary seven zero one heavy, at Kilo Echo, cross three one right, then Kilo to three one left.",
+      "expected": "QTR701 cross 31R at KE, taxi 31L via K",
+      "runAt": "2026-11-14T15:53:47.357Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 648.1760839999915,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1607,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 19
+            },
+            "usage": {
+              "input_tokens": 3567,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 19,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3586
+            },
+            "stopReason": "completed",
+            "serverMs": 578,
+            "toolCalls": [],
+            "text": "QTR701 cross 31R, taxi 31L via K\n",
+            "error": null
+          }
+        ],
+        "totalMs": 648.1760839999915,
+        "toolTrace": [],
+        "rawText": "QTR701 cross 31R, taxi 31L via K\n",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "QTR701",
+          "instructions": [
+            {
+              "type": "cross",
+              "runways": [
+                "31R"
+              ],
+              "at": null
+            },
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "runway",
+                "name": "31L"
+              },
+              "via": [
+                {
+                  "taxiway": "K",
+                  "turn": null
+                }
+              ],
+              "holdShort": []
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "QTR701 cross 31R, taxi 31L via K",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": null,
+          "holdShorts": null,
+          "crossings": false,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "19",
+      "repeat": 3,
+      "transcript": "Qatary seven zero one heavy, at Kilo Echo, cross three one right, then Kilo to three one left.",
+      "expected": "QTR701 cross 31R at KE, taxi 31L via K",
+      "runAt": "2026-11-14T15:53:56.840Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 965.5659999999916,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1607,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 25
+            },
+            "usage": {
+              "input_tokens": 3567,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 25,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3592
+            },
+            "stopReason": "completed",
+            "serverMs": 886,
+            "toolCalls": [],
+            "text": "QTR701 cross 31R at KE, taxi 31L via K, hs 31R",
+            "error": null
+          }
+        ],
+        "totalMs": 965.5659999999916,
+        "toolTrace": [],
+        "rawText": "QTR701 cross 31R at KE, taxi 31L via K, hs 31R",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "QTR701",
+          "instructions": [
+            {
+              "type": "cross",
+              "runways": [
+                "31R"
+              ],
+              "at": "KE"
+            },
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "runway",
+                "name": "31L"
+              },
+              "via": [
+                {
+                  "taxiway": "K",
+                  "turn": null
+                }
+              ],
+              "holdShort": []
+            },
+            {
+              "type": "hold-short",
+              "target": {
+                "kind": "runway",
+                "name": "31R"
+              }
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "QTR701 cross 31R at KE, taxi 31L via K, hs 31R",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": true,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": null,
+          "holdShorts": false,
+          "crossings": true,
+          "other": null
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "21",
+      "repeat": 1,
+      "transcript": "Delta twelver for, bad news, ground stop for Atlanta, take the next right at Kilo Charlie and head over to the penalty box.",
+      "expected": "DAL1204 ground-stop ATL, taxi penalty via R:KC",
+      "runAt": "2026-11-14T15:53:39.087Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 730.271041,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1627,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 17
+            },
+            "usage": {
+              "input_tokens": 3587,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 17,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3604
+            },
+            "stopReason": "completed",
+            "serverMs": 643,
+            "toolCalls": [],
+            "text": "DAL1204 ground-stop ATL, taxi penalty via R:KC",
+            "error": null
+          }
+        ],
+        "totalMs": 730.271041,
+        "toolTrace": [],
+        "rawText": "DAL1204 ground-stop ATL, taxi penalty via R:KC",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL1204",
+          "instructions": [
+            {
+              "type": "ground-stop",
+              "destination": "ATL"
+            },
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "penalty-box",
+                "name": null
+              },
+              "via": [
+                {
+                  "taxiway": "KC",
+                  "turn": "right"
+                }
+              ],
+              "holdShort": []
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "DAL1204 ground-stop ATL, taxi penalty via R:KC",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": true,
+          "holdShorts": null,
+          "crossings": null,
+          "other": true
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": true,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "21",
+      "repeat": 2,
+      "transcript": "Delta twelver for, bad news, ground stop for Atlanta, take the next right at Kilo Charlie and head over to the penalty box.",
+      "expected": "DAL1204 ground-stop ATL, taxi penalty via R:KC",
+      "runAt": "2026-11-14T15:53:48.191Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 829.510374999998,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1627,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 17
+            },
+            "usage": {
+              "input_tokens": 3587,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 17,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3604
+            },
+            "stopReason": "completed",
+            "serverMs": 702,
+            "toolCalls": [],
+            "text": "DAL1204 ground-stop ATL, taxi penalty via R:KC",
+            "error": null
+          }
+        ],
+        "totalMs": 829.510374999998,
+        "toolTrace": [],
+        "rawText": "DAL1204 ground-stop ATL, taxi penalty via R:KC",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "DAL1204",
+          "instructions": [
+            {
+              "type": "ground-stop",
+              "destination": "ATL"
+            },
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "penalty-box",
+                "name": null
+              },
+              "via": [
+                {
+                  "taxiway": "KC",
+                  "turn": "right"
+                }
+              ],
+              "holdShort": []
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "DAL1204 ground-stop ATL, taxi penalty via R:KC",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": true,
+        "exactRaw": true,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": true,
+          "destination": true,
+          "route": true,
+          "turns": true,
+          "holdShorts": null,
+          "crossings": null,
+          "other": true
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": true,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "21",
+      "repeat": 3,
+      "transcript": "Delta twelver for, bad news, ground stop for Atlanta, take the next right at Kilo Charlie and head over to the penalty box.",
+      "expected": "DAL1204 ground-stop ATL, taxi penalty via R:KC",
+      "runAt": "2026-11-14T15:53:57.675Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 833.8261659999989,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1627,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 17
+            },
+            "usage": {
+              "input_tokens": 3587,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 17,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3604
+            },
+            "stopReason": "completed",
+            "serverMs": 739,
+            "toolCalls": [],
+            "text": "DAL1204 neg to ATL, taxi penalty via R:KC",
+            "error": null
+          }
+        ],
+        "totalMs": 833.8261659999989,
+        "toolTrace": [],
+        "rawText": "DAL1204 neg to ATL, taxi penalty via R:KC",
+        "parsed": null,
+        "error": "terse answer doesn't parse: expected runway, 'ramp', 'pad' or 'penalty' after 'to', got 'ATL'"
+      },
+      "answerTerse": null,
+      "invalidReason": "terse answer doesn't parse: expected runway, 'ramp', 'pad' or 'penalty' after 'to', got 'ATL'",
+      "score": {
+        "valid": false,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": false,
+          "types": false,
+          "destination": false,
+          "route": false,
+          "turns": false,
+          "holdShorts": null,
+          "crossings": null,
+          "other": false
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": false,
+          "releaseTime": null
+        }
+      }
+    },
+    {
+      "num": "22",
+      "repeat": 1,
+      "transcript": "JetBlue six one five, release time one four five two for you, taxi to the pad via Alpha, Kilo, Kilo, and zip type.",
+      "expected": "JBU615 release 1452, taxi pad via A KK",
+      "runAt": "2026-11-14T15:53:40.211Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 1118.22595800001,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1629,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 22
+            },
+            "usage": {
+              "input_tokens": 3589,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 22,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3611
+            },
+            "stopReason": "completed",
+            "serverMs": 883,
+            "toolCalls": [],
+            "text": "JBU615 release 1452, taxi pad via A K K, hold-for-release",
+            "error": null
+          }
+        ],
+        "totalMs": 1118.22595800001,
+        "toolTrace": [],
+        "rawText": "JBU615 release 1452, taxi pad via A K K, hold-for-release",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "JBU615",
+          "instructions": [
+            {
+              "type": "release-time",
+              "time": "14:52"
+            },
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "pad",
+                "name": null
+              },
+              "via": [
+                {
+                  "taxiway": "A",
+                  "turn": null
+                },
+                {
+                  "taxiway": "K",
+                  "turn": null
+                },
+                {
+                  "taxiway": "K",
+                  "turn": null
+                }
+              ],
+              "holdShort": []
+            },
+            {
+              "type": "hold-for-release"
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "JBU615 release 14:52, taxi pad via A K K, hold-for-release",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": false,
+          "destination": true,
+          "route": false,
+          "turns": null,
+          "holdShorts": null,
+          "crossings": null,
+          "other": true
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": true
+        }
+      }
+    },
+    {
+      "num": "22",
+      "repeat": 2,
+      "transcript": "JetBlue six one five, release time one four five two for you, taxi to the pad via Alpha, Kilo, Kilo, and zip type.",
+      "expected": "JBU615 release 1452, taxi pad via A KK",
+      "runAt": "2026-11-14T15:53:49.243Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 1046.5437920000113,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1629,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 22
+            },
+            "usage": {
+              "input_tokens": 3589,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 22,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3611
+            },
+            "stopReason": "completed",
+            "serverMs": 909,
+            "toolCalls": [],
+            "text": "JBU615 release 1452, taxi pad via A K K Z R:E?",
+            "error": null
+          }
+        ],
+        "totalMs": 1046.5437920000113,
+        "toolTrace": [],
+        "rawText": "JBU615 release 1452, taxi pad via A K K Z R:E?",
+        "parsed": null,
+        "error": "terse answer doesn't parse: expected taxiway after 'R:', got 'E?'"
+      },
+      "answerTerse": null,
+      "invalidReason": "terse answer doesn't parse: expected taxiway after 'R:', got 'E?'",
+      "score": {
+        "valid": false,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": false,
+          "types": false,
+          "destination": false,
+          "route": false,
+          "turns": null,
+          "holdShorts": null,
+          "crossings": null,
+          "other": false
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": false
+        }
+      }
+    },
+    {
+      "num": "22",
+      "repeat": 3,
+      "transcript": "JetBlue six one five, release time one four five two for you, taxi to the pad via Alpha, Kilo, Kilo, and zip type.",
+      "expected": "JBU615 release 1452, taxi pad via A KK",
+      "runAt": "2026-11-14T15:53:58.464Z",
+      "result": {
+        "calls": [
+          {
+            "ms": 785.6929999999993,
+            "newConnection": false,
+            "tokens": {
+              "uncached": 1629,
+              "cacheRead": 1960,
+              "cacheWrite": 0,
+              "output": 22
+            },
+            "usage": {
+              "input_tokens": 3589,
+              "input_tokens_details": {
+                "cache_write_tokens": 0,
+                "cache_write_tokens_details": {
+                  "ttl_12h_tokens": 0,
+                  "ttl_30m_tokens": 0
+                },
+                "cached_tokens": 1960
+              },
+              "output_tokens": 22,
+              "output_tokens_details": {
+                "reasoning_tokens": 0
+              },
+              "total_tokens": 3611
+            },
+            "stopReason": "completed",
+            "serverMs": 692,
+            "toolCalls": [],
+            "text": "JBU615 release 1452, taxi pad via A K K, hold-for-release",
+            "error": null
+          }
+        ],
+        "totalMs": 785.6929999999993,
+        "toolTrace": [],
+        "rawText": "JBU615 release 1452, taxi pad via A K K, hold-for-release",
+        "parsed": {
+          "type": "transmission",
+          "callsign": "JBU615",
+          "instructions": [
+            {
+              "type": "release-time",
+              "time": "14:52"
+            },
+            {
+              "type": "taxi",
+              "to": {
+                "kind": "pad",
+                "name": null
+              },
+              "via": [
+                {
+                  "taxiway": "A",
+                  "turn": null
+                },
+                {
+                  "taxiway": "K",
+                  "turn": null
+                },
+                {
+                  "taxiway": "K",
+                  "turn": null
+                }
+              ],
+              "holdShort": []
+            },
+            {
+              "type": "hold-for-release"
+            }
+          ]
+        },
+        "error": null
+      },
+      "answerTerse": "JBU615 release 14:52, taxi pad via A K K, hold-for-release",
+      "invalidReason": null,
+      "score": {
+        "valid": true,
+        "exact": false,
+        "exactRaw": false,
+        "normalizationChanged": false,
+        "fields": {
+          "callsign": true,
+          "types": false,
+          "destination": true,
+          "route": false,
+          "turns": null,
+          "holdShorts": null,
+          "crossings": null,
+          "other": true
+        },
+        "other": {
+          "atisLetter": null,
+          "altimeter": null,
+          "handoff": null,
+          "frequency": null,
+          "delay": null,
+          "groundStop": null,
+          "releaseTime": true
+        }
+      }
+    }
+  ],
+  "summary": {
+    "samples": 36,
+    "scored": 36,
+    "valid": 28,
+    "exact": 23,
+    "exactRaw": 23,
+    "normalizationChanged": 2,
+    "normalizationChangedResult": 0,
+    "linesScored": 12,
+    "linesExactEveryRepeat": 6,
+    "fields": {
+      "callsign": {
+        "correct": 28,
+        "applicable": 36
+      },
+      "types": {
+        "correct": 26,
+        "applicable": 36
+      },
+      "destination": {
+        "correct": 14,
+        "applicable": 21
+      },
+      "route": {
+        "correct": 12,
+        "applicable": 21
+      },
+      "turns": {
+        "correct": 6,
+        "applicable": 12
+      },
+      "holdShorts": {
+        "correct": 15,
+        "applicable": 20
+      },
+      "crossings": {
+        "correct": 8,
+        "applicable": 9
+      },
+      "other": {
+        "correct": 8,
+        "applicable": 12
+      }
+    },
+    "other": {
+      "atisLetter": {
+        "correct": 3,
+        "applicable": 3
+      },
+      "altimeter": {
+        "correct": 3,
+        "applicable": 3
+      },
+      "handoff": {
+        "correct": 1,
+        "applicable": 3
+      },
+      "frequency": {
+        "correct": 0,
+        "applicable": 0
+      },
+      "delay": {
+        "correct": 0,
+        "applicable": 0
+      },
+      "groundStop": {
+        "correct": 2,
+        "applicable": 3
+      },
+      "releaseTime": {
+        "correct": 2,
+        "applicable": 3
+      }
+    },
+    "latency": {
+      "warm": 36,
+      "median": 730.271041,
+      "p95": 1321.5821250000008,
+      "min": 568.398583000002,
+      "max": 1425.1315409999952,
+      "withinBudget": 0,
+      "cold": 0,
+      "coldMedian": null
+    },
+    "perRequest": {
+      "warm": 36,
+      "median": 730.271041,
+      "p95": 1321.5821250000008
+    },
+    "roundTrips": {
+      "mean": 1,
+      "dist": {
+        "1": 36
+      }
+    },
+    "meanTokens": {
+      "uncached": 1611.5833333333333,
+      "cacheRead": 1960,
+      "cacheWrite": 0,
+      "output": 16.583333333333332
+    },
+    "maxCacheRead": 1960,
+    "usdPerTransmission": 0.00018905,
+    "usdPerHr": 0.0850725,
+    "usdPerHrUncached": 0.1644525,
+    "invalidReasons": {
+      "terse answer doesn't parse: expected taxiway after 'L:' in 'L:'": 3,
+      "terse answer doesn't parse: expected runway, 'ramp', 'pad' or 'penalty' after 'taxi'": 2,
+      "terse answer doesn't parse: unexpected 'short' after 'hold'": 1,
+      "terse answer doesn't parse: expected runway, 'ramp', 'pad' or 'penalty' after 'to'": 1,
+      "terse answer doesn't parse: expected taxiway after 'R:'": 1
+    }
+  }
+}
