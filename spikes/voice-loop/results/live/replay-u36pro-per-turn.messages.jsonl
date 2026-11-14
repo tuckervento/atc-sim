@@ -1,0 +1,88 @@
+{"t":4,"text":"{\"type\":\"hello\",\"mode\":\"replay\",\"session\":\"replay-2026-11-14T17-59-18-168Z\",\"log\":\"results/live/replay-u36pro-per-turn.jsonl\",\"settings\":{\"cartesiaTts\":\"cartesia-ws\",\"assemblySession\":\"per-turn\",\"seed\":1,\"maxSpend\":3},\"cards\":[]}"}
+{"t":100,"text":"{\"type\":\"recording\",\"id\":1,\"clientId\":1,\"ref\":{\"kind\":\"line\",\"num\":\"01\"},\"label\":\"L01\",\"combo\":{\"stt\":\"u36pro\",\"tts\":\"cartesia-ws\"}}"}
+{"t":6552,"text":"{\"type\":\"transcript\",\"id\":1,\"text\":\"Delta 4, runway 31 left, taxi via Alpha, right on Kilo Echo, hold short of Bravo.\",\"sttMs\":150.8}"}
+{"t":8120,"text":"{\"type\":\"command\",\"id\":1,\"terse\":\"DAL4 taxi 31L via A R:KE hs B\",\"valid\":true,\"invalidReason\":null,\"expected\":\"DAL4 taxi 31L via A R:KE hs B\",\"exact\":true,\"interpMs\":1568.1}"}
+{"t":8121,"text":"{\"type\":\"readback\",\"id\":1,\"kind\":\"readback\",\"text\":\"Okay, three one left via Alpha, right Kilo Echo, hold short Bravo, Delta four.\",\"voice\":\"Derrick\",\"provider\":\"cartesia\",\"tts\":\"cartesia-ws\",\"style\":\"chatty\"}"}
+{"t":8121,"text":"{\"type\":\"audio-start\",\"id\":1,\"sampleRate\":24000}"}
+{"t":8273,"binary":true,"kind":1,"id":1,"bytes":7397,"sha256":"e436fa30ef4f67a952149c81ac3c1957df2a4584b2eeecc9393507d20fd0c035"}
+{"t":8413,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"92810142378dc65271f045c9467f6e31134f227e7221b4e6bfb9e2364f0c7ac7"}
+{"t":8413,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"e76e124163aed4397ef3d9da5e5a25c8bab27982f1109ea6f5f54ad33ec1ec0f"}
+{"t":8416,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"3f223941fd6bdf84c26c82e8ca64cc8a4f83181ce9354eacc9ff94c84efd92ff"}
+{"t":8416,"binary":true,"kind":1,"id":1,"bytes":5701,"sha256":"f3d9adc3703086ba19ac9e53d6f3344a6b92c1fd9e7bcabe84ad4dcd7721ec43"}
+{"t":8416,"binary":true,"kind":1,"id":1,"bytes":7397,"sha256":"de19253f7ee18a29fcaf78d56a7385bd9d914b5215a56071d473a01abbc31837"}
+{"t":8424,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"8e5f57b38f562a62d4ce300053169f96c15beef508bca282ff033225342550dc"}
+{"t":8424,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"47e2bebca836448a03c63c753cb090e99b34744b109713cea0dd2eea2981ed04"}
+{"t":8428,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"460f5c48995a069ec67ab235738d74c8e140155a969fcc9f2be70c3a1ff5056f"}
+{"t":8428,"binary":true,"kind":1,"id":1,"bytes":5701,"sha256":"9a565c722c8eb489ea7686a69d9c0b43b7e8287c46b7368033f32dd03fae9333"}
+{"t":8462,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"0a3dc20f03701116bae6703be4fd73cbe89e83dbdf075c7a6fd1b5662e1551dc"}
+{"t":8462,"binary":true,"kind":1,"id":1,"bytes":9501,"sha256":"076caf6034fcaa2e0120c3931b3f70e9f9727fc109263a1f257326cc775e4bf8"}
+{"t":8536,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"828040160fccf1c22cce204ce3623027dc412dc1c079ad494cd14731c4b55ed1"}
+{"t":8537,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"79230f2a0e201d5accd25d2a8236b675a404f3045e2331bc9a88e78be7fee292"}
+{"t":8537,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"2d0b17f928e6576e8e7ecac6598f85619d5e55df18de8f35bbcc5fb6a1ee3052"}
+{"t":8537,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"0360a580e0e22c2fda038096b1e37df4d2d3b6c2431688a22b71d3d67a37e41f"}
+{"t":8538,"binary":true,"kind":1,"id":1,"bytes":413,"sha256":"14b000dfa17ed738e7a3719745d4e3333f3d56dbc466e6e5f292cb873ea9858e"}
+{"t":8593,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"e4e91bd70c0b58d3f83c85e853d9b9129e56de50df02385f92377603081dd1ae"}
+{"t":8617,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"8e466929155efa0ef9fff2e23f900ed9910e4f92e916056152c8f6e15485f517"}
+{"t":8617,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"86befcef8645943616b4bf1c049fcf5f3991f981bf03ff8425e846b92a9ae52e"}
+{"t":8617,"binary":true,"kind":1,"id":1,"bytes":9397,"sha256":"f1d291403d0ef74128e2fdc7b8c7fa020ecd68627070c317106b3588f4101eec"}
+{"t":8661,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"ab6e45f2d1a171524ebb0dc1084ec8822a90976a10ed51b349bc34bc37857c70"}
+{"t":8662,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"2ae88cc7733925a90d4aeb1ac6330f7f07de7ffa0d53966785f0a340ef9dc231"}
+{"t":8698,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"a76df5866b8dc379681bc95ae232a1ea14c16aba50299be6164eb68b1468d915"}
+{"t":8699,"binary":true,"kind":1,"id":1,"bytes":9397,"sha256":"d06cca28fd1457baf16bf5cd2329a472dcd51c2e4e5bbfd5228b2aababa134ab"}
+{"t":8727,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"0101cc200992583bfaa47f6ae3495f23a66bd0d7a3896dfac3ae07cba1c7bfcb"}
+{"t":8731,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"7d188160052de457875caf9a684d3e523b15725fd4d128e2bf223fa5122afdbe"}
+{"t":8731,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"05d0b916557902203996a7b67b493ef6c89ed1c0418a9d59c32a3b5c748550bc"}
+{"t":8731,"binary":true,"kind":1,"id":1,"bytes":9605,"sha256":"67342614e3f8dae02a1285ab7af5f82cb2eee4c96cacfc40ee0f53778e8e87a7"}
+{"t":8731,"binary":true,"kind":1,"id":1,"bytes":413,"sha256":"8ec256b4465ce08e21007c025fb7f015e01c3a4cb84e4b611e414d5902ce4ba7"}
+{"t":8745,"binary":true,"kind":1,"id":1,"bytes":7397,"sha256":"7012098033f0eafc70dbd6cdb16dadc4a8ebe0f2a5f91849238bada5d786561f"}
+{"t":8769,"binary":true,"kind":1,"id":1,"bytes":4541,"sha256":"e296ff19fd23027678d451d4b7faeeb3b9d07ae885de923f52f923664b242f95"}
+{"t":8784,"text":"{\"type\":\"audio-end\",\"id\":1,\"bytes\":268800,\"audioSec\":5.6,\"error\":null}"}
+{"t":8785,"text":"{\"type\":\"done\",\"id\":1,\"stages\":{\"sttMs\":150.8,\"interpMs\":1568.1,\"templateMs\":1.5,\"ttsFirstByteMs\":152,\"sendMs\":0.5,\"serverTotalMs\":1872.9},\"errors\":[],\"logged\":true}"}
+{"t":14967,"text":"{\"type\":\"recording\",\"id\":2,\"clientId\":2,\"ref\":{\"kind\":\"line\",\"num\":\"11\"},\"label\":\"L11\",\"combo\":{\"stt\":\"u36pro\",\"tts\":\"cartesia-ws\"}}"}
+{"t":18399,"text":"{\"type\":\"transcript\",\"id\":2,\"text\":\"Alaska niner three, hold short of runway four right.\",\"sttMs\":369.9}"}
+{"t":20314,"text":"{\"type\":\"command\",\"id\":2,\"terse\":\"ASA93 hs 4R\",\"valid\":true,\"invalidReason\":null,\"expected\":\"ASA93 hs 4R\",\"exact\":true,\"interpMs\":1915.2}"}
+{"t":20314,"text":"{\"type\":\"readback\",\"id\":2,\"kind\":\"readback\",\"text\":\"Hold short four right, Alaska niner three.\",\"voice\":\"Sebastian\",\"provider\":\"cartesia\",\"tts\":\"cartesia-ws\",\"style\":\"chatty\"}"}
+{"t":20314,"text":"{\"type\":\"audio-start\",\"id\":2,\"sampleRate\":24000}"}
+{"t":20433,"binary":true,"kind":1,"id":2,"bytes":7397,"sha256":"8bed5aa0023d9eb123eaae993c8bd6e20efa1815ec78d396cf16ddfc84edadc4"}
+{"t":20501,"binary":true,"kind":1,"id":2,"bytes":9605,"sha256":"7b82ead621c2729e53d7003cbb45c8c3f3d0acfd5c57c64d7b022950f173c646"}
+{"t":20501,"binary":true,"kind":1,"id":2,"bytes":9605,"sha256":"01197a2accf48b1b73de0fbd0ed31be4af2c2cbc74056c4f74a717a4c522bfa9"}
+{"t":20504,"binary":true,"kind":1,"id":2,"bytes":9605,"sha256":"533e29028fafc5b6ed3e60862b82ab58167d678fe5fae9a4ac166127393d1246"}
+{"t":20504,"binary":true,"kind":1,"id":2,"bytes":5701,"sha256":"12b0d828c6449e30323258de9ad576c4bef0527d44ae2ed7cffb0fce40146b57"}
+{"t":20517,"binary":true,"kind":1,"id":2,"bytes":7397,"sha256":"a19b875e14204fecf16f61ea3a90bc358926e033efc75fd9e23848656445cef7"}
+{"t":20549,"binary":true,"kind":1,"id":2,"bytes":9605,"sha256":"2ce45d4083fb3be1bd04e37a68dfbcdf6f0e12cd519eee9345e95677f9b180db"}
+{"t":20552,"binary":true,"kind":1,"id":2,"bytes":5805,"sha256":"c73c1e6afa335158081300cc79d1288de617cfc154214df5fdbed2b11f53273e"}
+{"t":20640,"binary":true,"kind":1,"id":2,"bytes":9605,"sha256":"76f3473218c153088e90b4f989b5c64251ee0047fed1f73cc74683d7fc625a90"}
+{"t":20648,"binary":true,"kind":1,"id":2,"bytes":9605,"sha256":"b066ad4611d4a620ba94ef1a612bf58fb002283ae48cbf07f37abaec1ee33998"}
+{"t":20648,"binary":true,"kind":1,"id":2,"bytes":9605,"sha256":"357c7e2f06059b0dee4c2f7d6a1184069e5301d58b325b4433e6a643da6399b3"}
+{"t":20648,"binary":true,"kind":1,"id":2,"bytes":2005,"sha256":"504776fa87e0739443ce4002cdab7ecb54f9d536b3aa41a7e20ddcd098c12c5a"}
+{"t":20700,"binary":true,"kind":1,"id":2,"bytes":9605,"sha256":"46f23ffad6285de18e3d92d7da107077f1f7d82120b4b961eacb19446b3ebe5e"}
+{"t":20701,"binary":true,"kind":1,"id":2,"bytes":9605,"sha256":"68bd33a98d23a4baae6921126b95689cc05f765442aa2219415408671e3be27a"}
+{"t":20706,"binary":true,"kind":1,"id":2,"bytes":9605,"sha256":"38520774e19c576a6f86f00f890a9cbd871b1ba2c7fa828de0e7632fd4438f06"}
+{"t":20706,"binary":true,"kind":1,"id":2,"bytes":5701,"sha256":"d93dd94d9ff1fa8498b48bfc3eefeb87c5ec294a17c183bc86787be1939f5233"}
+{"t":20722,"binary":true,"kind":1,"id":2,"bytes":8269,"sha256":"273adb25f356d89e94386175f8bd38ba6465caa0bab34149e91b1e6c5680be96"}
+{"t":20728,"text":"{\"type\":\"audio-end\",\"id\":2,\"bytes\":138240,\"audioSec\":2.9,\"error\":null}"}
+{"t":20729,"text":"{\"type\":\"done\",\"id\":2,\"stages\":{\"sttMs\":369.9,\"interpMs\":1915.2,\"templateMs\":0.2,\"ttsFirstByteMs\":118.5,\"sendMs\":0.1,\"serverTotalMs\":2403.9},\"errors\":[],\"logged\":true}"}
+{"t":24171,"text":"{\"type\":\"recording\",\"id\":3,\"clientId\":3,\"ref\":{\"kind\":\"line\",\"num\":\"14\"},\"label\":\"L14\",\"combo\":{\"stt\":\"u36pro\",\"tts\":\"cartesia-ws\"}}"}
+{"t":27788,"text":"{\"type\":\"transcript\",\"id\":3,\"text\":\"JetBlue 1123, hold position.\",\"sttMs\":195.5}"}
+{"t":28868,"text":"{\"type\":\"command\",\"id\":3,\"terse\":\"JBU1123 hold\",\"valid\":true,\"invalidReason\":null,\"expected\":\"JBU1123 hold\",\"exact\":true,\"interpMs\":1080.2}"}
+{"t":28869,"text":"{\"type\":\"readback\",\"id\":3,\"kind\":\"readback\",\"text\":\"Holding position, JetBlue eleven twenty-three.\",\"voice\":\"Sebastian\",\"provider\":\"cartesia\",\"tts\":\"cartesia-ws\",\"style\":\"terse\"}"}
+{"t":28869,"text":"{\"type\":\"audio-start\",\"id\":3,\"sampleRate\":24000}"}
+{"t":29013,"binary":true,"kind":1,"id":3,"bytes":7397,"sha256":"f5d97e478803d86d1119dab73167bed317cba3055c5ea82636c84001d5356a60"}
+{"t":29059,"binary":true,"kind":1,"id":3,"bytes":9605,"sha256":"f8309ab00e1f2c6536793aaa9bfd5ac73fd27884dcbcf376c1bab16898504417"}
+{"t":29063,"binary":true,"kind":1,"id":3,"bytes":9605,"sha256":"c650775565bdfacf73eda1fe1f792dfa26fec21274a6ff81d411d496a4f3d564"}
+{"t":29065,"binary":true,"kind":1,"id":3,"bytes":9605,"sha256":"af9f431ce975f80508b9978eb3f9a751b31d8900dd5dc7221c6d44bcaa667d48"}
+{"t":29065,"binary":true,"kind":1,"id":3,"bytes":9397,"sha256":"73e868ea03a2d38beecbb20ff65c84f4f958ffb446d345b1099a66427fd2e61f"}
+{"t":29091,"binary":true,"kind":1,"id":3,"bytes":7397,"sha256":"c658cd33431847012f247c1758687f433f00cbd4d351914f8719cc12c128f064"}
+{"t":29148,"binary":true,"kind":1,"id":3,"bytes":9605,"sha256":"f6fd9ae8f87b4c715bf0c3ca598d02892d90a598cd57aef06b7bebd397204885"}
+{"t":29149,"binary":true,"kind":1,"id":3,"bytes":9605,"sha256":"b3d2e80b06edf8bf61ba01d2f2f367c53535d9c330c763c77dc082188e7a65af"}
+{"t":29155,"binary":true,"kind":1,"id":3,"bytes":9605,"sha256":"ea972517ea6de39af918765e3e4975e858138ba7c0275ef7a57c7db9d4a45d07"}
+{"t":29156,"binary":true,"kind":1,"id":3,"bytes":9605,"sha256":"0964d5c2cf4febfb71966640424a448fa372f6b5a84c87f51772cbb077778a28"}
+{"t":29156,"binary":true,"kind":1,"id":3,"bytes":413,"sha256":"a044332797ae4f1c34fbce7f430f026a7c2df5c4a29d62649d0c7bb453eab358"}
+{"t":29214,"binary":true,"kind":1,"id":3,"bytes":9605,"sha256":"120aa1758307a18c3af253fe9cc31e0fd06dcdf1c322515b07b0c0cbeccbb13c"}
+{"t":29216,"binary":true,"kind":1,"id":3,"bytes":9605,"sha256":"6d7fb9eeb6309b5583977f25c42f6b458f6482384a3bf69545c17f5c4f1f2ff3"}
+{"t":29216,"binary":true,"kind":1,"id":3,"bytes":9605,"sha256":"faf380e77976047d50cc63bac161ceefcecf154be5f39478a9a31ae7ebcabb9a"}
+{"t":29216,"binary":true,"kind":1,"id":3,"bytes":9397,"sha256":"8d4a961e70184f38d6a18ab45d2348b51995c2cd3ba35f11c42420bb268aa024"}
+{"t":29265,"binary":true,"kind":1,"id":3,"bytes":9605,"sha256":"a8d4a37ebf91eb86d388618714bacfab33a5be180e7e76caf27f230442ffce28"}
+{"t":29265,"binary":true,"kind":1,"id":3,"bytes":6349,"sha256":"eeaaa3c8433d3305b64ba1f8be9339739d1d7514db268a96edc6ef60b9589c39"}
+{"t":29265,"text":"{\"type\":\"audio-end\",\"id\":3,\"bytes\":145920,\"audioSec\":3,\"error\":null}"}
+{"t":29266,"text":"{\"type\":\"done\",\"id\":3,\"stages\":{\"sttMs\":195.5,\"interpMs\":1080.2,\"templateMs\":0.5,\"ttsFirstByteMs\":144.6,\"sendMs\":0.2,\"serverTotalMs\":1421.1},\"errors\":[],\"logged\":true}"}
