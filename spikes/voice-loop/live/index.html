@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JFK Ground Live Loop</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <h1>JFK Ground · live voice loop</h1>
+    <span id="conn" class="pill bad">connecting…</span>
+    <span id="progress"></span>
+  </header>
+
+  <main>
+    <div id="banner" hidden></div>
+
+    <section id="mic">
+      <button id="start" type="button">Enable microphone</button>
+      <span id="mic-label">The page needs your microphone. Chrome will ask once.</span>
+      <div id="meter" title="Input level"><div id="meter-fill"></div></div>
+    </section>
+
+    <section id="card" aria-live="polite">
+      <div class="card-head">
+        <span id="card-id">--</span>
+        <span id="card-count"></span>
+        <span id="card-types"></span>
+      </div>
+      <p id="situation">Loading cards…</p>
+      <div id="wrong" hidden>
+        <p class="label">The pilot's (wrong) readback</p>
+        <p id="wrong-text"></p>
+        <button id="play-wrong" type="button">Play it (P)</button>
+      </div>
+      <p id="combo"></p>
+    </section>
+
+    <p id="status" class="idle">Enable the microphone to start.</p>
+
+    <section id="result" hidden>
+      <div class="grid">
+        <span class="label">Heard</span><span id="r-heard"></span>
+        <span class="label">Command</span><span id="r-command" class="mono"></span>
+        <span class="label">Expected</span><span id="r-expected" class="mono"></span>
+        <span class="label">Pilot</span><span id="r-readback"></span>
+        <span class="label">Timing</span><span id="r-timing" class="mono"></span>
+      </div>
+      <p id="verdict-ask">Did it understand you? Press <kbd>Y</kbd> yes or <kbd>N</kbd> no.</p>
+    </section>
+
+    <section id="errors-box" hidden>
+      <p class="label">Errors</p>
+      <ul id="errors"></ul>
+    </section>
+
+    <p id="keys">
+      Hold <kbd>Space</kbd> to talk, release to send ·
+      <kbd>Y</kbd> / <kbd>N</kbd> understood me? (then next card) ·
+      <kbd>&larr;</kbd> <kbd>&rarr;</kbd> previous / next card ·
+      <kbd>P</kbd> play the wrong readback ·
+      <kbd>Esc</kbd> cancel while talking
+    </p>
+
+    <details id="history-box">
+      <summary>Transmissions this session (<span id="history-count">0</span>)</summary>
+      <table id="history">
+        <thead><tr><th>#</th><th>Card</th><th>Combination</th><th>End to end</th><th>Exact</th><th>Y/N</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </details>
+  </main>
+
+  <script type="module" src="/client.js"></script>
+</body>
+</html>
