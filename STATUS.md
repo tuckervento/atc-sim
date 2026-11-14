@@ -1,13 +1,23 @@
 # STATUS
 
-_Last updated: 2026-11-14 (parallel cycle 3 started: 0.4 and 1.8)_
+_Last updated: 2026-11-14 (parallel cycle 3: 1.8 done; 0.4 in progress)_
 
 ## Snapshot
 
-8 of 20 tasks done (0.1, 0.2, 0.3, 0.5, 1.1, 1.2, 1.3, 1.4). 0.4 and 1.8 in progress (parallel cycle 3). Nothing blocked.
+9 of 20 tasks done (0.1, 0.2, 0.3, 0.5, 1.1, 1.2, 1.3, 1.4, 1.8). 0.4 in progress (parallel cycle 3). Nothing blocked.
 
 ## Completed
 
+- [x] 1.8 — Route resolution — done 2026-11-14 — verified by me after the subagent, and after my change for Q's way-out decision:
+  - `npx vitest run src/sim/route.test.ts`: 32 of 32 passed. `npm run typecheck`: exit 0. `npm test`: 167 of 167 passed across 6 files.
+  - Each Acceptance item has a test asserting exact nodes, edges, destination or reason:
+    - Turns are honored: right on A from stub 7 is unable, not overridden.
+    - With no turn given, it turns toward the destination (off C onto A for T2).
+    - Ambiguity: `{ node: 'bD', taxiway: 'B' }`, on the E-loop fixture.
+    - Unable when taxiways don't connect: "taxiways A and B don't meet".
+    - The path ends at the runway hold (`hA9`) and at the ramp entrance (`rbTC`).
+  - Also covered: no reversal, closures (reason quotes the closure), runway crossings in the hold list (one-way holds), clearance hold-shorts on and off the path, pads, the penalty box, and lane `7`.
+  - Only the owned files were added: `src/sim/route.ts`, `route.test.ts`, `__fixtures__/e-loop.overrides.json`.
 - [x] 0.5 — Voice bake-off; Q listens — done 2026-11-14 — verified:
   - Q rated all 15 voices on the samples page. The table is pasted unedited into § Voices → Q's listening verdict, with per-provider means.
   - § Voices has, per provider: median and p95 time to first audio, usable voices, rate control, accents and $/hr.
@@ -53,7 +63,6 @@ _Last updated: 2026-11-14 (parallel cycle 3 started: 0.4 and 1.8)_
 ## In Progress
 
 - 0.4 — Interpreter bake-off — started 2026-11-14 by an Opus subagent. It owns `spikes/voice-loop/interp-bench.ts`, `interp/**`, `results/interp/**`, `results/0.4-interpreter.md`, and only the `expected:` rows of `test-set/script.md`.
-- 1.8 — Route resolution — started 2026-11-14 by an Opus subagent. It owns `src/sim/route.ts`, `src/sim/route.test.ts` and `src/sim/__fixtures__/**`.
 
 ## Blocked
 
@@ -247,6 +256,32 @@ _Last updated: 2026-11-14 (parallel cycle 3 started: 0.4 and 1.8)_
     - 1.5 now also depends on 1.8 for those routes.
     - PRD §8.1 and §14 record them as [Q].
   - **ElevenLabs upgraded to Starter** (Q). Not yet confirmed: whether library voices now work through the API. 0.6 checks that before relying on them.
+
+- 2026-11-14 — **1.8 choices** (reference: the header comment of `src/sim/route.ts`):
+  - **API:** `resolveRoute(index, taxi, { node, arrivedVia, terminal })` returns one of:
+    - `path`: nodes, edges, `lengthM`, every hold line passed, where each clearance hold-short applies, and the destination
+    - `ambiguous`: the node, the taxiway, and the edges both ways
+    - `unable`: a reason
+    - A bad start position throws, because that's a caller bug.
+  - **Own way out:**
+    - If the aircraft isn't on the route's first taxiway yet, it continues forward along its current taxiway, or along unnamed edges, to where that taxiway begins.
+    - That's how it leaves a pad, a ramp stub, an exit taxiway or a departure line.
+    - **Q decided (2026-11-14) that the way out never crosses a runway.** It's unable instead ("reaching B means crossing runway 9/27 on D, which the route doesn't name"). Naming the taxiway it's on makes the crossing part of the route.
+    - I added that rule and its test (red first), after the agent.
+  - **Rules the agent chose:**
+    - Only `taxiway` edges are routed.
+    - It turns at the first junction and never skips one.
+    - A turn with no heading is unable.
+    - "R:A" while already on A is unable.
+    - Ramps match terminal ids, and holding areas match their ids (no spoken-name field yet).
+    - It ends at the nearest pad or penalty-box spot.
+    - A runway hold-short target also matches the departure line's front hold.
+  - **TDD:** the agent says that 3 times it wrote two tests before running either, and a type error slipped past Vitest until a typecheck. It fixed that, and typechecked after every step from then on.
+  - **TEST.json's description corrected:** under the strict rule, the B–E loop isn't ambiguous, because E1 and E2 must be named. The fixture makes the ambiguous case. Validation is unchanged: 0 errors, 0 warnings.
+  - **Follow-ups for later tasks:**
+    - **1.5:** spoken names for holding areas; name JFK's unnamed ramp stubs in overrides, or they're unreachable; time the search on KJFK, since it branches at every fork, and cache if it's slow.
+    - **1.6:** LGA lanes that ground controls must be imported as `taxiway` edges.
+    - **1.9:** starting mid-edge (pass the node ahead), and where exactly to stop before a hold node.
 
 ## Next Up
 

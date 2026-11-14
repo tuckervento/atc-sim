@@ -4,7 +4,7 @@
   "name": "Test Airport (synthetic)",
   "reference": { "lat": 0, "lon": 0 },
   "source": {
-    "description": "Synthetic airport for unit tests (PLAN 1.4), not a real place. It exercises every feature of the format: two intersecting runways (9/27 and 18/36, crossing at node rX), a hold-short on J that protects both, runway, ILS, LAHSO and intermediate holds, a runway crossing on A, ramp lanes (including numeric lane 7) with check-in names, two terminals, two pads and a penalty box (reachable both ways round the E loop, so a turn onto B toward it is ambiguous), two departure lines with ordered exits, two configurations (27 takes arrivals and departures in 'west'), split tower positions, and a closed segment of C. Units: meters, x east, y north."
+    "description": "Synthetic airport for unit tests (PLAN 1.4), not a real place. It exercises every feature of the format: two intersecting runways (9/27 and 18/36, crossing at node rX), a hold-short on J that protects both, runway, ILS, LAHSO and intermediate holds, a runway crossing on A, ramp lanes (including numeric lane 7) with check-in names, two terminals, two pads and a penalty box (reached round the E loop by E1 or E2, which a route must name, so it's not ambiguous here; src/sim/__fixtures__/e-loop.overrides.json makes the ambiguous case), two departure lines with ordered exits, two configurations (27 takes arrivals and departures in 'west'), split tower positions, and a closed segment of C. Units: meters, x east, y north."
   },
   "defaultConfiguration": "west",
   "nodes": [

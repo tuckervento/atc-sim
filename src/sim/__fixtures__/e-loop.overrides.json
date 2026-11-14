@@ -1,0 +1,11 @@
+{
+  "formatVersion": 1,
+  "airport": "TEST",
+  "description": "Route-test fixture, applied on top of data/airports/TEST.json: the two connectors from B down to E (edges bE1-eW, named E1, and bE2-eE, named E2) are renamed E. Taxiway E then meets B at both ends, at bE1 and at bE2, so 'B then E' to the penalty box works both ways round the loop: from D, a turn onto B with no direction is ambiguous. In TEST itself it isn't, because E1 and E2 are separate taxiways the route has to name.",
+  "edges": {
+    "patch": [
+      { "id": "bE1-eW", "name": "E" },
+      { "id": "bE2-eE", "name": "E" }
+    ]
+  }
+}
