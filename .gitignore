@@ -6,4 +6,5 @@ dist/
 !.env.example
 spikes/voice-loop/test-set/audio/
 spikes/voice-loop/samples/
+spikes/voice-loop/live/audio/
 .DS_Store

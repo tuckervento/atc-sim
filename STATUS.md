@@ -1,10 +1,10 @@
 # STATUS
 
-_Last updated: 2026-11-14 (parallel cycle 3 finished: 0.4 and 1.8 done)_
+_Last updated: 2026-11-14 (0.6 started: live voice loop)_
 
 ## Snapshot
 
-10 of 20 tasks done (0.1–0.5, 1.1–1.4, 1.8). Nothing blocked. **The interpreter misses its 0.4 s budget** (about 1.1–1.3 s median), so the loop's estimated median is about 1.55 s against the 1.0 s target; 0.6 measures it live. Next up: 0.6 and 1.9.
+10 of 20 tasks done (0.1–0.5, 1.1–1.4, 1.8). Nothing blocked. **The interpreter misses its 0.4 s budget** (about 1.1–1.3 s median), so the loop's estimated median is about 1.55 s against the 1.0 s target; 0.6 (in progress) measures it live. Next after it: 1.9.
 
 ## Completed
 
@@ -76,6 +76,8 @@ _Last updated: 2026-11-14 (parallel cycle 3 finished: 0.4 and 1.8 done)_
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
+
+- 0.6 — Live end-to-end loop and findings; Q tests — started 2026-11-14 by an Opus subagent. It owns `spikes/voice-loop/live/**`, `results/live/**` and `results/0.6-findings.md`. Plan: `~/.claude/plans/zany-snacking-llama.md`. The build is verified by replaying the test-set audio. Then it goes to Blocked on Q's live session, and § Findings follows that session.
 
 ## Blocked
 
@@ -327,9 +329,22 @@ _Last updated: 2026-11-14 (parallel cycle 3 finished: 0.4 and 1.8 done)_
     - **Routes from speech** are checked against the airport graph before the readback (0.6 or Phase 2), because transcript commas can split or merge taxiway names.
     - Haiku 5.5 is dropped for 0.6.
 
+- 2026-11-14 — **0.6 setup and Q's choices:**
+  - **No gpt-6.1-terra run** (Q). Q had thought it was below Luna. It's OpenAI's mid-tier model: $1 input, $0.05 cached and $5 output per million tokens, checked on OpenAI's model page.
+  - **Live transmissions use situation cards** (Q).
+    - About 24 cards each describe a situation and the intent, not the wording.
+    - Q says each one their own way and marks Y or N for "understood me".
+    - This tests phrasing the 0.4 prompt never saw.
+    - The page rotates speech-to-text × voice provider.
+  - **Built by an Opus subagent**, as in the earlier cycles, with me verifying. I verify through a replay mode that streams the 34 test-set recordings through the same pipeline.
+  - **Set up centrally:**
+    - `.gitignore` gains `spikes/voice-loop/live/audio/` (Q's live recordings, kept for offline re-scoring).
+    - The spike gains a `live` script.
+    - The spike tsconfig now also checks `interp/**` and `live/**`. Typecheck still exits 0.
+
 ## Next Up
 
-- 0.6 — Live end-to-end loop and findings; Q tests. Needs 0.3, 0.4 and 0.5, all done.
+- 0.6 is in progress (above). What it tests:
   - Picks to test: speech-to-text Nova-3 and Universal-3.6 Pro; interpreter gpt-6-luna with prompt context; voices from ElevenLabs (Daniel, plus library voices now that the account is on Starter) and Cartesia (Sebastian, Derrick and Gary).
   - Confirm ElevenLabs library voices work before relying on them.
   - The latency budget question goes with it.

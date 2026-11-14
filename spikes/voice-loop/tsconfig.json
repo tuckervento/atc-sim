@@ -15,7 +15,8 @@
     "erasableSyntaxOnly": true,
     "skipLibCheck": true
   },
-  // Top-level spike scripts only. recorder/ (a browser page) and test-set/ are
-  // owned by task 0.2 and are not type-checked here.
-  "include": ["*.ts"]
+  // Top-level spike scripts, plus interp/ and live/ (0.4's analyze.ts and 0.6's server
+  // aren't imported by a top-level script). recorder/ and live/'s browser code are plain JS
+  // and test-set/ is data, so they're not type-checked here.
+  "include": ["*.ts", "interp/**/*.ts", "live/**/*.ts"]
 }
