@@ -1,6 +1,6 @@
 # STATUS
 
-_Last updated: 2026-11-15 (1.5 done: JFK imported and valid)_
+_Last updated: 2026-11-15 (cycle 7 started: 1.6, 1.7 and 1.10 in parallel)_
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ _Last updated: 2026-11-15 (1.5 done: JFK imported and valid)_
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-Next: 1.6, 1.7, 1.10 and 1.11 are all eligible.
+In progress: 1.6, 1.7 and 1.10, in parallel. 1.11 is next.
 
 ## Completed
 
@@ -146,6 +146,10 @@ Next: 1.6, 1.7, 1.10 and 1.11 are all eligible.
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
+
+- [ ] 1.6 — Import LGA as a format check (subagent, own worktree). Q chose the agent's sourced picks, not a map sheet.
+- [ ] 1.7 — Map renderer (subagent, own worktree). Ends with Q comparing it with the FAA diagram.
+- [ ] 1.10 — Simulated tower (subagent, own worktree). It designs the sim-core parts the ramp (1.11) will share.
 
 ## Blocked
 
@@ -586,9 +590,11 @@ Next: 1.6, 1.7, 1.10 and 1.11 are all eligible.
     - Terse can't type multi-word spoken names, so one-word ones (Kilo, Zulu, Quebec) were added.
     - Stands 75–77, 78A, H12 and H13 aren't on OSM's graph.
 
+- 2026-11-15 — **Parallel cycle 7: 1.6, 1.7 and 1.10.** Q asked for 1.6, 1.7, 1.10 and 1.11 together. 1.10 and 1.11 both need the same new sim-core parts: role, airline, who controls the aircraft, motion outside the taxi logic, their own state, a slot in the tick, and events. So **Q chose 1.10 now and 1.11 next cycle.** The tower agent designs those parts and documents where the ramp fits.
+  - **LGA's hand-picked data (1.6): the agent's sourced picks** (Q), not a map sheet. Each pick is cited in `docs/airports/KLGA-notes.md`, and the doubtful ones are listed for Q.
+  - **Each agent works in its own git worktree** (my call). One `tsconfig.sim.json` covers both `src/airport/` (1.6) and `src/sim/` (1.10), so in a shared tree one agent's half-done edit would break the other's checks. I merge the diffs onto `main` in the order 1.6, 1.10, 1.7.
+
 ## Next Up
 
-- 1.6 — Import LGA as a format check (needs 1.5, done).
-- 1.7 — Map renderer (needs 1.5, done).
-- 1.10 — Simulated tower, and 1.11 — Simulated ramp (each needs 1.9, done). One should pass the aircraft's airline to `RouteStart` for company hangars.
+- 1.11 — Simulated ramp, after 1.10 lands (Q, 2026-11-15). It builds on the sim-core parts 1.10 adds.
 - 1.9's three open questions, and 1.5's five, are in their entries above.
