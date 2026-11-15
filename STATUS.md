@@ -1,6 +1,6 @@
 # STATUS
 
-_Last updated: 2026-11-15 (cycle 7 done: 1.6, 1.7 and 1.10)_
+_Last updated: 2026-11-15 (cycle 8 started: 1.11 and the 1.10 follow-ups in parallel)_
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ _Last updated: 2026-11-15 (cycle 7 done: 1.6, 1.7 and 1.10)_
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-Next: 1.11, plus the tower's throughput fix and a longer TEST 18/36 (Q's decisions below).
+In progress: 1.11, and the 1.10 follow-ups (throughput, a longer TEST 18/36). Next: 1.12.
 
 ## Completed
 
@@ -185,6 +185,9 @@ Next: 1.11, plus the tower's throughput fix and a longer TEST 18/36 (Q's decisio
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
+
+- [ ] 1.11 — Simulated ramp (subagent, own worktree), built on 1.10's sim-core parts.
+- [ ] 1.10 follow-ups (subagent, own worktree): mixed-runway throughput, and a longer TEST 18/36 so 36 takes arrivals.
 
 ## Blocked
 
@@ -723,13 +726,18 @@ Next: 1.11, plus the tower's throughput fix and a longer TEST 18/36 (Q's decisio
   - **1.7:** "map looks good on examination", which completes 1.7. I take that as covering 1.7's question 1, the South Hardstand's placement.
   - **1.10 Q1, throughput: too low.** "Even if only one aircraft can use the runway at a time, I would still expect one every ~2 minutes or so", so about 30 movements an hour on one runway. It gets better once several runways are active. Today's rate is about 13 takeoffs an hour alongside 15 landings.
   - **1.10 Q2:** lengthen TEST's 18/36, so 36 can take arrivals.
+  - **The throughput target, clarified (Q):** "departures every ~2 min", so about 30 takeoffs an hour on 31L while it lands 15.
+    - My probe measured today's KJFK 31L capacity with a full departure queue: 44 takeoffs an hour with no arrivals; 20 takeoffs and 15 landings at 15 arrivals an hour; 15 and 17 at 30 offered.
+    - The "13 an hour" I first reported came from the 50-seed scenario. Its crossings at KE and its departure demand (about 24 an hour) held it below capacity.
   - **1.6 Q7: accept** the KJFK K4 hold change (h5969626557 protects 13R/31L and 4L/22R).
   - **The LGA picks (1.6 Q1–3):** the default configuration, ground's lanes, the 13 line and the 22 exits are "fine for format for now, may change later."
 
+- 2026-11-15 — **Parallel cycle 8: 1.11 and the 1.10 follow-ups,** each in its own worktree (approved by Q).
+  - Why together: the follow-ups touch `tower.ts`, its tests and one TEST node (`r2S`, the 36 end, far from TEST's ramp). 1.11 adds `ramp.ts` beside the tower, where `world.ts` documents.
+  - **One existing test changes, by Q's decision:** tower's "fails loudly for 36" becomes "36 lands and exits at F".
+
 ## Next Up
 
-- 1.11 — Simulated ramp (needs 1.9, done; builds on 1.10's sim-core parts, documented on `World` in `world.ts`).
-- 1.10 follow-ups (Q, 2026-11-15): raise mixed-runway throughput to about one movement every 2 minutes, and lengthen TEST's 18/36 so 36 takes arrivals.
-- 1.12 — Rule checks and score counters, once 1.11 is done (needs 1.10 and 1.11).
+- 1.12 — Rule checks and score counters (needs 1.10 and 1.11). Bring 1.10's questions 3 and 7 (runway areas at intersections, airborne footprints) into its plan.
 - Open for Q, none blocking 1.11: 1.6's questions 4–6 and 8; 1.10's 3–7 (3 and 7 matter for 1.12, 5 for 1.14); 1.7's 2–5; 1.9's three; 1.5's five.
 - 1.9's three open questions, and 1.5's five, are in their entries above.
