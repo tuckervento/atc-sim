@@ -1,6 +1,6 @@
 # STATUS
 
-_Last updated: 2026-11-15 (Q answered the KJFK questions; 1.5 stage b is unblocked)_
+_Last updated: 2026-11-15 (1.5 stage b in progress)_
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ _Last updated: 2026-11-15 (Q answered the KJFK questions; 1.5 stage b is unblock
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-Next: 1.5 stage b. Also eligible: 1.10 and 1.11.
+In progress: 1.5 stage b. Also eligible: 1.10 and 1.11.
 
 ## Completed
 
@@ -123,6 +123,14 @@ Next: 1.5 stage b. Also eligible: 1.10 and 1.11.
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
+
+- 1.5 — Import JFK, **stage b** — started 2026-11-15 by an Opus subagent. It applies Q's answers in `docs/airports/KJFK-questions.md`, and adds:
+  - spoken names for holding areas
+  - hardstands and hangars (format, `Destination`, terse syntax, `resolveRoute`)
+  - unnamed connectors counted as turns
+  - 1.5's full Acceptance
+
+  Plan: `~/.claude/plans/zany-snacking-llama.md`.
 
 ## Blocked
 
