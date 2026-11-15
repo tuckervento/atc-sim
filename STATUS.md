@@ -1,10 +1,10 @@
 # STATUS
 
-_Last updated: 2026-11-15 (cycle 7 started: 1.6, 1.7 and 1.10 in parallel)_
+_Last updated: 2026-11-15 (cycle 7 done: 1.6, 1.7 and 1.10)_
 
 ## Snapshot
 
-13 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.5, 1.8 and 1.9. **JFK is imported and valid** (1.5).
+16 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.10. **LGA imports as a format check** (1.6), **the map renders any airport** (1.7, Q checked it against the FAA diagram), and **the simulated tower runs** (1.10).
 
 **Phase 0's picks (Q signed off 2026-11-14):**
 - speech-to-text: Deepgram Nova-3
@@ -13,9 +13,48 @@ _Last updated: 2026-11-15 (cycle 7 started: 1.6, 1.7 and 1.10 in parallel)_
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-In progress: 1.6, 1.7 and 1.10, in parallel. 1.11 is next.
+Next: 1.11, plus the tower's throughput fix and a longer TEST 18/36 (Q's decisions below).
 
 ## Completed
+
+- [x] 1.7 — Map renderer — done 2026-11-15 (subagent, own worktree; merged by me). **Q compared it with the FAA diagram: "map looks good on examination"** (2026-11-15). Verified by me:
+  - 297 of 297 tests and typecheck exit 0 on `main`.
+  - `npm run dev` binds `[::1]:5173` only (`lsof`).
+  - In Chrome at 1600×1100:
+    - `?airport=KJFK` shows all four runways (31L marked for arrivals and departures, 31R for arrivals) and the main taxiways labelled.
+    - `TEST` and `KLGA` load.
+    - `KXYZ` shows "Unknown airport" with links.
+    - No console errors or warnings.
+  - The screenshot is `docs/screenshots/kjfk-map.png`, which I retook after wiring the role (below).
+  - **The check Q did:**
+    1. Open https://aeronav.faa.gov/d-tpp/2611/00610ad.pdf (AL-610) next to `docs/screenshots/kjfk-map.png`, or run `npm run dev` and open http://localhost:5173/?airport=KJFK. Both are north-up.
+    2. Check the runways and the main taxiways: A and B around the central terminal area, K, KE, KD, KF and KG off 13R/31L, Z and Y, and P and Q in the west.
+    3. Check the terminals: 1, 4, 5, 7 and 8.
+    4. Check the curated places: the penalty box by Q1, the Kilo pad by K2, the Zulu pad by the 31L end, and the South Hardstand by PB.
+    5. Wheel to zoom and drag to pan.
+- [x] 1.10 — Simulated tower — done 2026-11-15 (subagent, own worktree; merged by me). Verified by me on `main`, with 1.6 and 1.7 merged:
+  - In the worktree: typecheck exit 0, 255 of 255. On `main`, after all three merges: typecheck exit 0, **297 of 297** across 19 files.
+  - **No existing test was edited:** `git diff` of `sim.test.ts`, `route.test.ts`, `terse.test.ts` and `kjfk.test.ts` is empty.
+  - **1.6's K4 change didn't break the tower:** its KJFK tests still pass on the new KJFK data (the K4 hold now protects two runways).
+  - **Acceptance, one test each** (`tower.test.ts`, `tower-safety.test.ts`), which I read:
+    - an arrival lands, exits at a configured exit and calls ground, on TEST 27 and on KJFK 31L and 31R
+    - a handed-off departure takes off within 2 minutes on a free runway, on TEST 27 and KJFK 31L (A320 and B77W)
+    - a crossing request is approved after a beat when idle, and held for an arrival inside the window with the callback later, on TEST (27 on D) and KJFK (31L on KE)
+    - **50 seeds × 20 minutes**, TEST and KJFK:
+      - It checks every tick for any tower movement sharing its runway's area with another ground aircraft, any footprint overlap involving tower's aircraft, and any uncleared runway entry.
+      - Every session must land, launch and cross at least once.
+      - 0 conflicts. TEST 3.1 s, KJFK 5.5 s (the agent's timings).
+    - **Q's interleave rule:** with 3 departures waiting and 40 arrivals an hour, 27 (TEST) and 31L (KJFK) strictly alternate (`L?(TL)+T`), with no go-arounds
+  - **Determinism:** the same seed gives the same state hash after 20,000 ticks, on TEST and KJFK.
+  - **1.5's follow-up closed:** "taxi hangar" with no name reaches the Delta hangar in a running sim (`sim-core.test.ts`).
+  - `tower.ts` has no `Math.random`, timers or clock (grep: 0).
+- [x] 1.6 — Import LGA as a format check — done 2026-11-15 (subagent, own worktree; merged by me). Verified by me:
+  - `npm run validate-airport -- KLGA`: **OK, 0 errors, 2 warnings** (`no-holding-pad`, `no-penalty-box`; no source gives LGA either). `-- KJFK`: OK, 0 errors and its 3 known warnings. `-- TEST`: OK, 0 and 0.
+  - **The acceptance test:** `klga.test.ts` checks that the intersection's hold (h3061622399 on AA) protects both 13/31 and 4/22. It's the only KLGA hold protecting two runways. Its 9 tests also cover a route over LGA.
+  - **Re-imports, offline:** KLGA twice, byte-identical (`cmp`). KJFK is byte-identical to the agent's file. Against the old KJFK, the agent's diff is exactly one line: the K4 hold h5969626557 now protects `["13R/31L","4L/22R"]` (see Deviations).
+  - **The one Overpass fetch** recorded the generic User-Agent `atc-sim/0.1 (personal research)`.
+  - **KLGA map sheet in Chrome:** no console messages. The crossing runways, the 13 line on P with exits BB and G, the exits off 22, and the check-in points at the alley mouths are all there.
+  - In the worktree: typecheck exit 0, 239 of 239.
 
 - [x] 1.5 — Import JFK — done 2026-11-15 (stage a by one subagent, stage b by another, after Q's map answers). Verified by me:
   - `npm run validate-airport -- KJFK`: **OK, 0 errors**, 3 warnings. All three are `hold-short-far-from-runway` on the 31R approach holds (Q15c), which guard the extended centerline by design; `kjfk.test.ts` asserts they're the only warnings.
@@ -146,10 +185,6 @@ In progress: 1.6, 1.7 and 1.10, in parallel. 1.11 is next.
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
-
-- [ ] 1.6 — Import LGA as a format check (subagent, own worktree). Q chose the agent's sourced picks, not a map sheet.
-- [ ] 1.7 — Map renderer (subagent, own worktree). Ends with Q comparing it with the FAA diagram.
-- [ ] 1.10 — Simulated tower (subagent, own worktree). It designs the sim-core parts the ramp (1.11) will share.
 
 ## Blocked
 
@@ -593,8 +628,108 @@ In progress: 1.6, 1.7 and 1.10, in parallel. 1.11 is next.
 - 2026-11-15 — **Parallel cycle 7: 1.6, 1.7 and 1.10.** Q asked for 1.6, 1.7, 1.10 and 1.11 together. 1.10 and 1.11 both need the same new sim-core parts: role, airline, who controls the aircraft, motion outside the taxi logic, their own state, a slot in the tick, and events. So **Q chose 1.10 now and 1.11 next cycle.** The tower agent designs those parts and documents where the ramp fits.
   - **LGA's hand-picked data (1.6): the agent's sourced picks** (Q), not a map sheet. Each pick is cited in `docs/airports/KLGA-notes.md`, and the doubtful ones are listed for Q.
   - **Each agent works in its own git worktree** (my call). One `tsconfig.sim.json` covers both `src/airport/` (1.6) and `src/sim/` (1.10), so in a shared tree one agent's half-done edit would break the other's checks. I merge the diffs onto `main` in the order 1.6, 1.10, 1.7.
+  - **Merge:** each worktree's diff applied cleanly (`git apply --check`), and its new files were copied by name. Typecheck and the full suite passed after each merge: 239, then 264, then 295. The worktrees live under `.claude/worktrees/`, which shows as untracked in `main`; it must never be committed.
+- 2026-11-15 — **1.6 choices** (reference: `docs/airports/KLGA-notes.md`):
+  - **Format unchanged.** `src/airport/` and TEST.json are untouched. `docs/airport-format.md` gains two import notes.
+  - **Four JFK-only importer assumptions, now generic rules:**
+    1. **Intersections:** a runway hold also protects another runway whose centerline is nearer to where its way enters the runway than the hold stands from its own runway. At LGA, AA's hold now protects both runways (HS 1).
+       - **At JFK this changes one hold:** K4's h5969626557 now protects 13R/31L as well as 4L/22R. K4 enters 4L/22R 75.6 m from 31L's centerline, inside JFK's own LAHSO marks (85–87 m), so I believe it's correct. That makes 1.5's note "no JFK hold protects two runways" stale; the K4 hold can test 1.9's two-runway follow-up.
+    2. **Holds on a runway's centerline** are imported (LGA has four), instead of being dropped as mistakes.
+    3. **A hold at a fork** guards every branch to the runway, up to 1.5× the best branch's length. This adds two holds on D at LGA.
+    4. **A terminal can be several buildings,** set by `areas.patch` in the overrides. LGA's Terminal B gates went from 0 to 21. `render-airport` now applies the same options, so its overlay matches the data.
+  - **Sourced picks:**
+    - **Default `22-13`** (land 22, depart 13), from the FAA LGA capacity profile.
+    - **Terminals:** B and C with their airlines, from laguardiaairport.com. The IATA→ICAO mapping is the agent's.
+    - **Tower:** one position, 118.7 (Chart Supplement).
+  - **Picks from the geometry** (unsourced):
+    - the 13 line on P with exits BB then G
+    - the 22 exits E, C, Y and B
+    - 15 check-in points at the alley mouths. Lanes 1–3 are ground's taxiways.
+  - **Left out:**
+    - the Marine Air Terminal (no airline uses it)
+    - lane 14 (OSM has no pavement for it)
+    - Twy F's indefinite closure (OSM's F never meets Y)
+    - a stray 5 m taxilane
+  - **Terse:** a numeric lane needs `#` (`taxi 4 via #14 B`), per the existing rule.
+  - **TDD:** two tests were written together. One test was changed to match the final design (stubs from A stay taxiways), and one route was switched around the bug below.
+  - **Open for Q:**
+    1. Which LGA lanes does ground control? Lanes 1–3, with the ramp boundary at the alley mouths, has no source.
+    2. Land 22, depart 13 as the default? The same FAA profile says LGA has no dominant configuration, and its data is from FY2009–10.
+    3. The 13 line (P, exits BB then G) and the 22 exits (E, C, Y, B)?
+    4. Terminal A: keep it out, or model it with no airlines?
+    5. Lane 14: hand-place it, or leave it out?
+    6. Twy F "closed indefinitely": model it or ignore it?
+    7. Accept the KJFK K4 hold change?
+    8. The ICAO codes, e.g. POE for Porter and FFT for Frontier.
+  - **Follow-ups:**
+    - **A route bug in 1.5's connector rule** (`route.ts`). At LGA, `taxi 13 via #1 R:B P` is unable: an unnamed fillet off lane 1 counts as the turn onto B before lane 1's real junction with B.
+    - Stands 26 and 46 end on a lane without sharing its node; a generic repair would recover them.
+    - `KJFK-notes.md`'s "no JFK hold protects two runways" is now stale.
+- 2026-11-15 — **1.10 choices** (reference: `tower.ts`'s header):
+  - **Shared sim-core design**, for 1.11:
+    - **Each aircraft gains** `role` (departure or arrival), `airline` (ICAO or null), `controller` (ground, tower or ramp), `motion` and `airborne`.
+      - Under `motion: 'controller'`, `movement.ts` skips the aircraft and its controller moves it, backward too, for pushback.
+      - Airborne aircraft are skipped by see-and-avoid and are in no runway area.
+    - **New statuses:** `on-final`, `landing`, `lining-up`, `lined-up`, `taking-off`, `airborne`.
+    - **State:** `world.tower`, plain JSON, so the hash covers it.
+    - **The tick:** tower spawns and decides, then everyone's place is taken, ground taxiing moves, tower moves, then runway areas update.
+    - **The ramp's place,** documented on `World`: a `world.ramp`, `rampDecide` after `towerDecide`, `rampMove` beside `towerMove`. Ramp-lane taxiing can use a ramp-made clearance under `motion: 'taxi'`.
+    - **Transmissions to an aircraft not on ground's frequency** get `not-on-frequency` and change nothing.
+    - **After takeoff:** `took-off` at lift-off (1.12's departure count), then the aircraft is removed at the far end with `departed`. `removeAircraft` is public.
+  - **Values** (most are the agent's own reasoning; those from memory are flagged in the header):
+    - **Arrivals:** 135 kt on final, spawning at 5 NM, decision 20 s out, touchdown 300 m in.
+    - **Rollout:** braking 1.2–3.5 m/s², with exits chosen within that range.
+    - **Spacing:** 60 s between takeoff rolls, 120 s behind a heavy, and at least 100 s between arrivals.
+    - **Tower:** the beat is 3 s; the crossing window is an arrival within 80 s of its threshold; an unused approval lapses after 60 s.
+  - **Runway rule:** each runway is one resource, and a held crossing goes before a departure that hasn't started to line up.
+  - **The tests found three bugs,** each fixed with a failing test first:
+    - JFK crossings were never held: holds stand a few edges short of the runway.
+    - Arrivals rolled to exits too far away.
+    - A lined-up departure and a held crossing could wait for each other forever.
+  - **TDD deviation:** the agent wrote most of `tower.ts` before its tests. Every test that passed on its first run was mutation-checked: 19 mutations killed. Two survived:
+    - one is equivalent on this data
+    - the other led to a new test, which kills it
+  - **Out of scope, as briefed:** release windows, the pilot's "still holding short" call, and 1.9's three open questions (behaviour unchanged).
+  - **Open for Q:**
+    1. **TEST's runway 36 can't take arrivals:** its only exit, F, is 700 m in on a 1,400 m runway, which needs 6 m/s² of braking. Lengthen 18/36, move F, or leave 36 unusable? For now, a 36 arrival throws a clear error.
+    2. **Throughput on a mixed runway is low:** about 13 takeoffs an hour on 31L alongside 15 arrivals. 1.14's peak of 41 departures an hour won't fit. Relax the one-resource rule, or keep reliability over throughput for v1?
+    3. 1.9's runway-area rule counts an edge touching an intersection as on both runways. That's conservative, and makes intersecting runways dependent. Changing it affects 1.12.
+    4. A handoff to tower anywhere but a departing runway's hold does nothing, silently. Should the pilot say "unable"?
+    5. Tower doesn't check that a crossing's far side is clear. That's safe, but it can jam.
+    6. Derive the airline from the callsign (DAL4 → DAL)? Today it defaults to null.
+    7. For 1.12: skip airborne aircraft's footprints; on final, the footprint sits at the runway end.
+- 2026-11-15 — **1.7 choices:**
+  - **Canvas 2D:** labels are drawn in screen space at a fixed size, redrawing every frame is cheap for 1.13's live aircraft, and one projection serves both drawing and later click-to-select.
+  - **Dark radar theme.** Taxiway labels are yellow on black and runway signs white on red. Departures are blue, arrivals green, and delayed magenta, the same colours as the runway-use marks.
+  - **Labels** have zoom thresholds and priorities, and never overlap. A taxiway's size check uses its whole same-named stretch.
+  - **Airports** load lazily through `import.meta.glob`, using `src/airport/load.ts`.
+  - **Wired by me after the merge:**
+    - The map's role now comes from the sim's `role`. "Delayed" is a caller flag, since the sim doesn't track delay yet.
+    - The demo spawns carry their sim roles.
+    - KLGA was added to the airport list.
+    - Each change came test first (failing, then passing). 297 of 297.
+  - **TDD:** two pairs of tests were written together. `draw.ts`, `map-view.ts` and `main.ts` have no unit tests; they were checked in Chrome. Four tests that passed on their first run were mutation-checked.
+  - **Open for Q:**
+    1. **Is the South Hardstand in the right place?** It draws in the west, by PB, from Q's Q9 aprons. Any fix belongs in the 1.5 data.
+    2. Draw hold-short bars? 1.13's crossings will want them.
+    3. "T4" or "Terminal 4" in the data block, plus the gate once one is assigned?
+    4. Should the sim's aircraft view carry a destination for the label?
+    5. Keep the dark theme, or use a light, chart-like one?
+  - **For 1.13:**
+    - The map doesn't refit when the window resizes (seen in Chrome).
+    - The legend panel covers part of KLGA's 4 end.
+
+- 2026-11-15 — **Q's answers after cycle 7:**
+  - **1.7:** "map looks good on examination", which completes 1.7. I take that as covering 1.7's question 1, the South Hardstand's placement.
+  - **1.10 Q1, throughput: too low.** "Even if only one aircraft can use the runway at a time, I would still expect one every ~2 minutes or so", so about 30 movements an hour on one runway. It gets better once several runways are active. Today's rate is about 13 takeoffs an hour alongside 15 landings.
+  - **1.10 Q2:** lengthen TEST's 18/36, so 36 can take arrivals.
+  - **1.6 Q7: accept** the KJFK K4 hold change (h5969626557 protects 13R/31L and 4L/22R).
+  - **The LGA picks (1.6 Q1–3):** the default configuration, ground's lanes, the 13 line and the 22 exits are "fine for format for now, may change later."
 
 ## Next Up
 
-- 1.11 — Simulated ramp, after 1.10 lands (Q, 2026-11-15). It builds on the sim-core parts 1.10 adds.
+- 1.11 — Simulated ramp (needs 1.9, done; builds on 1.10's sim-core parts, documented on `World` in `world.ts`).
+- 1.10 follow-ups (Q, 2026-11-15): raise mixed-runway throughput to about one movement every 2 minutes, and lengthen TEST's 18/36 so 36 takes arrivals.
+- 1.12 — Rule checks and score counters, once 1.11 is done (needs 1.10 and 1.11).
+- Open for Q, none blocking 1.11: 1.6's questions 4–6 and 8; 1.10's 3–7 (3 and 7 matter for 1.12, 5 for 1.14); 1.7's 2–5; 1.9's three; 1.5's five.
 - 1.9's three open questions, and 1.5's five, are in their entries above.
