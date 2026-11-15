@@ -15,6 +15,7 @@ import type { Command, Continue, Correction, Cross, HoldShort, HoldShortTarget, 
 import { MAX_DECEL_MPS2 } from './movement.ts';
 import { resolveRoute, type RouteAmbiguous, type RoutePath, type RouteStart, type RouteUnable } from './route.ts';
 import { copyCrossings, nextStop, nodeAt, stopsAhead } from './stops.ts';
+import { requestCrossing } from './tower.ts';
 import { buildTrack, placeOf, type Track } from './track.ts';
 import { emit, type Aircraft, type Clearance, type CrossingClearance, type Sim } from './world.ts';
 
@@ -29,8 +30,14 @@ export function applyCommand(sim: Sim, command: Command): void {
     return;
   }
   if (command.type === 'crossing-request') {
-    // The player asking tower (PRD §4.5), not the pilot. Tower (1.10) answers it.
+    // The player asking tower (PRD §4.5), not the pilot. Tower answers it after a beat.
     emit(sim, { tick: sim.world.tick, callsign: ac.callsign, type: 'crossing-requested', runway: command.runway });
+    requestCrossing(sim, ac, command.runway);
+    return;
+  }
+  if (ac.controller !== 'ground') {
+    // On tower's (or ramp's) frequency: the pilot doesn't hear ground. No reply, no effect.
+    emit(sim, { tick: sim.world.tick, callsign: ac.callsign, type: 'not-on-frequency', controller: ac.controller });
     return;
   }
   for (const instruction of command.instructions) applyInstruction(sim, ac, instruction);
@@ -293,7 +300,9 @@ function routeStartOf(ac: Aircraft): { start: RouteStart; nodeIndex: number } {
   const place = placeOf(ac.track, ac.s);
   const nodeIndex = place.kind === 'node' ? place.i : place.i + 1;
   const arrivedVia = nodeIndex > 0 ? (ac.track.edges[nodeIndex - 1] ?? null) : null;
-  return { start: { node: nodeOf(ac.track, nodeIndex), arrivedVia, terminal: ac.terminal }, nodeIndex };
+  // The airline only when known: an unknown one is left out (RouteStart's "omitted or null").
+  const airline = ac.airline === null ? {} : { airline: ac.airline };
+  return { start: { node: nodeOf(ac.track, nodeIndex), arrivedVia, terminal: ac.terminal, ...airline }, nodeIndex };
 }
 
 /**

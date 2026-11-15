@@ -428,14 +428,50 @@ one needs to change it, update this section and note it in STATUS.
   crossing is checked when the aircraft enters the runway (unauthorized crossing, PRD §4.5).
 - **`handoff`** hands the aircraft to tower or ramp. Its clearance is unchanged. The receiving
   facility takes it at its handoff point: the runway hold-short for tower (1.10), the ramp
-  entrance for ramp (1.11).
+  entrance for ramp (1.11). Until then it's still ground's, and takes the player's
+  instructions.
+  - **Tower** (1.10, `src/sim/tower.ts`) takes a departure handed off to it (`monitor` or
+    `contact`) once it's stopped at the front hold of its runway's departure line, on a taxi to
+    a runway the configuration departs from (`tower-accepted`). A handoff to tower anywhere else,
+    or for a runway not in use for departures, is recorded and nothing more happens.
+  - Tower then lines it up (`lining-up`), launches it (`takeoff-roll`, then `took-off` at
+    lift-off, the departure's scoring point) and, once it's airborne past the runway's far end,
+    removes it from the sim (`departed`).
 - **`correction`**: see "Corrections".
 - **`atis`** gives the pilot the current letter. It fixes an out-of-date-ATIS mistake.
 - **`say-again`**: the pilot repeats their last transmission.
 - **C12 advisories** inform the pilot, who acknowledges. They don't move the aircraft. A
   move goes with them as a separate `taxi`.
-- **`crossing-request`** goes to the simulated tower (1.10), which approves it, or holds it
-  and calls back.
+- **`crossing-request`** goes to the simulated tower (1.10). After a beat (3 s) it answers:
+  - `crossing-approved` for the hold line it's at or will next stop at, if the crossing is clear.
+    The approval is kept (`world.tower.approvals`) until the aircraft has crossed, for 1.12's
+    unauthorized-crossing check. The player must still pass on the clearance (`cross 27`);
+    tower's approval doesn't move the aircraft.
+  - `crossing-held` with a reason ("traffic on final", "landing traffic", "departing traffic"),
+    then `crossing-approved` as a callback once it's clear.
+  - `crossing-unable` when there's no such crossing, or the aircraft isn't ground's.
+  - It's for the next runway hold line on the route; with no route, the next one straight
+    ahead; with a runway (`request-crossing 31R`), the next one for that runway.
+  - An approval is withdrawn (`crossing-cancelled`) if it isn't used within a minute, or if an
+    arrival reaches its decision point before the aircraft has entered the runway. Crossing
+    after that is unauthorized.
+- **The pilot's calls to ground** from tower: an arrival stopped clear of the runway calls
+  "clear of three one left at Kilo Echo" (`clear-of-runway`, with the runway end and the exit's
+  taxiway, or null for an unnamed exit). It's then ground's: idle, with no clearance, on the
+  exit taxiway, its tail past the hold line.
+
+### Aircraft on another controller's frequency
+
+An aircraft under tower or ramp (`controller` in the view: on final, landing, rolling out,
+taken at the hold, lining up, lined up, taking off, or ramp's from 1.11) isn't listening to
+ground. **A transmission to it gets no reply and has no effect**: the sim emits one
+`not-on-frequency` event (with the controller) and changes nothing, whatever the instructions.
+A crossing request for it is answered `crossing-unable`. Once tower hands an arrival to ground
+(`clear-of-runway`), the player's transmissions apply as usual.
+
+There's no way for the player to take a departure back from tower once it's been taken at the
+hold (it would be a phone call to tower, not a radio call). An aircraft that's been handed off
+but hasn't reached the hold yet is still ground's.
 
 ## Errors
 

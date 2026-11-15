@@ -57,6 +57,8 @@ export function occupancyOf(sim: Sim): Occupancy {
     else map.set(key, [o]);
   };
   for (const ac of sim.world.aircraft) {
+    // On final or after takeoff: no one's traffic (world.ts).
+    if (ac.airborne) continue;
     const { nodes, edges, nodeAt } = ac.track;
     const spans = bodySpans(ac);
     if (spans.length === 0) {

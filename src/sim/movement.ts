@@ -24,7 +24,7 @@
 
 import { runwaysOccupied } from './occupancy.ts';
 import { crossingTaxiway, nextStop, nodeAt, useCrossing, type Stop } from './stops.ts';
-import { occupancyOf, RESTART_M, trafficStop, type Occupancy, type TrafficStop } from './traffic.ts';
+import { RESTART_M, trafficStop, type Occupancy, type TrafficStop } from './traffic.ts';
 import { emit, type Aircraft, type AircraftStatus, type Sim } from './world.ts';
 
 /** Simulation rate: ticks per simulated second. */
@@ -50,12 +50,12 @@ export const TURN_SPEEDS_KT: readonly (readonly [deg: number, kt: number])[] = [
   [180, 5],
 ];
 /** How far ahead an aircraft looks for bends and traffic: well past its longest braking distance. */
-const LOOKAHEAD_M = 300;
+export const LOOKAHEAD_M = 300;
 /**
  * Within this distance of a stop point, a crawling aircraft is put exactly on it. The speed
  * rule approaches a stop point ever more slowly and would never quite reach it otherwise.
  */
-const STOP_SNAP_M = 0.05;
+export const STOP_SNAP_M = 0.05;
 
 interface Plan {
   /** The fastest it may go this tick. */
@@ -64,17 +64,32 @@ interface Plan {
   stop: Stop | ({ kind: 'traffic' } & TrafficStop);
 }
 
-/** Advances the world by one tick. */
-export function advance(sim: Sim): void {
-  sim.world.tick += 1;
-  const occupancy = occupancyOf(sim);
-  const plans = sim.world.aircraft.map((ac) => plan(sim, occupancy, ac));
-  sim.world.aircraft.forEach((ac, i) => {
+/**
+ * Moves every aircraft that taxis (motion 'taxi', world.ts) by one tick, planning from
+ * `occupancy`: where every body was at the start of the tick. Aircraft their controller moves
+ * itself are left alone. The tick's order is in sim.ts (`advance`).
+ */
+export function moveTaxiing(sim: Sim, occupancy: Occupancy): void {
+  const taxiing = sim.world.aircraft.filter((ac) => ac.motion === 'taxi');
+  const plans = taxiing.map((ac) => plan(sim, occupancy, ac));
+  taxiing.forEach((ac, i) => {
     const p = plans[i];
     if (!p) throw new Error(`no plan for ${ac.callsign}`);
     move(sim, ac, p);
   });
+}
+
+/**
+ * After every aircraft has moved: each one's runway areas, emitting `crossed-runway` for each it
+ * has left. An airborne aircraft is in none, and leaving the ground isn't crossing a runway, so
+ * it emits nothing (the tower's `took-off` says it).
+ */
+export function updateRunways(sim: Sim): void {
   for (const ac of sim.world.aircraft) {
+    if (ac.airborne) {
+      ac.runways = [];
+      continue;
+    }
     const now = runwaysOccupied(sim.runwayAreas, ac);
     for (const runway of ac.runways) {
       if (!now.includes(runway)) emit(sim, { type: 'crossed-runway', tick: sim.world.tick, callsign: ac.callsign, runway });
@@ -120,10 +135,10 @@ export function turnSpeedMps(deflectionDeg: number): number {
 
 /**
  * The fastest speed now from which, after moving at it for one tick, the aircraft can still
- * slow to `vEnd` within `distance`, braking at DECEL_MPS2. From v·dt + (v² − vEnd²)/2a ≤ d.
+ * slow to `vEnd` within `distance`, braking at `a` (default DECEL_MPS2). From
+ * v·dt + (v² − vEnd²)/2a ≤ d.
  */
-function safeSpeed(distance: number, vEnd: number): number {
-  const a = DECEL_MPS2;
+export function safeSpeed(distance: number, vEnd: number, a = DECEL_MPS2): number {
   const adt = a * TICK_S;
   return -adt + Math.sqrt(adt * adt + vEnd * vEnd + 2 * a * Math.max(distance, 0));
 }

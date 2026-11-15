@@ -3,11 +3,12 @@
 // and its command script (PRD §8.2, §9.3).
 
 import type { AirportIndex } from '../airport/graph.ts';
-import type { EdgeId, HoldShortId, NodeId, RunwayId, TerminalId } from '../airport/types.ts';
+import type { EdgeId, HoldShortId, NodeId, RunwayEndDesignator, RunwayExitId, RunwayId, TerminalId } from '../airport/types.ts';
 import type { AircraftTypeCode } from './aircraft-types.ts';
 import type { HoldShortTarget, Instruction, Taxi } from './commands.ts';
 import type { Rng } from './rng.ts';
 import type { ReachedDestination, RouteStart, RoutePath } from './route.ts';
+import type { TowerSetup } from './tower.ts';
 import type { Track } from './track.ts';
 
 /** A running simulation: the airport, the state, and the events not yet drained. */
@@ -18,34 +19,215 @@ export interface Sim {
   events: SimEvent[];
   /** Derived from the airport, not state: the runways each edge is in the area of (occupancy.ts). */
   readonly runwayAreas: ReadonlyMap<EdgeId, RunwayId[]>;
+  /** Derived from the airport and the options, not state: the runways in use and the arrival streams. */
+  readonly tower: TowerSetup;
 }
 
-/** The whole simulation state. */
+/**
+ * The whole simulation state.
+ *
+ * Controllers. The player is ground. The simulated tower (tower.ts) and ramp (1.11) each own
+ * some aircraft (`Aircraft.controller`) and keep their own state here, as plain JSON, so the
+ * state hash covers it. Each gets two calls in the tick (sim.ts, `advance`):
+ * - decide: at the start of the tick, on the state as the last tick left it. It spawns, takes
+ *   handoffs, answers requests and starts movements. The tower: `towerSpawns` (sim.ts adds what
+ *   it returns) and `towerDecide`.
+ * - move: after movement.ts has moved the taxiing aircraft, it moves the aircraft it moves
+ *   itself (motion 'controller'), planning from the same start-of-tick places. The tower:
+ *   `towerMove`.
+ * Where the ramp (1.11) fits:
+ * - `ramp: RampState` beside `tower`, with gate occupancy and its aircraft's progress.
+ * - `rampDecide` after `towerDecide`: spawn departures at gates (controller 'ramp', role
+ *   'departure'), start pushbacks, take arrivals handed off at a ramp entrance (the way
+ *   `towerDecide` takes departures at the hold), and hold aircraft when a lane is busy.
+ * - Pushback is motion 'controller' (`s` may go backward); `rampMove` beside `towerMove` moves
+ *   it. Ramp-lane taxi can stay motion 'taxi' with a ramp-made clearance, so see-and-avoid and
+ *   turn speeds come from movement.ts.
+ * - At the ramp edge it hands the aircraft to ground (controller 'ground') with a check-in
+ *   event, as the tower does with `clear-of-runway`.
+ * - Transmissions to its aircraft get `not-on-frequency` (apply.ts), as the tower's do.
+ */
 export interface World {
   /** Ticks completed since the start. */
   tick: number;
   rng: Rng;
   /** In the order added, which is also the order they're processed in. */
   aircraft: Aircraft[];
+  tower: TowerState;
 }
 
 /**
  * What an aircraft is doing, as of the end of the last tick.
  * - `idle`: stopped, with no taxi clearance.
- * - `taxiing`: moving (or about to) under a clearance.
+ * - `taxiing`: moving (or about to) under a clearance. Also an arrival clear of the runway that
+ *   tower is bringing to a stop before it calls ground.
  * - `holding-short`: stopped at a hold point: a runway hold line it isn't cleared across, or
  *   one of its clearance's hold-shorts.
  * - `holding-position`: told to hold position; stopping or stopped.
  * - `stopped-for-traffic`: stopped behind, or short of, another aircraft (see-and-avoid).
- * - `arrived`: stopped at the end of its path, the clearance's destination.
+ * - `arrived`: stopped at the end of its path, the clearance's destination. A departure tower
+ *   has taken at its hold keeps this until it lines up.
+ * Under tower (tower.ts):
+ * - `on-final`: airborne, approaching the runway, until touchdown.
+ * - `landing`: on the runway, from touchdown until its body is clear of the runway.
+ * - `lining-up`: taxiing from the hold onto the runway; `lined-up`: stopped there, waiting.
+ * - `taking-off`: on the takeoff roll; `airborne`: after lift-off, until it leaves.
  */
-export type AircraftStatus = 'idle' | 'taxiing' | 'holding-short' | 'holding-position' | 'stopped-for-traffic' | 'arrived';
+export type AircraftStatus =
+  | 'idle'
+  | 'taxiing'
+  | 'holding-short'
+  | 'holding-position'
+  | 'stopped-for-traffic'
+  | 'arrived'
+  | 'on-final'
+  | 'landing'
+  | 'lining-up'
+  | 'lined-up'
+  | 'taking-off'
+  | 'airborne';
+
+/**
+ * The simulated tower's state (tower.ts). Track distances (`…At`) are meters along the
+ * aircraft's own track.
+ */
+export interface TowerState {
+  /** One per arrival stream (SimOptions.arrivals), in the order given. */
+  streams: ArrivalStreamState[];
+  /** Arrivals on final or on the runway, until tower hands them to ground. In the order added. */
+  arrivals: TowerArrival[];
+  /** Departures tower has taken at their hold, until they leave. In the order taken. */
+  departures: TowerDeparture[];
+  /** Crossing requests not yet answered, or held. In the order asked. */
+  requests: CrossingRequestState[];
+  /** Current crossing approvals (1.12 checks crossings against these). In the order given. */
+  approvals: CrossingApproval[];
+  /** The last takeoff roll started on each runway, for departure spacing. */
+  rolls: { runway: RunwayId; tick: number; heavy: boolean }[];
+}
+
+export interface ArrivalStreamState {
+  runwayEnd: RunwayEndDesignator;
+  /** The tick of the next spawn, if the final and the runway allow it then. */
+  nextTick: number;
+  /** Arrivals spawned so far: the next flight's number. */
+  count: number;
+  /**
+   * On a runway that also takes departures: whether a departure has started its takeoff roll
+   * since the last arrival was spawned. While a departure waits and this is false, the next
+   * arrival is held back, so landings and takeoffs interleave.
+   */
+  departureSinceArrival: boolean;
+}
+
+export interface TowerArrival {
+  callsign: string;
+  runwayEnd: RunwayEndDesignator;
+  /** Cleared to land: at the go-around decision point, the runway was clear. */
+  committed: boolean;
+  /** The exit it was sent to, chosen when committed. */
+  exit: PlannedExit | null;
+  /** Its whole body is past the exit's hold line (or out of the runway's area). */
+  clear: boolean;
+}
+
+export interface PlannedExit {
+  id: RunwayExitId;
+  /** The exit's spoken name. null: an unnamed exit. */
+  taxiway: string | null;
+  /** Track distances: the exit's node on the centerline, and the end of its first edge. */
+  nodeAt: number;
+  edgeEndAt: number;
+  /** Where the body counts as clear: the exit's runway hold line, else the end of the runway area. */
+  clearAt: number;
+  /** Where the nose stops: the tail CLEAR_MARGIN_M past `clearAt`. */
+  stopAt: number;
+  /** Speed through the exit, and the braking from touchdown to reach it. */
+  speedMps: number;
+  decelMps2: number;
+}
+
+export interface TowerDeparture {
+  callsign: string;
+  runwayEnd: RunwayEndDesignator;
+  /** When tower took it at the hold. */
+  acceptedTick: number;
+  /** Track distance where the nose stops when lined up. null until it starts lining up. */
+  lineupAt: number | null;
+  /** When it stopped lined up. */
+  linedUpTick: number | null;
+  /** Tower's estimate, when it started lining up, of the tick it lifts off. */
+  airborneByTick: number | null;
+}
+
+/** Where a crossing request is for: the hold line it's at, or will next stop at. */
+export interface CrossingTarget {
+  /** The hold line's runways, in its order. */
+  runways: RunwayId[];
+  holdShort: HoldShortId;
+  /** The hold line's node, and the first centerline node the crossing reaches. */
+  node: NodeId;
+  runwayNode: NodeId;
+  /** The taxiway it crosses on. */
+  taxiway: string | null;
+  /** Every runway whose area the crossing passes through (occupancy.ts), sorted. */
+  areas: RunwayId[];
+}
+
+export interface CrossingRequestState {
+  callsign: string;
+  /** When asked, and when tower first answers (after a beat). */
+  tick: number;
+  answerTick: number;
+  /** Answered "hold": tower calls back when the crossing is clear. */
+  held: boolean;
+  /** Where it's for, or why tower will say unable. */
+  target: CrossingTarget | { unable: string };
+}
+
+export interface CrossingApproval extends CrossingTarget {
+  callsign: string;
+  /** When tower approved it. */
+  tick: number;
+  /** The aircraft's body has been in one of the runways' areas since. */
+  entered: boolean;
+}
+
+/** What the flight is here to do. The map colours aircraft by it. */
+export type Role = 'departure' | 'arrival';
+
+/**
+ * Who it's talking to, and so who gives it instructions.
+ * - `ground`: the player. Only these aircraft take the player's transmissions.
+ * - `tower`: the simulated tower (tower.ts): on final, landing, or a departure from its handoff.
+ * - `ramp`: the simulated ramp (1.11): pushback and ramp-lane taxi.
+ */
+export type Controller = 'ground' | 'tower' | 'ramp';
+
+/**
+ * Who moves it each tick.
+ * - `taxi`: movement.ts, along its clearance (or braking to a stop without one).
+ * - `controller`: its controller moves it itself, with its own kinematics: the tower's landing
+ *   roll, line-up and takeoff; the ramp's pushback in 1.11. Such a mover may set `track`, `s` and
+ *   `v` as it likes, `s` going backward included (pushback); movement.ts leaves it alone.
+ */
+export type Motion = 'taxi' | 'controller';
 
 export interface Aircraft {
   callsign: string;
   type: AircraftTypeCode;
   lengthM: number;
   wingspanM: number;
+  role: Role;
+  /** ICAO airline designator ("DAL"), for "the company hangar". null: unknown. */
+  airline: string | null;
+  controller: Controller;
+  motion: Motion;
+  /**
+   * On final or after takeoff: not on the ground. It's in no runway area (`runways` is empty) and
+   * no one's traffic (see-and-avoid ignores it). The tower's own runway logic accounts for it.
+   */
+  airborne: boolean;
   /** Its terminal, for a taxi to "the ramp" with no name. */
   terminal: TerminalId | null;
   /** This pilot's taxi speed on a straight, m/s. */
@@ -138,8 +320,41 @@ export type SimEvent =
   | (AircraftEvent & { type: 'crossed-runway'; runway: RunwayId })
   /** Stopped for `behind`, the aircraft in its way. */
   | (AircraftEvent & { type: 'stopped-for-traffic'; behind: string })
-  /** The player asked tower for a crossing (PRD §4.5): `runway`, or null for the next one. Tower is 1.10. */
+  /** The player asked tower for a crossing (PRD §4.5): `runway`, or null for the next one. Tower answers after a beat. */
   | (AircraftEvent & { type: 'crossing-requested'; runway: string | null })
+  /**
+   * Tower: "cross … at … approved", as its answer or, after a hold, its callback. `runways` are
+   * ids; `designators` say them as tower would (the end in use, else the first end).
+   */
+  | (AircraftEvent & { type: 'crossing-approved'; runways: RunwayId[]; designators: string[]; taxiway: string | null; holdShort: HoldShortId })
+  /** Tower: "hold short, traffic …". It calls back with `crossing-approved` when it's clear. */
+  | (AircraftEvent & { type: 'crossing-held'; runways: RunwayId[]; designators: string[]; reason: string })
+  /** Tower can't give that crossing: none ahead, or the aircraft isn't ground's. */
+  | (AircraftEvent & { type: 'crossing-unable'; reason: string })
+  /** Tower withdrew an approval the aircraft hadn't used: landing traffic, or unused too long. */
+  | (AircraftEvent & { type: 'crossing-cancelled'; runways: RunwayId[]; designators: string[]; reason: string })
+  /** A transmission to an aircraft on another controller's frequency: no reply, no effect. */
+  | (AircraftEvent & { type: 'not-on-frequency'; controller: Exclude<Controller, 'ground'> })
+  /** Tower took a departure handed off at its hold. */
+  | (AircraftEvent & { type: 'tower-accepted'; runwayEnd: RunwayEndDesignator })
+  /** Tower: "line up and wait". */
+  | (AircraftEvent & { type: 'lining-up'; runwayEnd: RunwayEndDesignator })
+  /** Tower: "cleared for takeoff"; the roll starts. */
+  | (AircraftEvent & { type: 'takeoff-roll'; runwayEnd: RunwayEndDesignator })
+  /** Lift-off: a departure's scoring point (PRD §4.2). */
+  | (AircraftEvent & { type: 'took-off'; runwayEnd: RunwayEndDesignator })
+  /** Past the far end of the runway, airborne: removed from the sim in this tick. */
+  | (AircraftEvent & { type: 'departed'; runwayEnd: RunwayEndDesignator })
+  /** Touchdown. */
+  | (AircraftEvent & { type: 'landed'; runwayEnd: RunwayEndDesignator })
+  /** At the decision point the runway wasn't clear (or no exit was): back on final, behind the others. */
+  | (AircraftEvent & { type: 'go-around'; runwayEnd: RunwayEndDesignator; reason: string })
+  /**
+   * The pilot's call to ground: "clear of three one left at Kilo Echo". Stopped clear of the
+   * runway, it's now ground's (controller 'ground', status 'idle'). `exit`: the exit's spoken
+   * name, null for an unnamed exit.
+   */
+  | (AircraftEvent & { type: 'clear-of-runway'; runwayEnd: RunwayEndDesignator; exit: string | null; exitId: RunwayExitId })
   /** A transmission or request named a callsign that isn't in the sim. */
   | { tick: number; type: 'unknown-callsign'; callsign: string }
   /** "Aircraft calling Ground, say again your callsign" (an unknown-station transmission). */
