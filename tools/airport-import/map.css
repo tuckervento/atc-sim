@@ -1,0 +1,63 @@
+:root { color-scheme: light; --panel: 340px; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font: 13px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif; color: #1d232a; background: #f4f5f2; }
+#map { position: fixed; inset: 0 var(--panel) 0 0; overflow: hidden; cursor: grab; }
+#map.dragging { cursor: grabbing; }
+#svg { width: 100%; height: 100%; display: block; background: #fbfbf8; }
+#panel { position: fixed; top: 0; right: 0; bottom: 0; width: var(--panel); overflow-y: auto; background: #fff; border-left: 1px solid #ccd; padding: 10px 12px 40px; }
+#panel h1 { font-size: 15px; margin: 0 0 4px; }
+#panel h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #556; margin: 14px 0 4px; }
+#panel .muted { color: #667; font-size: 11px; }
+#panel input[type=search] { width: 100%; padding: 5px 6px; font: inherit; border: 1px solid #aab; border-radius: 4px; }
+#panel label { display: block; }
+#panel details { margin: 2px 0; }
+#panel summary { cursor: pointer; }
+#panel .issue { font-size: 11px; margin: 2px 0 4px 12px; cursor: pointer; }
+#panel .issue:hover { background: #fff4c2; }
+#panel .err { color: #a11; }
+#panel .warn { color: #8a5a00; }
+#panel pre { white-space: pre-wrap; font-size: 11px; background: #f3f3f6; padding: 6px; margin: 4px 0; max-height: 260px; overflow: auto; }
+#panel .matches div { cursor: pointer; font-size: 12px; }
+#panel .matches div:hover { background: #eef; }
+#hover { position: fixed; pointer-events: none; background: rgba(20, 24, 30, .92); color: #fff; font-size: 11px; padding: 4px 6px; border-radius: 3px; display: none; max-width: 420px; white-space: pre; z-index: 5; }
+.swatch { display: inline-block; width: 18px; height: 4px; vertical-align: middle; margin-right: 6px; }
+
+/* map layers; widths are in screen pixels (non-scaling strokes) */
+.area-apron { fill: #e6e7e2; stroke: #d0d1cb; }
+.area-terminalBuilding { fill: #c9d9ea; stroke: #8fa6bf; }
+.area-building { fill: #e9dccb; stroke: #b9a68c; }
+.edge { fill: none; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.edge-runway { stroke: #3a3d42; stroke-width: 7px; }
+.edge-taxiway { stroke: #e0a800; stroke-width: 3px; }
+.edge-taxiway.unnamed { stroke: #d257c9; }
+.edge-rampLane { stroke: #3c9a4a; stroke-width: 1.6px; }
+.edge.closed { stroke: #d01c1c; stroke-dasharray: 5 4; stroke-width: 3px; }
+.edge.hl { stroke: #0a5cff !important; stroke-width: 6px !important; }
+.hit { fill: none; stroke: transparent; stroke-width: 9px; vector-effect: non-scaling-stroke; pointer-events: stroke; }
+.dline { fill: none; stroke: #ff7a00; stroke-opacity: .45; stroke-width: 12px; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+.hold { stroke-width: 3px; vector-effect: non-scaling-stroke; }
+.hold-runway { stroke: #d01c1c; }
+.hold-ils { stroke: #ff7a00; }
+.hold-lahso { stroke: #9b27b0; }
+.hold-intermediate { stroke: #0b8fc6; }
+.hold.hl, .node.hl, .mark.hl { stroke: #0a5cff !important; stroke-width: 6px !important; }
+.node { fill: #fff; stroke: #556; vector-effect: non-scaling-stroke; stroke-width: 1px; }
+.node.hl { fill: #0a5cff; }
+.gate { fill: #1565c0; }
+.mark { vector-effect: non-scaling-stroke; }
+.ctx-mb { fill: #111; stroke: #fff; stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.ctx-stand { fill: #7a7a7a; }
+.spot { fill: #9b27b0; stroke: #fff; stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.handoff { fill: #00a86b; stroke: #fff; stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.exit { fill: #ff7a00; stroke: #fff; stroke-width: 1px; vector-effect: non-scaling-stroke; }
+text { font-family: system-ui, -apple-system, sans-serif; paint-order: stroke; stroke: #fbfbf8; stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
+.lbl-taxiway { fill: #6b4f00; font-weight: 700; font-size: var(--fs-tw); }
+.lbl-rampLane { fill: #1f6b2a; font-weight: 600; font-size: var(--fs-small); }
+.lbl-runway { fill: #fff; stroke: #3a3d42; font-weight: 700; font-size: var(--fs-tw); }
+.lbl-rwend { fill: #000; font-weight: 800; font-size: var(--fs-big); }
+.lbl-hold { fill: #8a1010; font-size: var(--fs-tiny); }
+.lbl-gate { fill: #0d47a1; font-size: var(--fs-tiny); }
+.lbl-area { fill: #4b3b25; font-size: var(--fs-small); font-style: italic; }
+.lbl-ctx { fill: #333; font-size: var(--fs-tiny); }
+.lbl-cur { fill: #6a1b9a; font-weight: 700; font-size: var(--fs-small); }
+.hidden-layer { display: none; }

@@ -1,0 +1,54 @@
+{
+  "formatVersion": 1,
+  "airport": "KJFK",
+  "description": "Hand-curated on top of the OSM import (PLAN 1.5 stage a). Only items with a source; each is cited in docs/airports/KJFK-notes.md. Sources: FAA Chart Supplement NE 29 OCT-24 DEC 2026 (closures, displaced thresholds, tower frequencies); FAA airport diagram AL-610 cycle 2611 (CAT 2 HOLD); OSM hold ref '31R-APCH'; jfkairport.com terminal airline pages fetched 2026-11-14; Q's decisions (terminals T1/T4/T5/T7/T8, closures as data, the 31s). Still to come from Q (stage b): the 31L departure line and exits, arrival exits, pads, penalty box, ramp handoffs, missing and doubtful names.",
+  "set": {
+    "defaultConfiguration": "31s"
+  },
+  "edges": {
+    "patch": [
+      { "id": "w5786453-n45355700-n1702839850", "closed": { "reason": "Chart Supplement NE 29 OCT 2026: Twy Z btn Rwy 04L and 22R and Twy Y clsd UFN" } },
+      { "id": "w5786453-n1702839850-n13858896748", "closed": { "reason": "Chart Supplement NE 29 OCT 2026: Twy Z btn Rwy 04L and 22R and Twy Y clsd UFN" } },
+      { "id": "w551554017-n6242188066-n5326590474", "closed": { "reason": "Chart Supplement NE 29 OCT 2026: Twy VA clsd between Trml 7 apron and Twy A" } }
+    ]
+  },
+  "runways": {
+    "patch": [
+      { "id": "4L/22R", "towerPosition": "twr-123.9", "ends": [{ "designator": "4L", "node": "n45288846", "displacedThresholdM": 140.2 }, { "designator": "22R", "node": "n5969622455", "displacedThresholdM": 1043.6 }] },
+      { "id": "4R/22L", "towerPosition": "twr-119.1" },
+      { "id": "13L/31R", "towerPosition": "twr-119.1", "ends": [{ "designator": "13L", "node": "n45291211", "displacedThresholdM": 276.5 }, { "designator": "31R", "node": "n45289927", "displacedThresholdM": 313 }] },
+      { "id": "13R/31L", "towerPosition": "twr-123.9", "ends": [{ "designator": "13R", "node": "n45287849", "displacedThresholdM": 623 }, { "designator": "31L", "node": "n45370885", "displacedThresholdM": 994.9 }] }
+    ]
+  },
+  "holdShorts": {
+    "patch": [
+      { "id": "h8025529446", "runways": ["4R/22L"], "towardEdge": "w5938318-n8025529446-n48857210" }
+    ],
+    "remove": ["h5607488397"]
+  },
+  "terminals": {
+    "patch": [
+      { "id": "T1", "airlines": ["CCA", "AFR", "ANZ", "ASL", "AAR", "AUA", "RZO", "BEL", "CES", "MSR", "EVA", "GFA", "ITY", "KAL", "LOT", "DLH", "NOS", "PAL", "RAM", "SVA", "SAS", "SWR", "TAP", "THY", "VIV"] },
+      { "id": "T4", "airlines": ["AMX", "AEA", "AIC", "AIZ", "AVA", "BWA", "CAL", "CMP", "DAL", "ELY", "UAE", "ETD", "KQA", "KLM", "LAN", "SIA", "UZB", "VIR", "WJA", "CXA"] },
+      { "id": "T5", "airlines": ["JBU", "KAP", "SCX"] },
+      { "id": "T7", "airlines": ["ANA", "EIN", "CFG", "KAC", "NBT", "ICE"] },
+      { "id": "T8", "airlines": ["ASA", "AAL", "BAW", "CPA", "CSN", "FIN", "GLO", "HAL", "IBE", "JAL", "LVL", "QFA", "QTR", "RJA"] }
+    ]
+  },
+  "configurations": {
+    "add": [
+      { "id": "31s", "name": "Land 31L and 31R, depart 31L", "runways": [{ "end": "31L", "roles": ["arrivals", "departures"] }, { "end": "31R", "roles": ["arrivals"] }] }
+    ]
+  },
+  "towerPositions": {
+    "add": [
+      { "id": "twr-123.9", "name": "Kennedy Tower 123.9 (4L/22R, 13R/31L)", "frequency": "123.9" },
+      { "id": "twr-119.1", "name": "Kennedy Tower 119.1 (4R/22L, 13L/31R)", "frequency": "119.1" }
+    ]
+  },
+  "areas": {
+    "patch": [
+      { "id": "w284907690", "name": "Terminal 8" }
+    ]
+  }
+}
