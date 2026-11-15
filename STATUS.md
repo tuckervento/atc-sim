@@ -1,10 +1,10 @@
 # STATUS
 
-_Last updated: 2026-11-14 (parallel cycle 5 started: 1.9 and 1.5 stage a)_
+_Last updated: 2026-11-15 (Q answered the KJFK questions; 1.5 stage b is unblocked)_
 
 ## Snapshot
 
-11 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.4 and 1.8. Nothing blocked.
+12 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.4, 1.8 and 1.9. 1.5 stage a is done, and Q has answered its map questions, so **stage b is ready**.
 
 **Phase 0's picks (Q signed off 2026-11-14):**
 - speech-to-text: Deepgram Nova-3
@@ -13,10 +13,20 @@ _Last updated: 2026-11-14 (parallel cycle 5 started: 1.9 and 1.5 stage a)_
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-In progress: 1.9 and 1.5 stage a (parallel cycle 5).
+Next: 1.5 stage b. Also eligible: 1.10 and 1.11.
 
 ## Completed
 
+- [x] 1.9 — Simulation core — done 2026-11-14 — verified by me after the subagent:
+  - `npx vitest run src/sim/sim.test.ts`: 24 of 24 passed. `npm run typecheck`: exit 0. `npm test`: 195 of 195 across 8 files, which includes 1.5a's `kjfk.test.ts`.
+  - Each Acceptance item has a named test, with real assertions:
+    - the node sequence
+    - a runway hold-short (`hAW`), held without clearance and crossed after `cross 36`
+    - follower spacing: footprint overlap and the nose-to-tail gap checked on every one of 1,000 ticks, with the leader stopping; the closest gap equals the 20 m spacing
+    - hold position and continue
+    - determinism: the same hash for the same seed and script; different for a changed script and for a different seed
+  - A grep shows no `Date`, `Math.random`, `performance` or timers in `src/sim/` outside tests.
+  - Only new files were added in `src/sim/`; no tracked file changed.
 - [x] 0.6 — Live end-to-end loop and findings; Q tests — done 2026-11-14 — verified:
   - **Q's live session:**
     - 30 transmissions over 25 situation cards, in Chrome with a real mic.
@@ -113,13 +123,6 @@ In progress: 1.9 and 1.5 stage a (parallel cycle 5).
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
-
-- 1.9 — Simulation core — started 2026-11-14 by an Opus subagent. It owns new files in `src/sim/` (not `route.ts`, `commands.ts` or `terse.ts`) and new fixtures in `src/sim/__fixtures__/`.
-- 1.5 — Import JFK, **stage a** — started 2026-11-14 by an Opus subagent. It owns:
-  - `tools/import-airport.ts`, `tools/airport-import/**` and `tools/render-airport.ts`
-  - `data/airports/KJFK.json`, `KJFK.overrides.json` and `raw/KJFK.overpass.json`
-  - `src/airport/kjfk.test.ts`
-  - `docs/airports/KJFK-notes.md` and `KJFK-questions.md`
 
 ## Blocked
 
@@ -449,8 +452,94 @@ In progress: 1.9 and 1.5 stage a (parallel cycle 5).
   - 1.5b waits for 1.9 because it edits `src/sim/` (`commands.ts`, `terse.ts`, `route.ts`), which 1.9 builds on.
   - The root `package.json` gained `import-airport` and `render-airport` scripts, set up centrally.
 
+- 2026-11-14 — **1.9 choices** (reference: `src/sim/sim.ts` and `movement.ts`):
+  - **API:** `createSim`, `addAircraft` (at a node, or mid-edge), `applyCommand`, `step`, `getAircraft`/`listAircraft`, `drainEvents` and `stateHash`. Events are a typed union, each with its tick.
+  - **10 Hz tick.**
+  - **Speeds and braking:**
+    - 20 kt on straights, ±10% per pilot from the seeded RNG, which is the RNG's only use so far.
+    - Turns: 20 kt at 10°, 10 kt at 45°, 5 kt at 180°.
+    - Accelerate at 0.5 m/s², brake at 0.6 m/s² planned, with a 1.5 m/s² hard limit for hold position.
+    - Basis: commonly cited Boeing figures (20 kt normal, 10 kt for turns over 45°), found only in pilot forums. The rest is the agent's own reasoning.
+  - **Spacing:** 20 m nose to tail. An aircraft whose wings are over a junction blocks it.
+  - **Holds:**
+    - The nose stops exactly on the hold node, which settles 1.8's follow-up.
+    - ILS, LAHSO and intermediate holds stop the aircraft only when a clearance names them.
+  - **Unable or ambiguous** keeps the current clearance and emits the event.
+  - **Extra rules:**
+    - A clearance that would put a hold inside the hard braking distance is unable, so the sim never runs a hold line.
+    - A later runway hold-short withdraws an earlier crossing of that runway.
+    - Corrections keep the progress already made where the taxied route still fits.
+  - **Not handled:**
+    - two aircraft converging on a free junction at once (1.12's collision check must catch it)
+    - right of way and gridlock
+    - rigid footprints in turns
+    - hashes stable across JS engines (they're stable run to run on one engine)
+  - **TDD:** the agent says about 9 tests passed on their first run, because the logic already existed. It confirmed each with a temporary mutation that made it fail. It wrote one rule before its test, then confirmed it the same way. It found and fixed one real bug with a red test first.
+  - **Open for Q:**
+    1. Should `continue` also release the next taxiway hold-short ahead, not only one it's stopped at? The agent recommends yes.
+    2. A new taxi keeps earlier crossing clearances unless it holds short of that runway. Keep this, and note it in `docs/terse-syntax.md`? The agent recommends yes.
+    3. A correction's `cross` replaces the latest unused crossing. Keep it? The agent recommends yes.
+  - **Follow-ups:**
+    - Test a hold line protecting two runways, and a moving aircraft with no clearance braking, on KJFK (1.5b or 1.10). TEST can't exercise either.
+    - Profile the 300 m traffic lookahead at the start of 1.14.
+
+- 2026-11-14 — **1.5 stage a choices** (reference: `docs/airports/KJFK-notes.md`):
+  - **One Overpass fetch:** 5,176 elements, every type count matching research §1.2. The raw file is 1.70 MB and gets committed, so re-imports run offline.
+  - **OSM → format:**
+    - A taxilane becomes `taxiway` when a taxiway shares its name, otherwise `rampLane`.
+    - Ids are derived from OSM, so an OSM re-split fails loudly instead of silently pointing elsewhere.
+  - **Topology repairs** (generic rules, each reported by the importer):
+    - Z and KD crossed 13R/31L with no shared node; now joined.
+    - Ten taxiway ends stopped 0.2–2.2 m short of a runway centerline; now joined to it.
+    - The research doc's "one connected graph" missed these.
+  - **Hold ownership:**
+    - Each hold protects the nearest runway centerline, facing it along the shortest way that crosses no other hold.
+    - All 45 chart runway/taxiway pairs have a protecting hold, and all 77 runway holds face their runway from 60–160 m.
+    - No JFK hold protects two runways, so 1.9's two-runway follow-up can't be tested on KJFK either.
+  - **Gates:** a stand within 150 m of a terminal building, nearest to it. That gives 161 gates: T1 14, T4 64, T5 33, T7 11, T8 39.
+  - **Sourced overrides:**
+    - closures of Z (between Y and 4L/22R) and VA (between the T7 apron and A). D has nothing to close; OSM's D ends at C.
+    - displaced thresholds from the Chart Supplement
+    - tower positions
+    - the 31s configuration as the default
+    - one approach hold removed
+    - the "CAT 2 HOLD" set to protect 4R. Q15 asks Q to confirm.
+  - **Airlines per terminal:** from jfkairport.com, fetched 2026-11-14. **The IATA→ICAO conversion is the agent's own knowledge, not sourced.** Q can spot-check it, or accept it.
+  - **Route timing on KJFK:** `resolveRoute` medians are 0.04–0.26 ms, so 1.8's branching worry doesn't matter at JFK's size and no cache is needed.
+  - **For Q (also in the sheet):**
+    - KE meets 13R/31L only about 100 m past the 31L end, but that threshold is displaced 995 m. So the PRD's "clear of 31L at Kilo Echo" may not suit a 31L landing (Q8).
+    - Two missing runway holds: D north of 13L/31R, and FA onto 4R/22L (Q12).
+    - The remote stands east of T4 (Q16).
+
+- 2026-11-15 — **1.5 stage a: verification, kept here because 1.5 isn't done yet:**
+    - **Deterministic:** the offline re-import (`npm run import-airport -- KJFK`, no `--fetch`) is byte-identical to the agent's `KJFK.json` (`cmp` exit 0, sha256 `4f40b1a1d526…`).
+    - **Validator gaps:** `npm run validate-airport -- KJFK` fails as expected, with 164 errors and 146 warnings in exactly the agent's seven categories, each mapped to a question:
+      - `gate-unreachable` (161) and `ramp-boundary-undeclared` (143): Q7
+      - arrival exits (2): Q8
+      - VA disconnects part of the T7 ramp (1): Q11
+      - the 31L departure line (1): Q1 and Q2
+      - no pad or penalty box: Q3 and Q4
+    - **Tests:** `kjfk.test.ts` 4 of 4. `npm run typecheck` exit 0. `npm test` 195 of 195.
+    - **Map:** loads in Chrome with no console messages, and no network request besides the file itself. Its layout matches JFK: four runway pairs, labelled displaced thresholds, and T1/T4/T5/T7/T8.
+    - **Scan:** 0 key or personal-info hits across 28 files. The raw snapshot records only the generic User-Agent.
+
+- 2026-11-15 — **Q's KJFK answers** (in `docs/airports/KJFK-questions.md`, with the follow-ups at the end). The main ones:
+  - **31L departure line:** Z from n4057398125 to the front hold h8025529445. It can extend back along Y and the northern part of Z for a longer queue. Exits: H, then J.
+  - **Closures:** the Z and VA closures are temporary, so they're ignored. Both overrides come out.
+  - **Pads and penalty box:**
+    - the Kilo pad (apron west of K between K1 and K2) and the Zulu pad (apron by Z at n8025529446), 3–4 aircraft each
+    - the penalty box ("Quebec box"): the Q loop by Q1 plus the de-icing spots
+  - **The South Hardstand** is a separate destination that ground controls. Its spoken name isn't settled.
+  - **Remote stands east of T4** are T4 parking that the ramp handles, like gates.
+  - **Hangars:** "company hangar" is the usual phrase; the aircraft's company decides which hangar. Each is reached from its nearest taxiway.
+  - **Ramp check-in points per terminal:** 23 points, in Q7.
+  - **Names:** NA and TT for the unnamed stubs. Keep all the doubtful names; ignore the X glyphs. No charted name is missing: the curved connectors are unnamed and serve turns.
+  - **Runway holds:** add them on D (north of 13L/31R) and FA. Accept all the derived choices in Q15, including approach holds for 31R.
+  - **Arrival exits:** the lists left in Q8. 31L: MB, MC, MD, PA, PC, PD, PE, PF. 31R: D, two unnamed, WW, W, unnamed, V, C5, U3, C3, U2.
+  - **Route rule change (my reading of Q6):** an unnamed connector between two consecutive named taxiways counts as the turn between them. Stage b updates `route.ts` and its tests.
+
 ## Next Up
 
-- 1.9 — Simulation core. Needs 1.8, done. It inherits 1.8's follow-ups: starting mid-edge, and where to stop before a hold node.
-- Also: 1.5 — JFK import. Needs Q's map answers (the 31L line, pads, the penalty box), and now covers hardstands and hangars.
-- Phase 0 is complete. Its Phase 2 follow-ups are in the 0.6 entry above.
+- 1.5 stage b, now unblocked: Q's answers into the overrides; hardstands and hangars in the format, `Destination` and `resolveRoute`; unnamed connectors as turns; then 1.5's full Acceptance. After it: 1.6 and 1.7.
+- 1.10 (simulated tower) and 1.11 (simulated ramp): each depends only on 1.9, so both are eligible.
+- 1.9's three open questions for Q are in its entry above.
