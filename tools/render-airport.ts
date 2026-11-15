@@ -18,6 +18,7 @@ import { AirportLoadError, loadAirport } from '../src/airport/load.ts';
 import type { Airport } from '../src/airport/types.ts';
 import { validateAirport } from '../src/airport/validate.ts';
 import { convertOverpass, type OsmContext } from './airport-import/convert.ts';
+import { importOptions } from './airport-import/import-options.ts';
 
 const ROOT = new URL('../', import.meta.url);
 
@@ -53,7 +54,9 @@ function main(args: string[]): number {
     if (index.nodes.has(edge.from) && index.nodes.has(edge.to)) lines[edge.id] = edgePolyline(index, edge);
   }
   let context: OsmContext | null = null;
-  if (existsSync(rawUrl)) context = convertOverpass(id, JSON.parse(readFileSync(rawUrl, 'utf8')) as unknown).context;
+  // Same options as the import (check-in points, terminal buildings), so the overlay's "stands
+  // that are not gates" match the base file.
+  if (existsSync(rawUrl)) context = convertOverpass(id, JSON.parse(readFileSync(rawUrl, 'utf8')) as unknown, importOptions(overrides, `data/airports/${id}.overrides.json`)).context;
 
   const data = {
     airport,

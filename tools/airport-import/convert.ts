@@ -30,6 +30,10 @@
 // - Terminals: aeroway=terminal polygons named "Termin… <x>" become terminal "T<x>" (this
 //   also reads OSM's misspelt "Terminl 8" as Terminal 8, and the report says so). Other
 //   aeroway=terminal polygons (e.g. "New Terminal 1") are plain buildings.
+//   The overrides file may assign other aeroway=terminal polygons to a terminal (its
+//   `areas.patch`/`.replace` items that set `terminal`, passed in as `terminalBuildings`): a
+//   terminal can be several buildings whatever their names (LGA's Terminal B and its
+//   "Eastern Concourse" and "Western Concourse"). Change them, then re-import.
 // - Gates: a parking_position lead-in with a `ref`, whose stand (the end off the network) is
 //   within GATE_TERMINAL_M of a terminal building and nearer to it than to any other
 //   aeroway=terminal polygon. Name = ref. Later stands with a name already used in that
@@ -107,6 +111,14 @@ export interface ConvertOptions {
    * point, the ramp's). Without them, OSM's way class decides (see the header).
    */
   rampBoundary?: string[];
+  /**
+   * Terminal buildings the overrides file assigns to a terminal (area id → terminal id), from
+   * its `areas.patch` / `areas.replace` items that set `terminal`. Each must be an
+   * aeroway=terminal polygon; it then counts as that terminal's building for gate matching,
+   * whatever its name (LGA: Terminal B's "Eastern Concourse" and "Western Concourse"). The
+   * terminal must exist (from a building named "Terminal X").
+   */
+  terminalBuildings?: Record<string, string>;
 }
 
 export function convertOverpass(id: string, rawValue: unknown, options: ConvertOptions = {}): ConvertResult {
@@ -401,6 +413,8 @@ export function convertOverpass(id: string, rawValue: unknown, options: ConvertO
   const terminals = new Map<string, Terminal>();
   const terminalShapes: { terminal: string | null; label: string; rings: Point[][] }[] = [];
   const polygonFeatures: (OsmWay | OsmRelation)[] = [...ways, ...relations];
+  const assignedBuildings = new Map(Object.entries(options.terminalBuildings ?? {}));
+  const lateAssigned: string[] = [];
   for (const f of polygonFeatures) {
     const a = aeroway(f);
     if (a !== 'apron' && a !== 'terminal' && a !== 'hangar') continue;
@@ -415,10 +429,18 @@ export function convertOverpass(id: string, rawValue: unknown, options: ConvertO
     const areaId = (k: number) => `${f.type === 'way' ? 'w' : 'r'}${f.id}${rings.length > 1 ? `-${k + 1}` : ''}`;
     if (a === 'terminal') {
       const t = name ? /^termin[a-z]*\s+(\S+)$/i.exec(name) : null;
-      const terminalId = t ? `T${(t[1] as string).toUpperCase()}` : null;
-      if (terminalId) {
-        if (name && !/^terminal\s/i.test(name)) warnings.push(`terminal ${f.type} ${f.id} is named "${name}"; read as Terminal ${terminalId.slice(1)}`);
-        if (!terminals.has(terminalId)) terminals.set(terminalId, { id: terminalId, name: `Terminal ${terminalId.slice(1)}`, airlines: [] });
+      const named = t ? `T${(t[1] as string).toUpperCase()}` : null;
+      const assigned = [...new Set(rings.map((_, k) => assignedBuildings.get(areaId(k))).filter((x): x is string => x !== undefined))];
+      if (assigned.length > 1) throw new Error(`terminal ${f.type} ${f.id}: its rings are assigned to different terminals (${assigned.join(', ')}) by the overrides file`);
+      rings.forEach((_, k) => assignedBuildings.delete(areaId(k)));
+      if (named) {
+        if (name && !/^terminal\s/i.test(name)) warnings.push(`terminal ${f.type} ${f.id} is named "${name}"; read as Terminal ${named.slice(1)}`);
+        if (!terminals.has(named)) terminals.set(named, { id: named, name: `Terminal ${named.slice(1)}`, airlines: [] });
+      }
+      const terminalId = assigned[0] ?? named;
+      if (assigned[0] !== undefined && assigned[0] !== named) {
+        lateAssigned.push(assigned[0]);
+        warnings.push(`terminal ${f.type} ${f.id} ("${name ?? 'unnamed'}") is assigned to ${assigned[0]} by the overrides file; its stands count as ${assigned[0]}'s`);
       }
       terminalShapes.push({ terminal: terminalId, label: `${name ?? '(unnamed)'} (${f.type} ${f.id})`, rings });
       rings.forEach((outline, k) => {
@@ -434,6 +456,14 @@ export function convertOverpass(id: string, rawValue: unknown, options: ConvertO
         areas.push(area);
       });
     }
+  }
+
+  if (assignedBuildings.size > 0) {
+    throw new Error(`the overrides file assigns area(s) ${[...assignedBuildings.keys()].join(', ')} to a terminal, but they are not aeroway=terminal polygons in the OSM data`);
+  }
+  const unknownTerminals = [...new Set(lateAssigned)].filter((t) => !terminals.has(t));
+  if (unknownTerminals.length > 0) {
+    throw new Error(`the overrides file assigns buildings to terminal(s) ${unknownTerminals.join(', ')}, which no building named "Terminal …" creates`);
   }
 
   // ---- gates

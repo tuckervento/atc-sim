@@ -10,11 +10,14 @@
 //    The ramp boundary comes from the overrides file: the nodes of its curated ramp handoffs
 //    (`rampHandoffs.add` and `.replace`) are the check-in points, and the converter puts the
 //    rampLane/taxiway boundary there (convert.ts, "Edge kind"). Change them, then re-import.
+//    Likewise the terminal buildings it assigns (`areas.patch` / `.replace` items that set
+//    `terminal`) count as that terminal's for gate matching (convert.ts, "Terminals").
 // Exit codes: 0 = written, 1 = failed, 2 = usage / missing raw file.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { convertOverpass, serializeAirport, type ConvertReport } from './airport-import/convert.ts';
+import { importOptions } from './airport-import/import-options.ts';
 import { datedRaw, fetchOverpass } from './airport-import/overpass.ts';
 
 const DATA_DIR = new URL('../data/airports/', import.meta.url);
@@ -48,35 +51,13 @@ async function main(args: string[]): Promise<number> {
   }
   const rawText = readFileSync(rawUrl, 'utf8');
   const overridesUrl = new URL(`${id}.overrides.json`, DATA_DIR);
-  const rampBoundary = existsSync(overridesUrl) ? checkInNodes(JSON.parse(readFileSync(overridesUrl, 'utf8')) as unknown, `data/airports/${id}.overrides.json`) : undefined;
-  const { airport, report } = convertOverpass(id, JSON.parse(rawText) as unknown, rampBoundary === undefined ? {} : { rampBoundary });
+  const overrides = existsSync(overridesUrl) ? (JSON.parse(readFileSync(overridesUrl, 'utf8')) as unknown) : undefined;
+  const options = importOptions(overrides, `data/airports/${id}.overrides.json`);
+  const { airport, report } = convertOverpass(id, JSON.parse(rawText) as unknown, options);
   const outName = `data/airports/${id}.json`;
   writeFileSync(new URL(`${id}.json`, DATA_DIR), serializeAirport(airport));
   printReport(outName, rawName, Buffer.byteLength(rawText, 'utf8'), report);
   return 0;
-}
-
-/**
- * The check-in nodes curated in an overrides file: the `node` of every ramp handoff it adds or
- * replaces. undefined when it curates none. Throws on a malformed entry (fail loudly).
- */
-function checkInNodes(overrides: unknown, name: string): string[] | undefined {
-  const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
-  if (!isObj(overrides)) throw new Error(`${name}: expected an object`);
-  const handoffs = overrides.rampHandoffs;
-  if (handoffs === undefined) return undefined;
-  if (!isObj(handoffs)) throw new Error(`${name}: rampHandoffs: expected an object`);
-  const nodes: string[] = [];
-  for (const op of ['add', 'replace'] as const) {
-    const list = handoffs[op];
-    if (list === undefined) continue;
-    if (!Array.isArray(list)) throw new Error(`${name}: rampHandoffs.${op}: expected an array`);
-    list.forEach((h: unknown, i) => {
-      if (!isObj(h) || typeof h.node !== 'string') throw new Error(`${name}: rampHandoffs.${op}[${i}]: expected an object with a string "node"`);
-      nodes.push(h.node);
-    });
-  }
-  return nodes.length === 0 ? undefined : nodes;
 }
 
 function printReport(outName: string, rawName: string, rawBytes: number, report: ConvertReport): void {

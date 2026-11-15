@@ -19,6 +19,17 @@
 //      without passing another runway-type hold line, within PROTECT_LIMIT_M. Crossing a
 //      runway at a node counts (the far side is walked on), so a hold before two runways with
 //      no hold line between them protects both.
+//   4. Intersections (PLAN 1.6, LGA): also every other runway whose centerline is nearer to the
+//      node where the hold's way enters its runway than the hold stands from that runway's
+//      centerline. Past the line the aircraft is inside that runway's hold-line distance too
+//      (LGA: AA enters 13/31 32 m from 4/22's centerline, at HS 1). Step 3 can't see this,
+//      because it never walks along runway edges.
+//   5. Forks (PLAN 1.6, LGA): a runway hold at a node where two edges both lead onto the runway
+//      clear of other hold lines gets a hold-short per branch (`<id>.2`, …), for every other
+//      branch whose way is at most FORK_BRANCH_RATIO times the best one's.
+//   A runway hold that sits on a runway's own centerline is a holding position marking on the
+//   runway (AIM 2-3-5; LGA has them on both runways either side of the crossing): handled like
+//   LAHSO below, kind `runway`, if the crossing runway is within PROTECT_LIMIT_M along it.
 // - ILS: steps 1 and 2 only (ILS holds sit behind the runway hold).
 // - LAHSO: the hold node is on one runway's centerline. It faces along that runway toward the
 //   nearest node shared with another runway, and protects that other runway.
@@ -37,6 +48,8 @@ export const UNTAGGED_RUNWAY_M = 200;
 export const HOLD_STANDOFF_M = 30;
 /** A hold projecting more than this (m) past a runway end is an approach-area hold. */
 export const APPROACH_BEYOND_M = 50;
+/** At a fork, another branch is guarded too if its clear way to the runway is at most this many times the best one's. */
+export const FORK_BRANCH_RATIO = 1.5;
 
 export type OsmHoldType = 'runway' | 'ILS' | 'LAHSO' | 'intermediate' | 'movement' | 'untagged' | string;
 
@@ -87,6 +100,18 @@ export function deriveHolds(index: AirportIndex, points: HoldPoint[]): HoldResul
       continue;
     }
     if (onRunway.length > 0) {
+      // A runway hold marked on a runway's own centerline is a runway holding position marking
+      // on the runway (AIM 2-3-5): traffic on that runway stops there before a crossing runway.
+      // Same geometry as LAHSO: it protects the nearest crossing runway along its runway.
+      if (p.osmType === 'runway') {
+        const onIt = runwayOnRunwayHold(index, p, onRunway, 'runway');
+        if (typeof onIt === 'string') notes.push(onIt);
+        else {
+          holdShorts.push(onIt);
+          notes.push(`${p.source} (runway) sits on runway ${onRunway.join(', ')}'s centerline: a hold marking on the runway, imported as a runway hold protecting ${onIt.runways.join(' and ')} along ${onIt.towardEdge}`);
+        }
+        continue;
+      }
       notes.push(`${p.source} (${p.osmType}) sits on runway ${onRunway.join(', ')}'s centerline; not imported`);
       continue;
     }
@@ -158,11 +183,33 @@ export function deriveHolds(index: AirportIndex, points: HoldPoint[]): HoldResul
     if (kind === 'runway') {
       // Also every runway reached beyond it before another hold line (e.g. two runways close together).
       const guarded = protectedRunways(index, p.node, best.edge, blocking, runwaysAt);
-      runways = [...new Set([target, ...guarded])].sort();
-      if (runways.length > 1) notes.push(`${p.source} protects ${runways.join(' and ')}: no hold line between them along ${best.edge.id}`);
+      // Also every runway whose centerline is nearer to where this way enters the target runway
+      // than this hold line stands from the target's: past the line, the aircraft is already
+      // inside that runway's hold line too (a taxiway entering at a runway intersection).
+      const entry = index.nodes.get(best.node);
+      if (!entry) throw new Error(`hold ${p.id}: unknown node ${best.node}`);
+      const inside = [...centerlines]
+        .filter(([runway, lines]) => runway !== target && Math.min(...lines.map((l) => distanceToPolyline([entry.x, entry.y], l))) < nearest.d)
+        .map(([runway]) => runway);
+      if (inside.length > 0) notes.push(`${p.source} leads onto runway ${target} at ${best.node}, inside the hold-line distance (${nearest.d.toFixed(0)} m) of ${inside.join(', ')}; it protects ${inside.length === 1 ? 'it' : 'them'} too`);
+      runways = [...new Set([target, ...guarded, ...inside])].sort();
+      if (guarded.some((r) => r !== target)) notes.push(`${p.source} protects ${[...new Set([target, ...guarded])].sort().join(' and ')}: no hold line between them along ${best.edge.id}`);
     }
     facingDistanceM.set(p.id, nearest.d);
     holdShorts.push({ id: p.id, kind, runways, node: p.node, towardEdge: best.edge.id });
+    // A runway hold at a fork guards every branch onto its runway: each other edge with a clear
+    // way to the runway, not much longer than the best one, gets its own hold-short (PLAN 1.6,
+    // LGA: D and an unnamed fillet onto 4/22 split at the hold node). Only clear ways count, so
+    // the way back (which passes other hold lines) never does.
+    if (kind === 'runway' && clear.length > 1 && clear[0] === best) {
+      clear.slice(1).filter((r) => r.distM <= best.distM * FORK_BRANCH_RATIO).forEach((r, k) => {
+        const id = `${p.id}.${k + 2}`;
+        const more = protectedRunways(index, p.node, r.edge, blocking, runwaysAt);
+        const branchRunways = [...new Set([...runways, ...more])].sort();
+        holdShorts.push({ id, kind, runways: branchRunways, node: p.node, towardEdge: r.edge.id });
+        notes.push(`${p.source} sits at a fork: ${r.edge.id} also reaches runway ${target} clear of other hold lines (${r.distM.toFixed(0)} m against ${best.distM.toFixed(0)} m), so hold-short ${id} guards it too`);
+      });
+    }
   }
   return { holdShorts, notes, facingDistanceM };
 }
@@ -303,7 +350,17 @@ function protectedRunways(
 
 /** A LAHSO hold on runway A faces along A to the nearest node A shares with another runway. */
 function lahsoHold(index: AirportIndex, p: HoldPoint, onRunway: string[]): HoldShort | string {
-  if (onRunway.length !== 1) return `${p.source} (LAHSO) is on ${onRunway.length} runways (${onRunway.join(', ')}); expected exactly 1; not imported`;
+  return runwayOnRunwayHold(index, p, onRunway, 'lahso');
+}
+
+/**
+ * A hold on runway A's centerline (LAHSO, or a runway hold marked on the runway) faces along A
+ * to the nearest node A shares with another runway, and protects that runway. A runway-kind one
+ * must be within PROTECT_LIMIT_M of that crossing.
+ */
+function runwayOnRunwayHold(index: AirportIndex, p: HoldPoint, onRunway: string[], kind: 'lahso' | 'runway'): HoldShort | string {
+  const label = kind === 'lahso' ? 'LAHSO' : 'runway';
+  if (onRunway.length !== 1) return `${p.source} (${label}) is on ${onRunway.length} runways (${onRunway.join(', ')}); expected exactly 1; not imported`;
   const own = onRunway[0] as string;
   let best: { edge: Edge; distM: number; runways: string[] } | null = null;
   for (const first of edgesAt(index, p.node).filter((e) => e.kind === 'runway' && e.runway === own)) {
@@ -323,8 +380,11 @@ function lahsoHold(index: AirportIndex, p: HoldPoint, onRunway: string[]): HoldS
       d += edgeLength(index, next);
     }
   }
-  if (!best) return `${p.source} (LAHSO) on runway ${own} has no crossing runway along it; not imported`;
-  return { id: p.id, kind: 'lahso', runways: best.runways, node: p.node, towardEdge: best.edge.id };
+  if (!best) return `${p.source} (${label}) on runway ${own} has no crossing runway along it; not imported`;
+  if (kind === 'runway' && best.distM > PROTECT_LIMIT_M) {
+    return `${p.source} (runway) on runway ${own}'s centerline is ${best.distM.toFixed(0)} m from the nearest crossing runway (more than ${PROTECT_LIMIT_M} m); not imported`;
+  }
+  return { id: p.id, kind, runways: best.runways, node: p.node, towardEdge: best.edge.id };
 }
 
 /** The edge from `start` toward the nearest junction (3+ edges), following 2-edge chains. */

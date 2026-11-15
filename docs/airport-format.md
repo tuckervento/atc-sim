@@ -166,4 +166,12 @@ Codes are the `IssueCode` union in `validate.ts`; tests assert on them.
   So after changing the check-in points, re-import.
 - Approach-area holds (OSM runway holds past a runway's end) become `runway` holds protecting
   that runway, facing where the taxiway crosses its extended centerline (Q, 2026-11-15).
+- Intersections and forks (1.6, LGA; `tools/airport-import/holds.ts`): a runway hold whose way
+  enters its runway inside another runway's hold-line distance protects both. A runway hold
+  marked on a runway's own centerline protects the crossing runway, facing it. A hold at a fork
+  where two branches lead onto the runway gets one hold-short per branch (`<id>`, `<id>.2`).
+- A terminal can be several buildings (1.6: LGA's Terminal B and its concourses). An
+  `areas.patch`/`replace` item in the overrides that sets `terminal` on an `aeroway=terminal`
+  building makes the importer count that building as the terminal's for gate matching, like
+  the check-in points. So after changing it, re-import.
 - Put the OSM licence in `source.license` ("Data © OpenStreetMap contributors, ODbL 1.0").

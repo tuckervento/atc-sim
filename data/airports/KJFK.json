@@ -2406,7 +2406,7 @@
     {"id":"h5969626554","kind":"runway","runways":["13R/31L"],"node":"n5969626554","towardEdge":"w5786872-n4058548447-n5969626554"},
     {"id":"h5969626555","kind":"runway","runways":["13R/31L"],"node":"n5969626555","towardEdge":"w5786872-n5969626555-n4058548436"},
     {"id":"h5969626556","kind":"ils","runways":["13R/31L"],"node":"n5969626556","towardEdge":"w551324788-n4057398142-n5969626556"},
-    {"id":"h5969626557","kind":"runway","runways":["4L/22R"],"node":"n5969626557","towardEdge":"w551324788-n8025526864-n5969626557"},
+    {"id":"h5969626557","kind":"runway","runways":["13R/31L","4L/22R"],"node":"n5969626557","towardEdge":"w551324788-n8025526864-n5969626557"},
     {"id":"h5969626558","kind":"runway","runways":["4L/22R"],"node":"n5969626558","towardEdge":"w403551983-n5969626558-n4059017695"},
     {"id":"h5969626559","kind":"runway","runways":["4L/22R"],"node":"n5969626559","towardEdge":"w551554036-n5969626559-n4058549560"},
     {"id":"h5969626560","kind":"runway","runways":["4L/22R"],"node":"n5969626560","towardEdge":"w403505035-n5969626560-n4058549575"},

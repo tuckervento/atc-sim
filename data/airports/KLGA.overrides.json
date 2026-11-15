@@ -1,0 +1,98 @@
+{
+  "formatVersion": 1,
+  "airport": "KLGA",
+  "description": "Hand-curated on top of the OSM import (PLAN 1.6, a format check). Each item is cited in docs/airports/KLGA-notes.md. Sources: FAA Chart Supplement NE 29 OCT-24 DEC 2026 p. 226 (tower 118.7); FAA airport diagram AL-289 cycle 2611; FAA LGA Airport Capacity Profile 2014 (configuration land 22 / depart 13); laguardiaairport.com /flights/airlines and /explore-lga/terminals fetched 2026-11-15 (terminals and airlines). Check-in points, arrival exits and the 13 departure line are the agent's picks from the geometry, listed as questions for Q in the notes. The ramp handoffs' nodes and the areas assigned to a terminal also drive the base import (tools/import-airport.ts): re-import after changing them.",
+  "set": {"defaultConfiguration": "22-13"},
+  "nodes": {
+    "remove": ["n12544862410", "n7770650275"]
+  },
+  "edges": {
+    "remove": ["w1355496893-n12544862410-n7770650275"]
+  },
+  "runways": {
+    "patch": [
+      {"id": "4/22", "towerPosition": "twr-118.7"},
+      {"id": "13/31", "towerPosition": "twr-118.7"}
+    ]
+  },
+  "runwayExits": {
+    "add": [
+      {"id": "x22-E", "runwayEnd": "22", "taxiway": "E", "node": "n45248476", "edge": "w5783801-n45253848-n45248476"},
+      {"id": "x22-C", "runwayEnd": "22", "taxiway": "C", "node": "n46539414", "edge": "w5822425-n46539394-n46539414"},
+      {"id": "x22-Y", "runwayEnd": "22", "taxiway": "Y", "node": "n3060033666", "edge": "w5783568-n9311515567-n3060033666"},
+      {"id": "x22-B", "runwayEnd": "22", "taxiway": "B", "node": "n45241090", "edge": "w1356066568-n45241097-n45241090"}
+    ]
+  },
+  "rampHandoffs": {
+    "add": [
+      {"id": "rh5", "name": "5", "node": "n10090369698", "use": "both", "terminals": ["TB"]},
+      {"id": "rh5L3", "name": "5", "node": "n10090373278", "use": "both", "terminals": ["TB"]},
+      {"id": "rh6", "name": "6", "node": "n7770609517", "use": "both", "terminals": ["TB"]},
+      {"id": "rh7", "name": "7", "node": "n6838369197", "use": "both", "terminals": ["TB"]},
+      {"id": "rh8", "name": "8", "node": "n6838004584", "use": "both", "terminals": ["TB"]},
+      {"id": "rh9", "name": "9", "node": "n6838004569", "use": "both", "terminals": ["TB", "TC"]},
+      {"id": "rh9L1", "name": "9", "node": "n10561870574", "use": "both", "terminals": ["TB", "TC"]},
+      {"id": "rh11", "name": "11", "node": "n12182211364", "use": "both", "terminals": ["TC"]},
+      {"id": "rh12", "name": "12", "node": "n11720580195", "use": "both", "terminals": ["TC"]},
+      {"id": "rh15", "name": "15", "node": "n46532700", "use": "both", "terminals": ["TC"]},
+      {"id": "rh16", "name": "16", "node": "n12463874436", "use": "both", "terminals": ["TC"]},
+      {"id": "rh17", "name": "17", "node": "n12463874457", "use": "both", "terminals": ["TC"]},
+      {"id": "rh18", "name": "18", "node": "n9711578204", "use": "both", "terminals": ["TC"]},
+      {"id": "rh19Z", "name": "19", "node": "n9711578206", "use": "both", "terminals": ["TC"]},
+      {"id": "rh19Z2", "name": "19", "node": "n9711578202", "use": "both", "terminals": ["TC"]}
+    ]
+  },
+  "terminals": {
+    "patch": [
+      {"id": "TB", "airlines": ["ACA", "AAL", "FFT", "JBU", "POE", "SWA", "UAL"]},
+      {"id": "TC", "airlines": ["DAL"]}
+    ],
+    "remove": ["TA"]
+  },
+  "gates": {
+    "remove": ["g1009202262", "g1009202263", "g1009202264", "g1009202265", "g1009202267", "g1384190854"]
+  },
+  "departureLines": {
+    "add": [
+      {
+        "id": "line13",
+        "runwayEnd": "13",
+        "holdShort": "h9311536450",
+        "edges": [
+          "w1358432350-n45244275-n11177971989",
+          "w1358432350-n11177971989-n45251341",
+          "w1358432350-n45251341-n12548009381",
+          "w1355842696-n12548009381-n11177971991",
+          "w1355842696-n11177971991-n45195586",
+          "w1355842696-n45195586-n9311536450"
+        ],
+        "exits": [
+          {"taxiway": "BB", "node": "n45251341", "edge": "w1355843286-n45251341-n45251273"},
+          {"taxiway": "G", "node": "n45195586", "edge": "w5822271-n45253061-n45195586"}
+        ]
+      }
+    ]
+  },
+  "configurations": {
+    "add": [
+      {"id": "22-13", "name": "Land 22, depart 13", "runways": [
+        {"end": "22", "roles": ["arrivals"], "arrivalExits": ["x22-E", "x22-C", "x22-Y", "x22-B"]},
+        {"end": "13", "roles": ["departures"]}
+      ]}
+    ]
+  },
+  "towerPositions": {
+    "add": [
+      {"id": "twr-118.7", "name": "LaGuardia Tower", "frequency": "118.7"}
+    ]
+  },
+  "areas": {
+    "patch": [
+      {"id": "w284852178", "kind": "building", "terminal": null},
+      {"id": "w633420347", "kind": "terminalBuilding", "terminal": "TB"},
+      {"id": "w677731265", "kind": "terminalBuilding", "terminal": "TB"},
+      {"id": "w664461080", "kind": "terminalBuilding", "terminal": "TB"},
+      {"id": "w701356157", "kind": "terminalBuilding", "terminal": "TB"}
+    ]
+  }
+}
