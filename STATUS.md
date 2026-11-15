@@ -1,10 +1,10 @@
 # STATUS
 
-_Last updated: 2026-11-15 (1.5 stage b in progress)_
+_Last updated: 2026-11-15 (1.5 done: JFK imported and valid)_
 
 ## Snapshot
 
-12 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.4, 1.8 and 1.9. 1.5 stage a is done, and Q has answered its map questions, so **stage b is ready**.
+13 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.5, 1.8 and 1.9. **JFK is imported and valid** (1.5).
 
 **Phase 0's picks (Q signed off 2026-11-14):**
 - speech-to-text: Deepgram Nova-3
@@ -13,10 +13,33 @@ _Last updated: 2026-11-15 (1.5 stage b in progress)_
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-In progress: 1.5 stage b. Also eligible: 1.10 and 1.11.
+Next: 1.6, 1.7, 1.10 and 1.11 are all eligible.
 
 ## Completed
 
+- [x] 1.5 — Import JFK — done 2026-11-15 (stage a by one subagent, stage b by another, after Q's map answers). Verified by me:
+  - `npm run validate-airport -- KJFK`: **OK, 0 errors**, 3 warnings. All three are `hold-short-far-from-runway` on the 31R approach holds (Q15c), which guard the extended centerline by design; `kjfk.test.ts` asserts they're the only warnings.
+  - `-- TEST`: OK, 0 errors and 0 warnings.
+  - `npm run typecheck`: exit 0. `npm test`: 230 of 230 across 8 files. 1.9's sim files and `sim.test.ts` are unchanged (`git diff` empty).
+  - Offline re-import: byte-identical (`cmp` exit 0, sha256 `6c0e8faf…`).
+  - **Acceptance in `kjfk.test.ts`:**
+    - the four runways and their holds
+    - "A then right on KE" on real data (to the Kilo pad)
+    - the 31L line with exits H and J
+    - routes to the South Hardstand and to a company hangar
+    - "A, then B" over a connector
+  - **The overrides match Q's answers** (checked item by item):
+    - the 31L line on Z, from n4057398125 to h8025529445, extended back along Z and Y
+    - pads: Kilo and Zulu, 3 spots each, with spoken names
+    - penalty box "Quebec box", 6 spots
+    - South Hardstand: entrances PB, Q5 and Q3, 5 spots
+    - 9 hangars
+    - the 31s: 8 exits on 31L and 13 on 31R
+    - 0 closures
+    - 24 check-in points with use and terminal
+  - **Map:** renders in Chrome with no console messages, showing the line, pads, penalty box, hardstand, hangars, check-in points and exits.
+  - **Route tests:** 159 lines added, 0 removed.
+  - **Scan:** 0 key or personal-info hits across 24 changed files.
 - [x] 1.9 — Simulation core — done 2026-11-14 — verified by me after the subagent:
   - `npx vitest run src/sim/sim.test.ts`: 24 of 24 passed. `npm run typecheck`: exit 0. `npm test`: 195 of 195 across 8 files, which includes 1.5a's `kjfk.test.ts`.
   - Each Acceptance item has a named test, with real assertions:
@@ -123,14 +146,6 @@ In progress: 1.5 stage b. Also eligible: 1.10 and 1.11.
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
-
-- 1.5 — Import JFK, **stage b** — started 2026-11-15 by an Opus subagent. It applies Q's answers in `docs/airports/KJFK-questions.md`, and adds:
-  - spoken names for holding areas
-  - hardstands and hangars (format, `Destination`, terse syntax, `resolveRoute`)
-  - unnamed connectors counted as turns
-  - 1.5's full Acceptance
-
-  Plan: `~/.claude/plans/zany-snacking-llama.md`.
 
 ## Blocked
 
@@ -546,8 +561,34 @@ In progress: 1.5 stage b. Also eligible: 1.10 and 1.11.
   - **Arrival exits:** the lists left in Q8. 31L: MB, MC, MD, PA, PC, PD, PE, PF. 31R: D, two unnamed, WW, W, unnamed, V, C5, U3, C3, U2.
   - **Route rule change (my reading of Q6):** an unnamed connector between two consecutive named taxiways counts as the turn between them. Stage b updates `route.ts` and its tests.
 
+- 2026-11-15 — **1.5 stage b choices:**
+  - **Format:**
+    - Holding areas gain `spokenNames` and a `hardstand` kind (with required `entrances`).
+    - A new 14th collection, `hangars` (`airlines`, `spots`), one per airline.
+    - `runwayExits.taxiway` is now optional, for unnamed exits.
+  - **Commands:** `Destination` gains `hardstand` and `hangar`; a null hangar means the aircraft's company hangar. Terse: `taxi hardstand|hangar [name] via …`.
+  - **Routes:**
+    - **Unnamed connectors count as turns** (Q6): a simple chain of open, unnamed taxiway edges, no forks, no runway node, ≤ 250 m, no turn sharper than 90°, and only where the two taxiways don't meet directly.
+    - A turn direction is measured through the connector.
+    - `RouteStart` gains an optional airline.
+  - **Ramp boundary:** now a generic importer rule. It floods out from the runways and stops at the overrides' check-in nodes. The base file therefore depends on the check-in points: changing them means re-importing.
+  - **Hand-placed data:** spot nodes and lead-ins for the pads and hardstand, each checked against aprons and for crossings.
+  - **TDD:** some rules were implemented before their tests, and most connector tests passed on their first run. The agent mutation-checked each rule; two survived their mutation, so it added tests that catch them. One test first passed for the wrong reason, which a mutation exposed, and it was fixed.
+  - **Open for Q:**
+    1. The South Hardstand's spoken name (defaulted to "South Hardstand" and "hardstand").
+    2. The FA hold sits at the FA/FB merge, 39.5 m from 4R/22L (FA's last edge is inside the runway's safety area).
+    3. The VA check-in point is set to "both" (Q's sheet said "closed", but Q also said to treat VA as open). SA has one node; "A10/H" is named A10.
+    4. Spot-check the hangar ICAO codes (SIA, FDX, UAL are the agent's own knowledge). DHL has no airline. Both FedEx buildings form one hangar.
+    5. The 31L line's longer queue is modelled as the line's full extent. The H exit takes the west branch.
+  - **Follow-ups:**
+    - The sim (`apply.ts`) doesn't pass the aircraft's airline to `RouteStart` yet, so "taxi hangar" with no name is unable in the sim (1.10 or 1.11).
+    - 0.4's spike schema lists only the old destination kinds.
+    - Terse can't type multi-word spoken names, so one-word ones (Kilo, Zulu, Quebec) were added.
+    - Stands 75–77, 78A, H12 and H13 aren't on OSM's graph.
+
 ## Next Up
 
-- 1.5 stage b, now unblocked: Q's answers into the overrides; hardstands and hangars in the format, `Destination` and `resolveRoute`; unnamed connectors as turns; then 1.5's full Acceptance. After it: 1.6 and 1.7.
-- 1.10 (simulated tower) and 1.11 (simulated ramp): each depends only on 1.9, so both are eligible.
-- 1.9's three open questions for Q are in its entry above.
+- 1.6 — Import LGA as a format check (needs 1.5, done).
+- 1.7 — Map renderer (needs 1.5, done).
+- 1.10 — Simulated tower, and 1.11 — Simulated ramp (each needs 1.9, done). One should pass the aircraft's airline to `RouteStart` for company hangars.
+- 1.9's three open questions, and 1.5's five, are in their entries above.
