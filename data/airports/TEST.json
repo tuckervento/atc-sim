@@ -4,7 +4,7 @@
   "name": "Test Airport (synthetic)",
   "reference": { "lat": 0, "lon": 0 },
   "source": {
-    "description": "Synthetic airport for unit tests (PLAN 1.4), not a real place. It exercises every feature of the format: two intersecting runways (9/27 and 18/36, crossing at node rX), a hold-short on J that protects both, runway, ILS, LAHSO and intermediate holds, a runway crossing on A, ramp lanes (including numeric lane 7) with check-in names, two terminals, two pads and a penalty box (reached round the E loop by E1 or E2, which a route must name, so it's not ambiguous here; src/sim/__fixtures__/e-loop.overrides.json makes the ambiguous case), two departure lines with ordered exits, two configurations (27 takes arrivals and departures in 'west'), split tower positions, and a closed segment of C. Units: meters, x east, y north."
+    "description": "Synthetic airport for unit tests (PLAN 1.4), not a real place. It exercises every feature of the format: two intersecting runways (9/27 and 18/36, crossing at node rX), a hold-short on J that protects both, runway, ILS, LAHSO and intermediate holds, a runway crossing on A, ramp lanes (including numeric lane 7) with check-in names, two terminals, two pads and a penalty box (reached round the E loop by E1 or E2, which a route must name, so it's not ambiguous here; src/sim/__fixtures__/e-loop.overrides.json makes the ambiguous case, and connector.overrides.json makes E1 an unnamed connector), a hardstand entered from G with spoken names, a Delta hangar reached over a ramp-lane lead-in from aW, two departure lines with ordered exits, two configurations (27 takes arrivals and departures in 'west'), split tower positions, and a closed segment of C. Units: meters, x east, y north."
   },
   "defaultConfiguration": "west",
   "nodes": [
@@ -63,6 +63,11 @@
     { "id": "npS1", "x": 1200, "y": 420 },
     { "id": "npS2", "x": 1300, "y": 420 },
     { "id": "wpS", "x": -1200, "y": 330 },
+
+    { "id": "gS", "x": 700, "y": -480 },
+    { "id": "hsS1", "x": 640, "y": -540 },
+    { "id": "hsS2", "x": 760, "y": -540 },
+    { "id": "hgD", "x": -1640, "y": 280 },
 
     { "id": "rb7", "x": -800, "y": 270 },
     { "id": "l7A", "x": -800, "y": 400 },
@@ -144,6 +149,10 @@
     { "id": "np2-npS2", "kind": "taxiway", "from": "np2", "to": "npS2" },
     { "id": "npE-aP2", "kind": "taxiway", "name": "P2", "from": "npE", "to": "aP2" },
     { "id": "aK-wpS", "kind": "taxiway", "name": "K", "from": "aK", "to": "wpS", "widthM": 23 },
+    { "id": "bF-gS", "kind": "taxiway", "name": "G", "from": "bF", "to": "gS" },
+    { "id": "gS-hsS1", "kind": "taxiway", "from": "gS", "to": "hsS1" },
+    { "id": "gS-hsS2", "kind": "taxiway", "from": "gS", "to": "hsS2" },
+    { "id": "aW-hgD", "kind": "rampLane", "from": "aW", "to": "hgD" },
 
     { "id": "rb7-a7", "kind": "taxiway", "name": "7", "from": "rb7", "to": "a7" },
     { "id": "rb7-l7A", "kind": "rampLane", "name": "7", "from": "rb7", "to": "l7A" },
@@ -230,7 +239,11 @@
   "holdingAreas": [
     { "id": "padNorth", "name": "North pad", "kind": "pad", "spots": ["npS1", "npS2"], "outline": [[1080, 330], [1420, 330], [1420, 450], [1080, 450]] },
     { "id": "padWest", "name": "West pad", "kind": "pad", "spots": ["wpS"], "outline": [[-1260, 300], [-1140, 300], [-1140, 370], [-1260, 370]] },
-    { "id": "penaltyBox", "name": "Penalty box", "kind": "penaltyBox", "spots": ["pbS1", "pbS2"], "outline": [[-1150, -380], [550, -380], [550, -500], [-1150, -500]] }
+    { "id": "penaltyBox", "name": "Penalty box", "kind": "penaltyBox", "spokenNames": ["the box"], "spots": ["pbS1", "pbS2"], "outline": [[-1150, -380], [550, -380], [550, -500], [-1150, -500]] },
+    { "id": "hardstand", "name": "South hardstand", "kind": "hardstand", "spokenNames": ["the hardstand"], "entrances": ["G"], "spots": ["hsS1", "hsS2"], "outline": [[600, -500], [800, -500], [800, -580], [600, -580]] }
+  ],
+  "hangars": [
+    { "id": "hangarDAL", "name": "Delta hangar", "airlines": ["DAL"], "spots": ["hgD"], "outline": [[-1720, 300], [-1580, 300], [-1580, 380], [-1720, 380]] }
   ],
   "departureLines": [
     {

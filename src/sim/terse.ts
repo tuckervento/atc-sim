@@ -89,6 +89,8 @@ const KEYWORDS = new Set([
   'ramp',
   'pad',
   'penalty',
+  'hardstand',
+  'hangar',
 ]);
 
 const CORRECTION_PARTS = ['to', 'via', 'turn', 'hs', 'cross'] as const;
@@ -298,16 +300,18 @@ function parseTaxi(c: Cursor): Instruction {
 function parseDestination(c: Cursor, after: string): Destination {
   const tok = c.next();
   const kw = keyword(tok);
-  if (kw === 'ramp' || kw === 'pad' || kw === 'penalty') {
+  if (kw === 'ramp' || kw === 'pad' || kw === 'penalty' || kw === 'hardstand' || kw === 'hangar') {
     const name = endsList(c.peek()) ? null : parseName(c, c.next(), `${kw} name`, kw);
     if (kw === 'ramp') return { kind: 'ramp', name };
     if (kw === 'pad') return { kind: 'pad', name };
+    if (kw === 'hardstand') return { kind: 'hardstand', name };
+    if (kw === 'hangar') return { kind: 'hangar', name };
     return { kind: 'penalty-box', name };
   }
   if (tok !== undefined && startsWithDigit(tok.text)) {
     return { kind: 'runway', name: parseRunway(c, tok, after) };
   }
-  return c.fail(`expected runway, 'ramp', 'pad' or 'penalty' after '${after}', got ${got(tok)}`, tok);
+  return c.fail(`expected runway, 'ramp', 'pad', 'penalty', 'hardstand' or 'hangar' after '${after}', got ${got(tok)}`, tok);
 }
 
 /** One or more route items, up to the next keyword, comma or end. */

@@ -102,6 +102,7 @@ function printSummary(a: Airport): void {
     ['terminals', a.terminals.length, a.terminals.map((t) => t.id).join(', ')],
     ['gates', a.gates.length, ''],
     ['holding areas', a.holdingAreas.length, countBy(a.holdingAreas.map((h) => h.kind))],
+    ['hangars', a.hangars.length, a.hangars.map((h) => (h.airlines.length > 0 ? `${h.name} (${h.airlines.join(',')})` : h.name)).join(', ')],
     ['departure lines', a.departureLines.length, `${lineExits} exits`],
     ['configurations', a.configurations.length, a.configurations.map((c) => (c.id === a.defaultConfiguration ? `${c.id} (default)` : c.id)).join(', ')],
     ['tower positions', a.towerPositions.length, ''],

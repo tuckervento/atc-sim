@@ -186,13 +186,17 @@
     const p = nodePt(x.node);
     if (!p) continue;
     const c = el('circle', { class: 'exit mark', cx: sx(p), cy: sy(p), 'data-k': 'exit', 'data-id': x.id, style: 'r: calc(var(--u) * 4px)' }, L.cur);
-    register('exit', x.id, x.taxiway, [c], [p]);
-    text(L.curLabels, 'lbl-cur', [p[0], p[1] - 14], 'exit ' + x.runwayEnd + '→' + x.taxiway);
+    const exitName = x.taxiway || '(unnamed)';
+    register('exit', x.id, exitName, [c], [p]);
+    text(L.curLabels, 'lbl-cur', [p[0], p[1] - 14], 'exit ' + x.runwayEnd + '→' + exitName);
   }
+  // Pads purple, the penalty box red, hardstands teal.
+  const AREA_COLOR = { pad: '#9b27b0', penaltyBox: '#c62828', hardstand: '#00897b' };
   for (const area of A.holdingAreas) {
     const els = [];
     const ptsList = [];
-    if (area.outline) els.push(el('polygon', { points: ptsAttr(area.outline), fill: '#9b27b0', 'fill-opacity': '0.12', stroke: '#9b27b0' }, L.cur));
+    const color = AREA_COLOR[area.kind] || '#9b27b0';
+    if (area.outline) els.push(el('polygon', { points: ptsAttr(area.outline), fill: color, 'fill-opacity': '0.12', stroke: color }, L.cur));
     for (const s of area.spots) {
       const p = nodePt(s);
       if (!p) continue;
@@ -200,7 +204,23 @@
       els.push(el('circle', { class: 'spot mark', cx: sx(p), cy: sy(p), 'data-k': 'node', 'data-id': s, style: 'r: calc(var(--u) * 4px)' }, L.cur));
     }
     register('holdingArea', area.id, area.name, els, ptsList.length ? ptsList : area.outline || []);
-    if (ptsList[0]) text(L.curLabels, 'lbl-cur', [ptsList[0][0], ptsList[0][1] + 16], area.name + ' (' + area.kind + ')');
+    for (const n of area.spokenNames || []) register('holdingArea', n.toUpperCase(), area.name, els, ptsList.length ? ptsList : area.outline || []);
+    const spoken = (area.spokenNames || []).filter((n) => n !== area.name);
+    if (ptsList[0]) text(L.curLabels, 'lbl-cur', [ptsList[0][0], ptsList[0][1] + 16], area.name + ' (' + area.kind + (spoken.length ? '; "' + spoken.join('", "') + '"' : '') + ')');
+  }
+  for (const hangar of A.hangars || []) {
+    const els = [];
+    const ptsList = [];
+    if (hangar.outline) els.push(el('polygon', { points: ptsAttr(hangar.outline), fill: '#5d4037', 'fill-opacity': '0.25', stroke: '#5d4037' }, L.cur));
+    for (const s of hangar.spots) {
+      const p = nodePt(s);
+      if (!p) continue;
+      ptsList.push(p);
+      els.push(el('circle', { class: 'spot mark', cx: sx(p), cy: sy(p), 'data-k': 'node', 'data-id': s, style: 'r: calc(var(--u) * 4px); fill: #5d4037' }, L.cur));
+    }
+    register('hangar', hangar.id, hangar.name, els, ptsList.length ? ptsList : hangar.outline || []);
+    for (const a of hangar.airlines) register('hangar', a, hangar.name, els, ptsList.length ? ptsList : hangar.outline || []);
+    if (ptsList[0]) text(L.curLabels, 'lbl-cur', [ptsList[0][0], ptsList[0][1] + 16], hangar.name + ' (hangar' + (hangar.airlines.length ? ': ' + hangar.airlines.join(',') : '') + ')');
   }
   for (const line of A.departureLines) {
     const els = [];
@@ -287,7 +307,7 @@
     }
     if (k === 'exit') {
       const x = A.runwayExits.find((r) => r.id === id);
-      return x ? 'runway exit ' + x.runwayEnd + ' → ' + x.taxiway + '\nid ' + x.id + ', node ' + x.node + ', edge ' + x.edge : id;
+      return x ? 'runway exit ' + x.runwayEnd + ' → ' + (x.taxiway || '(unnamed)') + '\nid ' + x.id + ', node ' + x.node + ', edge ' + x.edge : id;
     }
     return id;
   }
@@ -406,6 +426,7 @@
     <div><span class="swatch" style="background:#d01c1c"></span>runway hold <span class="swatch" style="background:#ff7a00;margin-left:8px"></span>ILS <span class="swatch" style="background:#9b27b0;margin-left:8px"></span>LAHSO <span class="swatch" style="background:#0b8fc6;margin-left:8px"></span>intermediate</div>
     <div class="muted">Hold bars sit on their node; the short tick points at the protected side. Label: id, runways [OSM ref].</div>
     <div><span class="swatch" style="background:#1565c0;height:8px;width:8px;border-radius:4px"></span>gate (blue dot, name beside it)</div>
+    <div><span class="swatch" style="background:#ff7a00;opacity:.45;height:8px"></span>departure line <span class="swatch" style="background:#9b27b0;opacity:.4;height:8px;margin-left:8px"></span>pad <span class="swatch" style="background:#c62828;opacity:.4;height:8px;margin-left:8px"></span>penalty box <span class="swatch" style="background:#00897b;opacity:.4;height:8px;margin-left:8px"></span>hardstand <span class="swatch" style="background:#5d4037;opacity:.5;height:8px;margin-left:8px"></span>hangar</div>
     ${CTX ? '<div><span class="swatch" style="background:#111;height:8px;width:8px"></span>OSM non-movement boundary mark <span class="swatch" style="background:#7a7a7a;height:8px;width:8px;border-radius:4px;margin-left:8px"></span>OSM stand that is not a gate</div>' : ''}
     <h2>Validation: ${errors.length} error(s), ${warnings.length} warning(s)</h2>
     <div id="issues"></div>

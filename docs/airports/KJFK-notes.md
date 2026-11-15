@@ -1,13 +1,14 @@
-# KJFK: import notes (PLAN 1.5, stage a)
+# KJFK: import notes (PLAN 1.5)
 
-_Written 2026-11-14. Sources, choices and dates for `data/airports/KJFK.json` (generated) and
-`data/airports/KJFK.overrides.json` (hand-curated). Open items for Q are in
-[`KJFK-questions.md`](KJFK-questions.md)._
+_Stage a written 2026-11-14; stage b (Q's answers applied) 2026-11-15. Sources, choices and
+dates for `data/airports/KJFK.json` (generated) and `data/airports/KJFK.overrides.json`
+(hand-curated). Q's answers are in [`KJFK-questions.md`](KJFK-questions.md); what stage b set
+for each is in "Q's answers, applied" below._
 
 ## Commands
 
 ```
-npm run import-airport -- KJFK            # offline: raw file → data/airports/KJFK.json
+npm run import-airport -- KJFK            # offline: raw file (+ the overrides' check-in points) → data/airports/KJFK.json
 npm run import-airport -- KJFK --fetch    # one Overpass request first (don't repeat casually)
 npm run render-airport -- KJFK            # → dist/maps/KJFK.html (open in Chrome)
 npm run validate-airport -- KJFK
@@ -39,11 +40,18 @@ type identical, §1.2), although its OSM base time is 13 hours later.
 - **Ids** come from OSM ids, so overrides survive re-imports or fail loudly: nodes `n<osm>`;
   edges `w<way>-<from>-<to>` (a split change makes the old id vanish rather than move);
   hold-shorts `h<osm node>` or `hl<hold-line way>`; gates `g<way>`; areas `w<way>` / `r<rel>`.
-- **Edge kind.** `aeroway=taxiway` → `taxiway`. `aeroway=taxilane` → `taxiway` when a taxiway
-  way carries the same name (G, H, N, NB, NC, S, SA–SD, T, TA, W, LA, MA, Q1, Q2, C6, HB, KF,
-  KG continue as named taxiways), else `rampLane` (AA, BB, D1, D2, D5–D7, D13, HEAVY, HH,
-  INNER, OUTER, unnamed). Parking lead-ins → `rampLane`, unnamed. This is only a first cut of
-  the ramp boundary (research §8.9); Q's ramp answers settle it in stage b.
+- **Edge kind (stage b: the ramp boundary rule).** The importer reads the check-in points
+  curated in the overrides file (`rampHandoffs`, Q7) and floods from the runways over every
+  non-runway edge, stopping at those nodes. What it reaches is `taxiway` (ground's movement
+  area); what lies behind a check-in point is `rampLane`. OSM's way class is ignored, because at
+  JFK many check-in marks sit in the middle of one taxilane (MA, KF, KG, G, NC, S, SA, TA, T).
+  Result: 144 named taxilane edges behind the check-in points became `rampLane` (G 21, H 21,
+  KF 21, HB 19, NC 16, SA 10, TA 8, MA 7, NB 5, N 4, KG 3, S 3, T 3, D, DA, W), and 38 unnamed
+  lanes and lead-ins outside any ramp (cargo and hangar stands, the GA aprons, the de-icing
+  stands) became unnamed `taxiway`. Afterwards every ramp-lane/taxiway boundary is a check-in
+  point, so `ramp-boundary-undeclared` is gone and every gate is reachable. Changing the
+  check-in points means re-importing. (Stage a's first cut, by OSM class, applies only when the
+  overrides curate no check-in points.)
 - **Names** = `ref`, else `name`. Runway refs lose leading zeros (`04L/22R` → `4L/22R`).
 - **Runways.** Grouped by ref; ends matched to designators by the centerline's true bearing.
   Centerline lengths are within 1% of the Chart Supplement (a test checks this).
@@ -81,8 +89,11 @@ OSM gives the kind (`runway`, `ILS`, `LAHSO`, `intermediate`, `movement`), never
   the shortest way). A runway hold also protects any further runway reachable through that
   edge before another hold line (none at JFK: the 4L/22R × 13R/31L crossing has hold lines on
   each side). Not imported: holds within 30 m of a centerline (1: h8025526864 on K4, at the
-  4L/22R edge) and holds more than 50 m past a runway end (2 approach holds on FA/FB beyond
-  31R).
+  4L/22R edge; Q15d). **Approach-area holds** (stage b, Q15c): a runway hold more than 50 m past
+  a runway's end is imported as a runway hold for that runway, facing where the taxiways cross
+  its extended centerline (the edge with the shortest way to that crossing). At JFK: h5607488398
+  on FB and h5607488399 on FA, beyond 31R, both facing the FA/FB merge, the way to FB's
+  crossing of 31R's extended centerline.
 - **Untagged:** imported as `runway` only within 200 m of a centerline (2 imported, on F and
   GG at 84–85 m; 2 left out at 278 and 287 m).
 - **LAHSO:** on one runway, facing along it to the nearest crossing runway, which it protects.
@@ -98,21 +109,106 @@ OSM gives the kind (`runway`, `ILS`, `LAHSO`, `intermediate`, `movement`), never
 - **Spot-checked against the diagram overlay:** the 31L end (Z, JA, JB, J), the HS 1 / K
   complex (K, KD, KE, K4), the 31R/22L corner (FA, FB, E, Y, YA), H at 4R/22L.
 
-## What the overrides file sets, and why
+## What the overrides file sets, and why (stage b)
+
+Generated items keep OSM ids. Hand-made items start with `x`: nodes `xk…` (Kilo pad), `xz…`
+(Zulu pad), `xs…` (hardstand), `xg…` (hangar spots), `xhD13L` (a hold node); their edges
+`xk-…`, `xz-…`, `xs-…`, `xg-…`, `xM-…`, `xD13L-…`.
 
 | Item | Value | Source |
 |---|---|---|
-| Closed: Z, 2 edges from the Y junction (n45355700) to 4L/22R (n13858896748) | `closed` | Chart Supplement: "Twy Z btn Rwy 04L and 22R and Twy Y clsd UFN" |
-| Closed: VA, the edge from the T7 apron edge (n6242188066) to A (n5326590474) | `closed` | Chart Supplement: "Twy VA clsd between Trml 7 apron and Twy A". A chart "X" sits beside VA |
-| D between C and hangar 7 | nothing | OSM's D ends at C (n46582784); the closed pavement isn't in the data |
-| NB southbound turns onto A | nothing | Deferred (Q): needs turn restrictions |
+| Closures | none (stage a's Z and VA closures removed) | Q1, Q11: temporary, ignore |
 | Displaced thresholds 4L 140.2, 22R 1043.6, 13L 276.5, 31R 313.0, 13R 623.0, 31L 994.9 m | `displacedThresholdM` | Chart Supplement "Thld dsplcd" 460, 3424, 907, 1027, 2044, 3264 ft. 4R/22L: none |
 | Tower 123.9 (4L/22R, 13R/31L), 119.1 (4R/22L, 13L/31R) | `towerPositions`, `runways[].towerPosition` | Chart Supplement / FAA diagram |
-| Configuration `31s`: 31L arrivals + departures, 31R arrivals; default | `configurations`, `set.defaultConfiguration` | Q (2026-11-14); ASPM (research §4.1) |
-| Remove `h5607488397` | `holdShorts.remove` | Its OSM ref is "31R-APCH": an approach hold on FB beyond the 31R end. The format can't express one, and the derived facing pointed away from the approach |
-| `h8025529446` (ILS, on Z between the 31L end and 4R): protects 4R/22L, faces toward 4R | `holdShorts.patch` | The diagram prints "CAT 2 HOLD" here. The Chart Supplement lists TDZL for 4L, 4R, 22L, 13L and 31R, not 31L, and CAT II needs TDZ lights, so it can't be 31L's. Geometry alone was a near tie (181 m vs 205 m). Q to confirm (questions sheet) |
+| Configuration `31s`: 31L arrivals + departures, 31R arrivals; default; arrival exits below | `configurations`, `set.defaultConfiguration` | Q (2026-11-14), Q8 |
+| `h8025529446` (ILS, on Z, the diagram's "CAT 2 HOLD"): protects 4R/22L | `holdShorts.patch` | Q15b: accepted |
+| `h5607488397` (OSM ref "31R-APCH", on FB just past the 31R end): kept, faces down FB toward the crossing | `holdShorts.patch` (stage a removed it) | Q15c |
+| Runway hold `hxD13L` on D north of 13L/31R, 84.1 m from the centerline like D's south hold h8025529400 (84.3 m); D's edge from C split at node `xhD13L` | `nodes.add`, `edges.remove`/`add`, `holdShorts.add` | Q12 |
+| Runway hold `hxFA4R` onto 4R/22L at the FA/FB merge n45358355, facing only the edge onto the runway | `holdShorts.add` | Q12; see "Judgment calls" |
+| 24 ramp check-in points (23 of Q's, plus VA's second mark) with name, use, terminal | `rampHandoffs.add` | Q7 |
+| Ramp lane `M` from M's check-in (where OSM's M ends) to MA's lane, 164 m | `edges.add` | Q7: "M, arrivals, for gates also served by MA" |
+| Stub names NA (A → T1), TT (B → JetBlue hangar); and the 6–11 m pieces from A1, W and VA to their check-in marks named A1, W, VA | `edges.patch` | Q14; a ramp entrance's way in is its named stub |
+| 23 remote stands east of T4 as T4 gates: 72, 73 A380, 73A, 73B, 74, 78, 78B, 79, 79A, 79B, H1, H1A, H2–H11, H14 | `gates.add` | Q16 follow-up |
+| 31L departure line `line31L`: Y from n45357551 to n45355700, then Z to n4057398125 (Q1's longer queue), then Z to h8025529445 (Q1's line, 3 edges, 563 m); exits H at n4057398125 (west branch), J at n4068921630 (west branch) | `departureLines.add` | Q1, Q2 |
+| Kilo pad, Zulu pad, penalty box, South Hardstand | `nodes.add`, `edges.add`, `holdingAreas.add` | Q3–Q5, Q9, follow-ups; below |
+| 9 hangars | `nodes.add`, `edges.add`, `hangars.add` | Q10; below |
+| 21 arrival exits (31L 8, 31R 13), in Q's order | `runwayExits.add`, `configurations[31s].arrivalExits` | Q8 |
 | Area `w284907690` name "Terminl 8" → "Terminal 8" | `areas.patch` | OSM typo |
 | Terminal airlines | `terminals.patch` | jfkairport.com, below |
+
+### Q's answers, applied
+
+| Q | Answer (follow-up wins) | Set |
+|---|---|---|
+| Q1 | 31L line: Z from n4057398125 to h8025529445; could extend back along Y and northern Z; Z closure temporary | `line31L`; closure removed. The longer queue is modelled: Q's extension is one path back from n4057398125 (Z north through n46547996 to n45355700, then Y to n45357551 at F), so the line is that full extent, back to front Y, Z. A queue fills from its front hold, so the Y/northern-Z part is used only when it's long ("mostly" the Z part). |
+| Q2 | Exits H @ n4057398125, J @ n4068921630 | `line31L.exits` = H, J (each takes the branch away from the 31L end: H west toward Y, J west toward JA/JB's junctions) |
+| Q3 | Kilo pad (apron west of K between K1 and K2), Zulu pad (apron by Z at n8025529446), 3–4 each | `kilo`, `zulu`, 3 spots each |
+| Q4, follow-up | Penalty box: the Q loop with Q1 by GA, plus the de-icing spots at n14158137952 and similar | `quebec`: Q1 loop nodes n5969625842, n14158137907; de-icing stands H19-1 n14158137951, H19-3 n14158137952, H19-5 n14158137954, and n5969625810 (the similar stand off Q2) |
+| Q5, follow-up | "Kilo pad", "Zulu pad", "Quebec box", "penalty box" | `spokenNames` (also the one-word forms Kilo, Zulu, Quebec, for terse) |
+| Q6 | No names for the curved connectors; they're the turns | no charted names added; route rule changed (src/sim/route.ts) |
+| Q7 | 23 check-in points | `rampHandoffs`, terminals as Q grouped them; ramp boundary moved there (importer) |
+| Q8 | 31L: MB, MC, MD, PA, PC, PD, PE, PF; 31R: D, two unnamed, WW, W, unnamed (2,209/2,309 m), V, C5, U3, C3, U2 | `runwayExits` `x31L-*`, `x31R-*`; the unnamed ones have no `taxiway`. D is two edges (1,368 and 1,417 m); "unnamed at 2,209/2,309 m" is two edges; W is its 90° branch |
+| Q9, follow-up | South Hardstand: aprons w158041999 and w5786176, via Q5/PB and Q3+Q4, 5–6 spots, ground controls; name not settled | `south`, kind hardstand, 5 spots, entrances PB, Q5, Q3; spoken "South Hardstand", "hardstand" (the default) |
+| Q10 | Company hangars, each from its nearest taxiway | 9 hangars, below |
+| Q11 | VA closure temporary | removed; VA is a T7 check-in, use both |
+| Q12 | Add runway holds on D and FA | `hxD13L`, `hxFA4R` |
+| Q13 | Keep all doubtful names; ignore the X glyphs | nothing changed |
+| Q14 | NA and TT | `edges.patch` |
+| Q15 | (a), (b), (d), (e) as derived; (c) approach holds as runway holds for 13L/31R facing the extended centerline | (c): importer rule plus the h5607488397 patch |
+| Q16, follow-up | Remote stands are T4 parking handled by ramp | 23 T4 gates; reached through the T4 check-in points |
+
+### Placing what OSM doesn't have (method)
+
+Computed once by a scratch script from the base geometry, then written into the overrides.
+Every added edge was checked: it crosses no existing edge (except at its ends) and no building,
+and every pad and hardstand spot lies inside its apron polygon.
+
+- **Kilo pad** (apron w632238147): a lane parallel to K, 45 m west of it, joined to K at the K1
+  junction (n45352547) and the K2 junction (n4058549561); three spots 35 m further west, at the
+  lane's ends and middle.
+- **Zulu pad** (apron w5938321): an entry node on the apron's long axis level with
+  n8025529446 (39 m from Z), and three spots spread along the axis (55 m north; 45 and 85 m
+  south, 10 m either side), each on its own lead-in.
+- **South Hardstand**: OSM's lanes are its lead-ins. Spots: the end of the PB lane
+  (n14158137994), the end of the Q5 lane (n14158137989), the tip of the west apron's loop
+  (n4066683435, via Q3 and the unnamed piece Q calls Q4), and one stub into each loop's middle
+  (`xsE` 60 m, `xsW` 55 m). D4 (off Q6) isn't a spot: Q didn't list Q6 as an entrance.
+- **Hangars**: an existing stand within 60 m of the building whose lead-in reaches a named
+  taxiway, else a new spot 20 m outside the building toward its nearest taxiway node, with a
+  straight unnamed lead-in from that node.
+
+| Hangar | Airlines | Spot | Reached from |
+|---|---|---|---|
+| Delta (r3778810) | DAL | stand n12546344193 | S |
+| American (w284907758) | AAL | `xgAAL` (lead-in 18 m) | SC |
+| JetBlue (w843327546) | JBU | stand n4058675894 | TT |
+| Korean Air (w284907751) | KAL | `xgKAL` (77 m) | SC |
+| Singapore (w284907764, "SQ") | SIA | `xgSIA` (32 m) | SB |
+| ANA (w284907702) | ANA | `xgANA` (115 m) | S / R junction |
+| FedEx (w284907714 and "262 Federal Express" w284907711, one hangar, two spots) | FDX | `xgFDX1`, `xgFDX2` (127, 144 m) | C2 / C3 junction |
+| United Cargo (w284907736) | UAL | `xgUAL` (144 m) | W |
+| DHL Cargo (w284907684) | none (no single ICAO operator) | stand n9020941108 | SB |
+
+Not attributed (no company in OSM): four hangars named "Cargo" (w284907886, w284907927,
+w843327540, w843327541), "17" (w284911961, tagged abandoned), "19" (w842894938, next to the
+de-icing stands), and six unnamed (w284907728, w284907733, w284907740, w284907867,
+w284907891, w843327547). The IATA → ICAO codes (SQ → SIA, FedEx → FDX, United → UAL) are
+mine, not sourced.
+
+### Judgment calls
+
+- **FA hold onto 4R/22L.** FA and FB merge at n45358355, already 39.5 m from 4R/22L's
+  centerline, and FA's last edge (204 m) runs alongside the runway into it. So no point on it
+  is ~95 m out like the nearby holds (F's h12213645048 is 95.7 m). The only places that far out
+  are FA and FB before the merge, where the approach holds already stand; making those also
+  protect 4R/22L would stop traffic just crossing between FA and FB for a runway it never
+  enters. So `hxFA4R` sits at the merge and applies only to the edge onto the runway.
+- **VA check-in.** Q listed VA as "closed" with no use; with the closure gone (Q11), it's
+  `both`, at OSM's two marks there: n9328838863 (stand 7) and n5326590473 (stands 7M and 8).
+- **SA check-in.** Q's second SA node, n6365384158, ends a 20 m dead-end stub with no ramp
+  lane behind it, so SA is one check-in point, n5763789087.
+- **A10/H** is named A10: the movement-area stub to it is A10; H is the ramp lane behind it.
+- **31L line exits** take the branch away from the 31L end (H west, J west).
 
 ### Airlines (jfkairport.com, fetched 2026-11-14T19:40–19:41Z)
 
@@ -140,29 +236,17 @@ designators I know, not fetched.** Check any that look wrong.
 
 Gates have no `airlines` yet (any of the terminal's).
 
-## Validation now (stage a)
+## Validation now (stage b)
 
-`npm run validate-airport -- KJFK` fails, as expected, on items only Q's answers fix (each
-mapped to a question in the sheet):
+`npm run validate-airport -- KJFK`: **OK, 0 errors, 3 warnings**, all
+`hold-short-far-from-runway` on the approach holds h5607488397, h5607488398 and h5607488399.
+They protect 13L/31R's extended centerline beyond the 31R end, not its pavement, so by design no
+13L/31R node lies within 500 m beyond them.
 
-| Code | Count | Question |
-|---|---|---|
-| `gate-unreachable` (error) | 161 | Q7 ramp check-in points |
-| `ramp-boundary-undeclared` (warning) | 143 | Q7 |
-| `configuration-arrival-end-without-exits` (error) | 2 (31L, 31R) | Q8 |
-| `disconnected-network` (error) | 1 (VA stub + 6 T7 ramp-lane edges cut off by the VA closure) | Q11 |
-| `configuration-departure-end-without-line` (warning) | 1 (31L) | Q1, Q2 |
-| `no-holding-pad`, `no-penalty-box` (warnings) | 2 | Q3, Q4 |
+## Route search on KJFK (stage b)
 
-**Coming in stage b:** I ran the `runway-entry-unprotected` check with a probe ramp handoff on
-every one of the 143 ramp/ground boundary nodes. It finds 4 entries with no OSM hold, which
-will become errors once real handoffs exist: D onto 13L/31R from the C side (3 edges at
-n46582783), and FA onto 4R/22L (n45358355 → n45357837). See Q12.
-
-## Route search on KJFK
-
-`resolveRoute` (1.8) on KJFK, with probe pads in memory (stage a has no real destinations), 20–30
-runs each: every route resolved in 0.04–0.26 ms median, 0.39 ms worst (e.g. "A D C", 3 items).
-The fork branching 1.8 warned about isn't a cost at this size; no cache needed.
-Also seen: "A and B don't meet". OSM joins the parallel A and B only through unnamed
-connectors (or the chart's A-numbers), so a route from A to B needs Q6's names.
+`resolveRoute` on the real data (no probe pads), 30 runs each, median / worst: every route
+0.01–0.20 ms / ≤ 0.47 ms, except the first call (JIT warm-up, 1.88 ms worst). Routes timed:
+A R:KE K4 K to the Kilo pad; A B F over the A/B fillet; A B K to the Kilo pad (8.3 km); the
+hardstand via Q Q5 and Q Q3; the Delta hangar via S; 31L via Z; the Zulu pad via Z; the penalty
+box via Q Q2 and Q Q1 (ambiguous at the Q1 fork). The connector search adds nothing noticeable.

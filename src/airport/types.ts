@@ -42,6 +42,7 @@ export type RampHandoffId = string;
 export type TerminalId = string;
 export type GateId = string;
 export type HoldingAreaId = string;
+export type HangarId = string;
 export type DepartureLineId = string;
 export type ConfigurationId = string;
 export type TowerPositionId = string;
@@ -70,6 +71,7 @@ export interface Airport {
   terminals: Terminal[];
   gates: Gate[];
   holdingAreas: HoldingArea[];
+  hangars: Hangar[];
   departureLines: DepartureLine[];
   configurations: RunwayConfiguration[];
   towerPositions: TowerPosition[];
@@ -184,8 +186,12 @@ export interface RunwayExit {
   id: RunwayExitId;
   /** The landing direction this exit serves. */
   runwayEnd: RunwayEndDesignator;
-  /** The exit's spoken name ("clear at Kilo Echo"); must equal `edge`'s name. */
-  taxiway: string;
+  /**
+   * The exit's spoken name ("clear at Kilo Echo"); must equal `edge`'s name. Omitted for an
+   * unnamed exit (JFK has unnamed high-speed exits off 31R): tower can still send arrivals to
+   * it, but the player can't name it.
+   */
+  taxiway?: string;
   /** The centerline node where the exit leaves the runway. */
   node: NodeId;
   /** The first edge off the runway: touches `node`, isn't a runway edge. */
@@ -274,22 +280,60 @@ export interface Gate {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Delays: holding areas and departure lines
+// Delays and ground-controlled parking: holding areas, hangars, departure lines
 
 /**
  * - `pad`: a holding pad where the player parks departures that must wait.
  * - `penaltyBox`: where arrivals wait for a gate ("the penalty box").
+ * - `hardstand`: ground-controlled parking off the ramp (JFK's South Hardstand). Aircraft park
+ *   there for longer, but the player, not the ramp, taxis them in and out.
+ *
+ * A hardstand is a holding-area kind rather than its own collection because it has exactly a
+ * holding area's shape (spots, spoken names, an outline), its spots are entered the same way
+ * (unnamed taxiway lead-ins, see `entrances`), and the same checks apply (spots reachable over
+ * taxiways, runway entries protected). Only the destination it answers to differs.
  */
-export type HoldingAreaKind = 'pad' | 'penaltyBox';
+export type HoldingAreaKind = 'pad' | 'penaltyBox' | 'hardstand';
 
 export interface HoldingArea {
   id: HoldingAreaId;
-  /** As spoken: "the pad", "Kilo pad", "the penalty box". */
+  /** Display name, also spoken: "Kilo pad", "the penalty box", "South Hardstand". */
   name: string;
   kind: HoldingAreaKind;
+  /**
+   * Other ways the player names it ("penalty box", "Quebec box"). A taxi destination with a
+   * name matches the area whose id, `name` or any spoken name equals it, ignoring case.
+   */
+  spokenNames?: string[];
+  /**
+   * The taxiways it's entered from (names). From each one, a spot must be reachable over the
+   * area's own lead-in: open, unnamed taxiway edges. Required for a `hardstand`; optional for
+   * the others.
+   */
+  entrances?: string[];
   /** Nodes where one aircraft each can park and wait, reachable over open taxiway edges. */
   spots: NodeId[];
   /** Outline for drawing. */
+  outline?: Point[];
+}
+
+/**
+ * A hangar that aircraft taxi to ("taxi to the company hangar"). Ground controls the taxi all
+ * the way in: from the route's last taxiway, over unnamed taxiway edges or ramp-lane lead-ins
+ * (never through a ramp handoff point), to one of its spots.
+ */
+export interface Hangar {
+  id: HangarId;
+  /** Display name: "Delta hangar". A named taxi destination matches its id, name or an airline. */
+  name: string;
+  /**
+   * ICAO designators of the airlines whose company hangar it is ("DAL"). An airline has at most
+   * one hangar. Empty: no company's; it's reached by name only.
+   */
+  airlines: string[];
+  /** Where aircraft stop: nodes reachable over open taxiway edges plus the hangar's lead-ins. */
+  spots: NodeId[];
+  /** Outline for drawing (the building). */
   outline?: Point[];
 }
 
@@ -393,6 +437,7 @@ export const COLLECTION_KEYS = [
   'terminals',
   'gates',
   'holdingAreas',
+  'hangars',
   'departureLines',
   'configurations',
   'towerPositions',
@@ -412,6 +457,7 @@ export const COLLECTION_ITEM_NAMES: Record<CollectionKey, string> = {
   terminals: 'terminal',
   gates: 'gate',
   holdingAreas: 'holding area',
+  hangars: 'hangar',
   departureLines: 'departure line',
   configurations: 'configuration',
   towerPositions: 'tower position',
@@ -455,6 +501,7 @@ export interface AirportOverrides {
   terminals?: CollectionOverrides<Terminal>;
   gates?: CollectionOverrides<Gate>;
   holdingAreas?: CollectionOverrides<HoldingArea>;
+  hangars?: CollectionOverrides<Hangar>;
   departureLines?: CollectionOverrides<DepartureLine>;
   configurations?: CollectionOverrides<RunwayConfiguration>;
   towerPositions?: CollectionOverrides<TowerPosition>;

@@ -5,7 +5,7 @@
 // Errors make the airport unusable; warnings are odd but possibly intended. Reachability
 // checks use open (non-closed) edges only.
 
-import { edgeLength, edgesAt, indexAirport, otherEnd, touches, type AirportIndex } from './graph.ts';
+import { edgeLength, edgesAt, holdingAreaNames, indexAirport, otherEnd, touches, type AirportIndex } from './graph.ts';
 import {
   COLLECTION_ITEM_NAMES,
   COLLECTION_KEYS,
@@ -59,8 +59,16 @@ export type IssueCode =
   | 'holding-area-no-spots'
   | 'holding-spot-on-runway'
   | 'holding-spot-unreachable'
+  | 'holding-area-no-entrances'
+  | 'holding-area-entrance-invalid'
+  | 'holding-area-name-repeated'
   | 'no-holding-pad'
   | 'no-penalty-box'
+  // hangars
+  | 'hangar-no-spots'
+  | 'hangar-spot-on-runway'
+  | 'hangar-spot-unreachable'
+  | 'hangar-airline-repeated'
   // departure lines
   | 'departure-line-empty'
   | 'departure-line-no-exits'
@@ -171,6 +179,7 @@ class Validator {
     this.checkRunwayEntries();
     this.checkRamp();
     this.checkHoldingAreas();
+    this.checkHangars();
     this.checkDepartureLines();
     this.checkConfigurations();
     this.checkTowerAndAreas();
@@ -262,7 +271,7 @@ class Validator {
     const tooFar = (x: number, y: number) => Math.hypot(x, y) > MAX_DISTANCE_FROM_REFERENCE_M;
     for (const n of this.a.nodes) if (tooFar(n.x, n.y)) far.push(`node "${n.id}"`);
     for (const e of this.a.edges) if (e.points?.some(([x, y]) => tooFar(x, y))) far.push(`edge "${e.id}"`);
-    for (const shape of [...this.a.areas, ...this.a.holdingAreas]) {
+    for (const shape of [...this.a.areas, ...this.a.holdingAreas, ...this.a.hangars]) {
       if (shape.outline?.some(([x, y]) => tooFar(x, y))) far.push(`outline of "${shape.id}"`);
     }
     if (far.length > 0) {
@@ -357,7 +366,8 @@ class Validator {
         this.error('runway-exit-onto-runway', `${owner}: edge "${edge.id}" is a runway edge; an exit leads off the runway onto a taxiway`, [x.id, edge.id]);
       }
       if (edge.name !== x.taxiway) {
-        this.error('runway-exit-name-mismatch', `${owner} is called "${x.taxiway}" but its edge "${edge.id}" is named ${edge.name === undefined ? 'nothing' : `"${edge.name}"`}`, [x.id, edge.id]);
+        const called = x.taxiway === undefined ? 'unnamed' : `called "${x.taxiway}"`;
+        this.error('runway-exit-name-mismatch', `${owner} is ${called} but its edge "${edge.id}" is named ${edge.name === undefined ? 'nothing' : `"${edge.name}"`}`, [x.id, edge.id]);
       }
       if (edge.closed) {
         this.error('runway-exit-closed', `${owner}: edge "${edge.id}" is closed (${edge.closed.reason}); remove the exit or reopen the edge`, [x.id, edge.id]);
@@ -467,6 +477,7 @@ class Validator {
     const sources = [
       ...this.a.rampHandoffs.map((h) => h.node),
       ...this.a.holdingAreas.flatMap((a) => a.spots),
+      ...this.a.hangars.flatMap((h) => h.spots),
     ].filter((n) => this.index.nodes.has(n));
     if (sources.length === 0) return;
     for (const info of this.runwayInfo.values()) {
@@ -521,12 +532,17 @@ class Validator {
       }
     }
 
+    const gateNodes = new Set(this.a.gates.map((g) => g.node));
+    const hangarSpots = new Set(this.a.hangars.flatMap((h) => h.spots));
     for (const n of this.a.nodes) {
       if (handoffNodes.has(n.id)) continue;
       const edges = edgesAt(this.index, n.id);
       const ramp = edges.filter((e) => e.kind === 'rampLane');
       const ground = edges.filter((e) => e.kind !== 'rampLane');
       if (ramp.length > 0 && ground.length > 0) {
+        // A hangar's ramp-lane lead-in: ground taxis into it, and there's no gate behind it.
+        const behind = [...rampReach(this.index, n.id)];
+        if (behind.some((m) => hangarSpots.has(m)) && !behind.some((m) => gateNodes.has(m))) continue;
         this.warn('ramp-boundary-undeclared', `node "${n.id}" joins ramp lane edge(s) ${quoteList(ramp.map((e) => e.id))} to ${ground[0]?.kind} edge(s) ${quoteList(ground.map((e) => e.id))} but is not a ramp handoff; declare one there (with its check-in name) if aircraft pass between ramp and ground here`, [n.id]);
       }
     }
@@ -602,10 +618,35 @@ class Validator {
           this.error('holding-spot-on-runway', `${owner}: spot "${spot}" is on a runway`, [area.id, spot]);
         } else if (!this.mainNodes.has(spot)) {
           this.error('holding-spot-unreachable', `${owner}: spot "${spot}" is not connected to the airport's network over open edges`, [area.id, spot]);
+        } else if (!this.reachesNamedTaxiway(spot, (e) => e.kind === 'taxiway')) {
+          this.error('holding-spot-unreachable', `${owner}: spot "${spot}" can't be reached from a named taxiway over open taxiway edges; ground taxis aircraft to it, so its lead-in must be taxiway edges`, [area.id, spot]);
+        }
+      }
+      if (area.kind === 'hardstand' && (area.entrances ?? []).length === 0) {
+        this.error('holding-area-no-entrances', `${owner} is a hardstand but lists no entrances; list the taxiways it is entered from in "entrances"`, [area.id]);
+      }
+      const spots = new Set(area.spots);
+      for (const entrance of area.entrances ?? []) {
+        const starts = this.a.edges.filter((e) => e.kind === 'taxiway' && e.name === entrance).flatMap((e) => [e.from, e.to]);
+        if (starts.length === 0) {
+          this.error('holding-area-entrance-invalid', `${owner}: entrance "${entrance}" is not a taxiway`, [area.id]);
+        } else if (!starts.some((n) => [...this.leadInReach(n)].some((m) => spots.has(m)))) {
+          this.error('holding-area-entrance-invalid', `${owner}: no spot is reached from taxiway ${entrance} over open, unnamed taxiway edges (the area's lead-in); remove the entrance or connect it`, [area.id]);
         }
       }
       if (area.outline && area.outline.length < 3) {
         this.error('outline-invalid', `${owner}'s outline has ${area.outline.length} point(s); a polygon needs at least 3`, [area.id]);
+      }
+    }
+    const answering = new Map<string, string>();
+    for (const area of this.a.holdingAreas) {
+      for (const name of holdingAreaNames(area)) {
+        const key = `${area.kind}\u0000${name}`;
+        const other = answering.get(key);
+        if (other === undefined) answering.set(key, area.id);
+        else if (other !== area.id) {
+          this.error('holding-area-name-repeated', `holding areas "${other}" and "${area.id}" (both kind "${area.kind}") both answer to "${name}"; a taxi to a named ${area.kind === 'penaltyBox' ? 'penalty box' : area.kind} must mean one`, [area.id, other]);
+        }
       }
     }
     if (!this.a.holdingAreas.some((a) => a.kind === 'pad')) {
@@ -614,6 +655,77 @@ class Validator {
     if (!this.a.holdingAreas.some((a) => a.kind === 'penaltyBox')) {
       this.warn('no-penalty-box', 'the airport has no penalty box (kind "penaltyBox"); arrivals waiting for a gate have nowhere to wait', []);
     }
+  }
+
+  private checkHangars(): void {
+    const handoffNodes = new Set(this.a.rampHandoffs.map((h) => h.node));
+    // A hangar's own lead-ins: taxiway edges, or ramp lanes that don't pass a ramp handoff.
+    const leadIn = (e: Edge, from: string, to: string) =>
+      e.kind === 'taxiway' || (e.kind === 'rampLane' && !handoffNodes.has(from) && !handoffNodes.has(to));
+    const byAirline = new Map<string, string>();
+    for (const hangar of this.a.hangars) {
+      const owner = `hangar "${hangar.id}" ("${hangar.name}")`;
+      if (hangar.spots.length === 0) {
+        this.error('hangar-no-spots', `${owner} has no spots; list the nodes where aircraft stop in "spots"`, [hangar.id]);
+      }
+      for (const spot of hangar.spots) {
+        if (!this.nodeRef(spot, owner, hangar.id)) continue;
+        if (edgesAt(this.index, spot).some((e) => e.kind === 'runway')) {
+          this.error('hangar-spot-on-runway', `${owner}: spot "${spot}" is on a runway`, [hangar.id, spot]);
+        } else if (!this.reachesNamedTaxiway(spot, leadIn)) {
+          this.error('hangar-spot-unreachable', `${owner}: spot "${spot}" can't be reached from a named taxiway over open taxiway edges and its own lead-ins (ramp lanes that pass no ramp handoff)`, [hangar.id, spot]);
+        }
+      }
+      for (const airline of hangar.airlines) {
+        const other = byAirline.get(airline);
+        if (other !== undefined) {
+          this.error('hangar-airline-repeated', `airline "${airline}" has two company hangars, "${other}" and "${hangar.id}"; a taxi to "the company hangar" must mean one`, [hangar.id, other]);
+        } else {
+          byAirline.set(airline, hangar.id);
+        }
+      }
+      if (hangar.outline && hangar.outline.length < 3) {
+        this.error('outline-invalid', `${owner}'s outline has ${hangar.outline.length} point(s); a polygon needs at least 3`, [hangar.id]);
+      }
+    }
+  }
+
+  /**
+   * Does `start` connect to a named, open taxiway over open edges that pass `edgeOk`? That's
+   * whether ground can taxi an aircraft between it and the route network.
+   */
+  private reachesNamedTaxiway(start: string, edgeOk: (edge: Edge, from: string, to: string) => boolean): boolean {
+    const seen = new Set([start]);
+    const queue = [start];
+    for (let node = queue.shift(); node !== undefined; node = queue.shift()) {
+      const edges = edgesAt(this.index, node).filter((e) => !e.closed);
+      if (edges.some((e) => e.kind === 'taxiway' && e.name !== undefined)) return true;
+      for (const edge of edges) {
+        const next = otherEnd(edge, node);
+        if (!seen.has(next) && edgeOk(edge, node, next)) {
+          seen.add(next);
+          queue.push(next);
+        }
+      }
+    }
+    return false;
+  }
+
+  /** Nodes reached from `start` over open, unnamed taxiway edges: a holding area's lead-in. */
+  private leadInReach(start: string): Set<string> {
+    const seen = new Set([start]);
+    const queue = [start];
+    for (let node = queue.shift(); node !== undefined; node = queue.shift()) {
+      for (const edge of edgesAt(this.index, node)) {
+        if (edge.kind !== 'taxiway' || edge.name !== undefined || edge.closed) continue;
+        const next = otherEnd(edge, node);
+        if (!seen.has(next)) {
+          seen.add(next);
+          queue.push(next);
+        }
+      }
+    }
+    return seen;
   }
 
   private checkDepartureLines(): void {

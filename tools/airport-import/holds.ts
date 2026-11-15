@@ -5,9 +5,12 @@
 //   1. Protected runway: the runway whose centerline is nearest in a straight line. Hold
 //      lines are set out from a centerline, so this beats distance along the taxiways where a
 //      taxiway meets a runway at a shallow angle. A hold closer than HOLD_STANDOFF_M to any
-//      centerline is on the runway, not a hold line for it: not imported, reported. A hold
-//      more than APPROACH_BEYOND_M past the runway's end, along its extended centerline, guards
-//      the approach, which the format doesn't model: not imported, reported.
+//      centerline is on the runway, not a hold line for it: not imported, reported. A runway
+//      hold more than APPROACH_BEYOND_M past the runway's end, along its extended centerline,
+//      guards the approach: it's imported as a runway hold protecting that runway, facing the
+//      extended centerline (Q, 2026-11-15: ground traffic stops there for arrivals), i.e. its
+//      `towardEdge` is the edge that leads closest toward that line. Other kinds there aren't
+//      imported (reported).
 //   2. Facing: of the hold node's non-runway edges, the one with the shortest way (Dijkstra
 //      over non-runway edges, up to FACING_LIMIT_M) to a node of that runway that passes no
 //      other runway-type hold line; if no way avoids one, the shortest way at all. That edge
@@ -112,7 +115,13 @@ export function deriveHolds(index: AirportIndex, points: HoldPoint[]): HoldResul
     const target = nearest.runway;
     const beyond = beyondRunwayEnd(index, target, [node.x, node.y]);
     if (beyond > APPROACH_BEYOND_M) {
-      notes.push(`${p.source} (${p.osmType}) lies ${beyond.toFixed(0)} m beyond an end of runway ${target}, along its extended centerline: an approach-area hold, which the format doesn't model; not imported`);
+      const toward = p.osmType === 'runway' ? towardExtendedCenterline(index, target, p.node) : null;
+      if (!toward) {
+        notes.push(`${p.source} (${p.osmType}) lies ${beyond.toFixed(0)} m beyond an end of runway ${target}, along its extended centerline: an approach-area hold${p.osmType === 'runway' ? ' with no edge toward that line' : ` of type ${p.osmType}`}; not imported`);
+        continue;
+      }
+      notes.push(`${p.source} (runway) lies ${beyond.toFixed(0)} m beyond an end of runway ${target}: an approach-area hold, imported as a runway hold for ${target} facing its extended centerline along ${toward.id}`);
+      holdShorts.push({ id: p.id, kind: 'runway', runways: [target], node: p.node, towardEdge: toward.id });
       continue;
     }
     // Prefer a way to the runway that passes no other hold line; else any way.
@@ -156,6 +165,58 @@ export function deriveHolds(index: AirportIndex, points: HoldPoint[]): HoldResul
     holdShorts.push({ id: p.id, kind, runways, node: p.node, towardEdge: best.edge.id });
   }
   return { holdShorts, notes, facingDistanceM };
+}
+
+/**
+ * The non-runway edge at `nodeId` with the shortest way (over non-runway edges, up to
+ * FACING_LIMIT_M) to where a taxiway crosses `runwayId`'s extended centerline beyond one of its
+ * ends: the crossing an approach-area hold protects. null if no way crosses it in that reach.
+ */
+function towardExtendedCenterline(index: AirportIndex, runwayId: string, nodeId: NodeId): Edge | null {
+  const runway = index.runways.get(runwayId);
+  const a = runway && index.nodes.get(runway.ends[0].node);
+  const b = runway && index.nodes.get(runway.ends[1].node);
+  if (!a || !b) throw new Error(`runway ${runwayId} has unknown end nodes`);
+  const len = Math.hypot(b.x - a.x, b.y - a.y);
+  const [ux, uy] = [(b.x - a.x) / len, (b.y - a.y) / len];
+  const along = (p: [number, number]) => (p[0] - a.x) * ux + (p[1] - a.y) * uy;
+  const side = (p: [number, number]) => (p[0] - a.x) * -uy + (p[1] - a.y) * ux;
+  /** Does the polyline cross the extended centerline outside the runway itself? */
+  const crosses = (line: [number, number][]) =>
+    line.some((p, i) => {
+      const q = line[i + 1];
+      if (!q) return false;
+      const [sp, sq] = [side(p), side(q)];
+      if (sp === sq || Math.sign(sp) === Math.sign(sq)) return false;
+      const t = sp / (sp - sq);
+      const s = along([p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])]);
+      return s < 0 || s > len;
+    });
+  let best: { edge: Edge; d: number } | null = null;
+  for (const first of edgesAt(index, nodeId)) {
+    if (first.kind === 'runway') continue;
+    // Dijkstra leaving by `first`; the cost of reaching a crossing is the distance to the
+    // start of the edge that crosses.
+    const dist = new Map<NodeId, number>([[nodeId, 0]]);
+    const queue: [NodeId, Edge, number][] = [[nodeId, first, 0]];
+    let found = Infinity;
+    while (queue.length > 0) {
+      queue.sort((p, q) => q[2] - p[2]);
+      const [from, edge, d] = queue.pop() as [NodeId, Edge, number];
+      if (d > FACING_LIMIT_M || d >= found) break;
+      if (crosses(edgePolyline(index, edge) as [number, number][])) {
+        found = d;
+        break;
+      }
+      const to = otherEnd(edge, from);
+      const dTo = d + edgeLength(index, edge);
+      if ((dist.get(to) ?? Infinity) <= dTo) continue;
+      dist.set(to, dTo);
+      for (const next of edgesAt(index, to)) if (next.kind !== 'runway' && next.id !== edge.id) queue.push([to, next, dTo]);
+    }
+    if (found < (best?.d ?? Infinity) || (best && found === best.d && first.id < best.edge.id)) best = { edge: first, d: found };
+  }
+  return best?.edge ?? null;
 }
 
 /** How far (m) `p` projects past the nearer end of `runwayId`'s end-to-end line; ≤ 0 when beside it. */

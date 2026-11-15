@@ -1,6 +1,6 @@
 // Lookup tables and geometry over a loaded airport. Pure: no I/O, no mutation of the airport.
 
-import type { Airport, Edge, Node, Point, Runway, RunwayEnd } from './types.ts';
+import type { Airport, Edge, HoldingArea, Node, Point, Runway, RunwayEnd } from './types.ts';
 
 export interface RunwayEndRef {
   runway: Runway;
@@ -100,4 +100,12 @@ export function polylineLength(points: Point[]): number {
     if (a && b) total += Math.hypot(b[0] - a[0], b[1] - a[1]);
   }
   return total;
+}
+
+/**
+ * Everything a holding area answers to as a named taxi destination, lowercased: its id, its
+ * name and its spoken names. A destination name matches when it equals one, ignoring case.
+ */
+export function holdingAreaNames(area: HoldingArea): string[] {
+  return [...new Set([area.id, area.name, ...(area.spokenNames ?? [])].map((n) => n.toLowerCase()))];
 }

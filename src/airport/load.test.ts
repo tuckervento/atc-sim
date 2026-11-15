@@ -21,7 +21,7 @@ describe('loadAirport without overrides', () => {
   it('returns every item of the file, as a copy', () => {
     const before = JSON.stringify(testAirport);
     const a = loadAirport(testAirport);
-    expect([a.nodes.length, a.edges.length, a.runways.length, a.gates.length]).toEqual([65, 74, 2, 5]);
+    expect([a.nodes.length, a.edges.length, a.runways.length, a.gates.length]).toEqual([69, 78, 2, 5]);
     a.nodes.length = 0;
     expect(JSON.stringify(testAirport)).toBe(before);
   });
@@ -34,7 +34,7 @@ describe('overrides operations', () => {
       nodes: { add: [{ id: 'new1', x: 1, y: 2 }, { id: 'new2', x: 3, y: 4 }] },
     } satisfies AirportOverrides;
     const a = loadAirport(testAirport, ov);
-    expect(a.nodes.length).toBe(67);
+    expect(a.nodes.length).toBe(71);
     expect(a.nodes.slice(-2)).toEqual([{ id: 'new1', x: 1, y: 2 }, { id: 'new2', x: 3, y: 4 }]);
   });
 
@@ -99,6 +99,23 @@ describe('overrides operations', () => {
   });
 });
 
+describe('hardstands, spoken names and hangars (PLAN 1.5 stage b)', () => {
+  it('decodes holding-area spoken names and entrances, the hardstand kind, and hangars', () => {
+    const ov = {
+      ...header,
+      holdingAreas: {
+        patch: [{ id: 'padWest', spokenNames: ['West pad', 'the west pad'] }],
+        add: [{ id: 'hs2', name: 'East hardstand', kind: 'hardstand', spokenNames: ['the east hardstand'], entrances: ['B'], spots: ['bF'] }],
+      },
+      hangars: { add: [{ id: 'hgX', name: 'X hangar', airlines: ['JBU'], spots: ['aE'], outline: [[0, 0], [1, 0], [1, 1]] }] },
+    } satisfies AirportOverrides;
+    const a = loadAirport(testAirport, ov);
+    expect(a.holdingAreas.find((h) => h.id === 'padWest')?.spokenNames).toEqual(['West pad', 'the west pad']);
+    expect(a.holdingAreas.at(-1)).toEqual({ id: 'hs2', name: 'East hardstand', kind: 'hardstand', spokenNames: ['the east hardstand'], entrances: ['B'], spots: ['bF'] });
+    expect(a.hangars.at(-1)).toEqual({ id: 'hgX', name: 'X hangar', airlines: ['JBU'], spots: ['aE'], outline: [[0, 0], [1, 0], [1, 1]] });
+  });
+});
+
 describe('overrides fail loudly', () => {
   it('on ids that do not exist, for replace, patch and remove', () => {
     const issues = loadIssues(testAirport, {
@@ -137,7 +154,7 @@ describe('overrides fail loudly', () => {
 
   it('on unknown collections and operations', () => {
     expect(loadIssues(testAirport, { ...header, edgez: {}, edges: { update: [] } })).toEqual([
-      'overrides: unknown field "edgez" (allowed: formatVersion, airport, description, set, nodes, edges, runways, runwayExits, holdShorts, rampHandoffs, terminals, gates, holdingAreas, departureLines, configurations, towerPositions, areas)',
+      'overrides: unknown field "edgez" (allowed: formatVersion, airport, description, set, nodes, edges, runways, runwayExits, holdShorts, rampHandoffs, terminals, gates, holdingAreas, hangars, departureLines, configurations, towerPositions, areas)',
       'overrides.edges: unknown field "update" (allowed: add, replace, patch, remove)',
     ]);
   });

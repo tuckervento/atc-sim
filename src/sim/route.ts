@@ -6,11 +6,27 @@
 // - Ground routes use `taxiway` edges only. Runway edges belong to tower: a route may cross a
 //   runway at a node, never travel along one. Ramp lanes belong to the simulated ramp (§8.3).
 // - Each route item covers at least one edge. Going along item i, the aircraft turns onto item
-//   i + 1 at the first node it reaches where that taxiway has an edge. It never skips one: if
-//   neither way on from there works, it's unable.
-// - A turn direction picks the way by geometry, relative to the heading it arrived with. With
-//   no direction, it takes the way that completes the route; if both do, it's ambiguous; if
-//   neither does, unable. With no heading at all (`arrivedVia` null), a direction is unable.
+//   i + 1 at the first node it reaches where it can: where that taxiway has an edge, or where an
+//   unnamed connector to it starts (below). It never skips one: if no way on from there works,
+//   it's unable.
+// - Unnamed connectors count as turns (Q's Q6 answer, 2026-11-15). JFK's parallel taxiways (A
+//   and B, ...) meet only through unnamed curved fillets, and "A, then B" means "take the
+//   fillet". So between consecutive route items X and Y, the path may cross a short run of
+//   unnamed taxiway edges that joins X to Y (`connectorWays`):
+//   - a simple chain: every node inside it has exactly two edges (a fork makes it part of a
+//     network, such as a pad's lanes, not a turn), and it ends at the first node on Y;
+//   - it never touches a runway, so it can't add a crossing the route doesn't name (Q);
+//   - at most CONNECTOR_MAX_M long, with no turn onto, along or off it sharper than
+//     CONNECTOR_MAX_TURN_DEG, so a fillet built for the other direction is no way on;
+//   - where X meets Y directly at a node, connectors from that node aren't considered.
+//   The first junction is the first node with a direct edge or a usable connector to Y.
+// - A turn direction picks the way by geometry, relative to the heading it arrived with.
+//   Through a connector it's measured over the whole turn, from the heading along X to the
+//   heading along Y (`waySide`); a jog between parallel taxiways, where that sums to under
+//   CONNECTOR_JOG_DEG, turns the way its first bend does. With no direction, it takes the way
+//   that completes the route; if more than one does (both ways along Y, or connectors either
+//   side), it's ambiguous; if none does, unable. With no heading at all (`arrivedVia` null), a
+//   direction is unable.
 // - Before the first item, the aircraft's own way out: if it isn't on the first item already,
 //   it goes forward along the taxiway it's on, or along unnamed taxiway edges, to the first
 //   node where the first item begins. That's how it leaves a pad spot (unnamed lead-out), a
@@ -18,21 +34,29 @@
 //   The way out never crosses a runway (Q): that would be a crossing the route doesn't name,
 //   so it's unable, and naming the taxiway it's on makes the crossing part of the route.
 // - After the last item, only the destination's own way in: a runway end's departure line to
-//   its front hold, a ramp entrance's stub (taxiway edges with the entrance's name), or a
-//   holding area's unnamed lead-in to the nearest spot. It's taken at the first node along the
-//   last item where it starts and is open. A closed one is passed by, and named if no open one
-//   follows.
+//   its front hold; a ramp entrance's stub (taxiway edges with the entrance's name); a holding
+//   area's (pad, penalty box, hardstand) unnamed taxiway lead-in to the nearest spot; or a
+//   hangar's lead-in, unnamed taxiway edges or ramp lanes that pass no ramp handoff, to the
+//   nearest hangar spot. A holding area's or hangar's lead-in passes no node on a named taxiway
+//   or a runway, so it can't hop across the airport on connectors. It's taken at the first
+//   node along the last item where it starts and is open. A closed one is passed by, and named
+//   if no open one follows.
+// - Named destinations: a holding area by its id, name or a spoken name; a hangar by its id,
+//   name or one of its airlines; all ignoring case. An unnamed hangar is "the company hangar":
+//   the one whose airlines include `RouteStart.airline`.
 // - Never back along the edge just travelled, never along any edge twice, never over a closed
 //   edge.
 // - Where several failures compete, the reason given is the one that got furthest along.
 
-import { edgeLength, edgePolyline, edgesAt, otherEnd, type AirportIndex } from '../airport/graph.ts';
+import { edgeLength, edgePolyline, edgesAt, holdingAreaNames, otherEnd, type AirportIndex } from '../airport/graph.ts';
 import type {
   Closure,
   DepartureLine,
   DepartureLineId,
   Edge,
   EdgeId,
+  Hangar,
+  HangarId,
   HoldingArea,
   HoldingAreaId,
   HoldShortId,
@@ -59,6 +83,11 @@ export interface RouteStart {
   arrivedVia: EdgeId | null;
   /** The aircraft's terminal, for a taxi to "the ramp" (a ramp destination with no name). */
   terminal: TerminalId | null;
+  /**
+   * The aircraft's airline (ICAO, e.g. "DAL"), for a taxi to "the company hangar" (a hangar
+   * destination with no name). Omitted or null: unknown.
+   */
+  airline?: string | null;
 }
 
 export type RouteResult = RoutePath | RouteAmbiguous | RouteUnable;
@@ -112,8 +141,15 @@ export type ReachedDestination =
   | { kind: 'runway'; runwayEnd: RunwayEndDesignator; departureLine: DepartureLineId; holdShort: HoldShortId }
   /** A ramp entrance serving the terminal, where ramp takes over. */
   | { kind: 'ramp'; terminal: TerminalId; rampHandoff: RampHandoffId }
-  /** One spot of a holding pad or the penalty box: the nearest one along the way in. */
-  | { kind: 'pad' | 'penalty-box'; holdingArea: HoldingAreaId; spot: NodeId };
+  /** One spot of a holding pad, the penalty box or a hardstand: the nearest one along the way in. */
+  | { kind: HoldingDestination; holdingArea: HoldingAreaId; spot: NodeId }
+  /** One spot of a hangar: the nearest one along its way in. */
+  | { kind: 'hangar'; hangar: HangarId; spot: NodeId };
+
+/** The taxi destinations that are holding areas, and the area kind each one means. */
+type HoldingDestination = 'pad' | 'penalty-box' | 'hardstand';
+const HOLDING_KIND: Record<HoldingDestination, HoldingArea['kind']> = { pad: 'pad', 'penalty-box': 'penaltyBox', hardstand: 'hardstand' };
+const HOLDING_WHAT: Record<HoldingDestination, string> = { pad: 'pad', 'penalty-box': 'penalty box', hardstand: 'hardstand' };
 
 /** Both ways on `taxiway` from `node` complete the route, and the clearance doesn't say which. */
 export interface RouteAmbiguous {
@@ -193,7 +229,7 @@ function checkRoute(index: AirportIndex, via: RouteItem[]): string | null {
   let previous: string | null = null;
   for (const { taxiway } of via) {
     if (previous === taxiway) return `taxiway ${taxiway} is named twice in a row`;
-    if (previous !== null && meetingNodes(index, previous, taxiway).length === 0) {
+    if (previous !== null && meetingNodes(index, previous, taxiway).length === 0 && connectorStarts(index, previous, taxiway).length === 0) {
       return `taxiways ${previous} and ${taxiway} don't meet`;
     }
     previous = taxiway;
@@ -204,8 +240,13 @@ function checkRoute(index: AirportIndex, via: RouteItem[]): string | null {
 /** Why an aircraft on taxiway `a` didn't get to taxiway `b`. */
 function notReachedReason(index: AirportIndex, a: string, b: string): string {
   const meet = meetingNodes(index, a, b);
-  if (meet.length === 0) return `taxiways ${a} and ${b} don't meet`;
-  return `taxiway ${a} doesn't reach ${b} in the direction of travel (they meet only at ${meet.join(', ')})`;
+  const connectors = connectorStarts(index, a, b);
+  if (meet.length === 0 && connectors.length === 0) return `taxiways ${a} and ${b} don't meet`;
+  const where = [
+    meet.length > 0 ? `at ${meet.join(', ')}` : null,
+    connectors.length > 0 ? `through unnamed connectors from ${connectors.join(', ')}` : null,
+  ].filter((w) => w !== null);
+  return `taxiway ${a} doesn't reach ${b} in the direction of travel (they meet only ${where.join(' and ')})`;
 }
 
 /** Hold-short targets that don't exist at the airport. null: none. */
@@ -218,6 +259,15 @@ function checkTargets(index: AirportIndex, targets: HoldShortTarget[]): string |
     }
   }
   return null;
+}
+
+/**
+ * The nodes of taxiway `a` where an unnamed connector to taxiway `b` starts, whatever the
+ * heading, in airport file order (for "don't meet" and its explanation).
+ */
+function connectorStarts(index: AirportIndex, a: string, b: string): NodeId[] {
+  const nodes = [...new Set(index.airport.edges.filter((e) => e.kind === 'taxiway' && e.name === a).flatMap((e) => [e.from, e.to]))];
+  return nodes.filter((n) => connectorWays(index, n, null, [], b).length > 0);
 }
 
 /** The nodes where taxiways `a` and `b` meet, closed segments included, in airport file order. */
@@ -268,7 +318,7 @@ interface Failed {
 function leadOut(ctx: Context, node: NodeId, arrived: Edge | null, used: EdgeId[]): Outcome {
   const first = ctx.via[0];
   if (!first) throw new Error('route has no items');
-  if (taxiwayEdgesAt(ctx.index, node, first.taxiway, arrived, used).length > 0) return turnOnto(ctx, 0, node, arrived, used);
+  if (waysOnto(ctx.index, node, arrived, used, first.taxiway).length > 0) return turnOnto(ctx, 0, node, arrived, used);
   const forward = edgesAt(ctx.index, node).filter(
     (e) =>
       e.kind === 'taxiway' &&
@@ -302,25 +352,143 @@ function runwayAt(index: AirportIndex, node: NodeId): RunwayId | null {
   return edgesAt(index, node).find((e) => e.kind === 'runway')?.runway ?? null;
 }
 
-/** At `node`, turns onto route item `j`'s taxiway, either way it goes from here. */
+/**
+ * At `node`, turns onto route item `j`'s taxiway, either way it goes from here: directly, or
+ * through an unnamed connector (see `waysOnto`).
+ */
 function turnOnto(ctx: Context, j: number, node: NodeId, arrived: Edge | null, used: EdgeId[]): Outcome {
   const item = ctx.via[j];
   if (!item) throw new Error(`route item ${j} doesn't exist`);
-  let candidates = taxiwayEdgesAt(ctx.index, node, item.taxiway, arrived, used);
+  let ways = waysOnto(ctx.index, node, arrived, used, item.taxiway);
   if (item.turn !== null) {
     const turn = item.turn;
     // Left and right are relative to a heading. With none, the turn can't be followed, and
     // guessing would be a silent fallback.
     if (arrived === null) return failed(j, used, `can't turn ${turn} onto ${item.taxiway} at ${node} with no heading`);
-    candidates = candidates.filter((edge) => turnSide(ctx.index, node, arrived, edge) === turn);
-    if (candidates.length === 0) return failed(j, used, `taxiway ${item.taxiway} doesn't go ${turn} from ${node}`);
+    ways = ways.filter((way) => waySide(ctx.index, node, arrived, way) === turn);
+    if (ways.length === 0) return failed(j, used, `taxiway ${item.taxiway} doesn't go ${turn} from ${node}`);
+  }
+  // Each item covers at least one edge, so the next junction is looked for from the far end of
+  // its first edge on.
+  const follow = (way: Way): Outcome =>
+    travelSteps(node, way.steps, used, j, (at, now) => travel(at, way.onto, now, j, (to, after) => walkItem(ctx, j, to, way.onto, after, true, null))[1]);
+  // Ways that share their first edge (one connector, both ways along the taxiway at its end)
+  // are one option here; where they part, at the connector's end, is where the pilot would ask.
+  const groups = new Map<EdgeId, Way[]>();
+  for (const way of ways) {
+    const first = (way.steps[0]?.edge ?? way.onto).id;
+    groups.set(first, [...(groups.get(first) ?? []), way]);
   }
   return choose(
     node,
     item.taxiway,
-    // Each item covers at least one edge, so the next junction is looked for from `to` on.
-    candidates.map((edge) => travel(node, edge, used, j, (to, now) => walkItem(ctx, j, to, edge, now, true, null))),
+    [...groups.values()].map((group): [Edge, Outcome] => {
+      const [way] = group;
+      if (!way) throw new Error('empty group of ways');
+      const first = way.steps[0]?.edge ?? way.onto;
+      if (group.length === 1) return [first, follow(way)];
+      return [first, choose(way.node, item.taxiway, group.map((w): [Edge, Outcome] => [w.onto, follow(w)]))];
+    }),
   );
+}
+
+/** Travels `steps` in order from `node`, then the rest of the route from where they end. */
+function travelSteps(node: NodeId, steps: Step[], used: EdgeId[], item: number, then: (at: NodeId, used: EdgeId[]) => Outcome): Outcome {
+  const [step, ...rest] = steps;
+  if (!step) return then(node, used);
+  return travel(node, step.edge, used, item, (to, now) => travelSteps(to, rest, now, item, then))[1];
+}
+
+// ---------------------------------------------------------------------------------------------
+// Unnamed connectors (Q6, 2026-11-15)
+
+/** A connector is at most this long (m). JFK's unnamed fillets between taxiways are all under 170 m. */
+export const CONNECTOR_MAX_M = 250;
+/** No turn onto, along or off a connector may be sharper than this (degrees): no hairpins. */
+export const CONNECTOR_MAX_TURN_DEG = 90;
+/** Through a connector, a total turn smaller than this (degrees) is a jog: its side is the first turn's. */
+export const CONNECTOR_JOG_DEG = 30;
+
+/**
+ * One way onto a taxiway from a node: along `steps` (an unnamed connector; empty when the
+ * taxiway is right there), then onto `onto`, a taxiway edge leaving `node`'s end of the steps.
+ */
+interface Way {
+  steps: Step[];
+  onto: Edge;
+  /** Where `onto` starts: the connector's far end, or the node itself. */
+  node: NodeId;
+}
+
+/**
+ * The ways onto taxiway `name` from `node`. Where it meets the taxiway directly, those edges
+ * only. Otherwise every unnamed connector from here to it (`connectorWays`).
+ */
+function waysOnto(index: AirportIndex, node: NodeId, arrived: Edge | null, used: EdgeId[], name: string): Way[] {
+  const direct = taxiwayEdgesAt(index, node, name, arrived, used);
+  if (direct.length > 0) return direct.map((onto) => ({ steps: [], onto, node }));
+  return connectorWays(index, node, arrived, used, name);
+}
+
+/**
+ * Unnamed connectors from `node` to taxiway `name`: a short run of open, unnamed taxiway edges
+ * that joins the two, as at JFK where parallel taxiways meet only through unnamed fillets.
+ * - It's a simple chain: every node inside it has exactly two edges, both its own. It ends at
+ *   the first node where the taxiway has an edge.
+ * - It never touches a runway (Q: no crossing the route doesn't name), and doesn't start on one.
+ * - At most CONNECTOR_MAX_M long, and no turn onto it, along it or off it onto the taxiway is
+ *   sharper than CONNECTOR_MAX_TURN_DEG. With no heading (`arrived` null), the first turn isn't
+ *   checked.
+ * Each result is one connector and one way along the taxiway at its end.
+ */
+function connectorWays(index: AirportIndex, node: NodeId, arrived: Edge | null, used: EdgeId[], name: string): Way[] {
+  const ways: Way[] = [];
+  if (edgesAt(index, node).some((e) => e.kind === 'runway')) return ways;
+  const walk = (at: NodeId, last: Edge | null, steps: Step[], length: number): void => {
+    for (const edge of edgesAt(index, at)) {
+      if (edge.kind !== 'taxiway' || edge.name !== undefined || edge.closed) continue;
+      if (edge.id === last?.id || edge.id === arrived?.id || used.includes(edge.id)) continue;
+      if (last !== null && Math.abs(turnAngle(index, at, last, edge)) > CONNECTOR_MAX_TURN_DEG) continue;
+      const to = otherEnd(edge, at);
+      const total = length + edgeLength(index, edge);
+      if (total > CONNECTOR_MAX_M || to === node || steps.some((s) => s.to === to)) continue;
+      const there = edgesAt(index, to);
+      if (there.some((e) => e.kind === 'runway')) continue;
+      const chain = [...steps, { edge, to }];
+      const onto = there.filter((e) => e.kind === 'taxiway' && e.name === name && !used.includes(e.id));
+      if (onto.length > 0) {
+        for (const e of onto) {
+          if (Math.abs(turnAngle(index, to, edge, e)) <= CONNECTOR_MAX_TURN_DEG) ways.push({ steps: chain, onto: e, node: to });
+        }
+        continue;
+      }
+      if (there.length === 2) walk(to, edge, chain, total);
+    }
+  };
+  walk(node, arrived, [], 0);
+  return ways;
+}
+
+/**
+ * The side a way turns onto its taxiway, for an aircraft that arrived at `node` along
+ * `arrived`. Directly: the turn at the node. Through a connector: the whole turn, from the
+ * heading it arrived with to the heading it leaves along the taxiway, summed over every bend.
+ * A jog between parallel taxiways sums to about nothing, so under CONNECTOR_JOG_DEG it takes
+ * the side of its first turn: the side the taxiway lies on.
+ */
+function waySide(index: AirportIndex, node: NodeId, arrived: Edge, way: Way): Turn | null {
+  if (way.steps.length === 0) return turnSide(index, node, arrived, way.onto);
+  const angles: number[] = [];
+  let [at, last] = [node, arrived];
+  for (const step of way.steps) {
+    angles.push(turnAngle(index, at, last, step.edge));
+    [at, last] = [step.to, step.edge];
+  }
+  angles.push(turnAngle(index, at, last, way.onto));
+  const total = angles.reduce((sum, a) => sum + a, 0);
+  if (Math.abs(total) >= CONNECTOR_JOG_DEG) return total > 0 ? 'right' : 'left';
+  const first = angles.find((a) => Math.abs(a) >= 1);
+  return first === undefined ? null : first > 0 ? 'right' : 'left';
 }
 
 /**
@@ -344,7 +512,7 @@ function walkItem(
   if (checkHere) {
     if (next) {
       // The first junction with the next taxiway is where it turns. It never skips one.
-      if (taxiwayEdgesAt(ctx.index, node, next.taxiway, arrived, used).length > 0) return turnOnto(ctx, i + 1, node, arrived, used);
+      if (waysOnto(ctx.index, node, arrived, used, next.taxiway).length > 0) return turnOnto(ctx, i + 1, node, arrived, used);
     } else {
       // A closed way in doesn't end the walk: another one may come further on.
       const entered = tryWayIn(ctx, node, arrived, used);
@@ -396,6 +564,18 @@ function failed(item: number, used: EdgeId[], reason: string): Failed {
  * straight ahead or straight back.
  */
 function turnSide(index: AirportIndex, node: NodeId, arrived: Edge, edge: Edge): Turn | null {
+  const relative = turnAngle(index, node, arrived, edge);
+  const epsilon = 1e-6;
+  if (Math.abs(relative) < epsilon || Math.abs(relative) > 180 - epsilon) return null;
+  return relative > 0 ? 'right' : 'left';
+}
+
+/**
+ * The turn at `node` from `arrived` onto `edge`, in degrees in [-180, 180): clockwise
+ * (right) is positive. By the last stretch of `arrived` into the node and the first stretch of
+ * `edge` out of it.
+ */
+function turnAngle(index: AirportIndex, node: NodeId, arrived: Edge, edge: Edge): number {
   const inward = edgePolyline(index, arrived);
   if (arrived.to !== node) inward.reverse();
   const outward = edgePolyline(index, edge);
@@ -404,10 +584,7 @@ function turnSide(index: AirportIndex, node: NodeId, arrived: Edge, edge: Edge):
   const [c, d] = [outward[0], outward[1]];
   if (!a || !b || !c || !d) throw new Error(`edge "${arrived.id}" or "${edge.id}" has no length`);
   const delta = bearing(c, d) - bearing(a, b);
-  const relative = (((delta % 360) + 540) % 360) - 180; // in [-180, 180): clockwise is positive
-  const epsilon = 1e-6;
-  if (Math.abs(relative) < epsilon || Math.abs(relative) > 180 - epsilon) return null;
-  return relative > 0 ? 'right' : 'left';
+  return (((delta % 360) + 540) % 360) - 180;
 }
 
 /** Degrees clockwise from north (the local frame's +y), from `a` toward `b`. */
@@ -454,7 +631,8 @@ function prefix(step: Step, outcome: Outcome): Outcome {
 type WayIn =
   | { kind: 'runway'; describe: string; runwayEnd: RunwayEndDesignator; lines: LineWay[] }
   | { kind: 'ramp'; describe: string; terminal: TerminalId; handoffs: RampHandoff[] }
-  | { kind: 'holding'; describe: string; destination: 'pad' | 'penalty-box'; areas: HoldingArea[] };
+  | { kind: 'holding'; describe: string; destination: HoldingDestination; areas: HoldingArea[] }
+  | { kind: 'hangar'; describe: string; hangars: Hangar[] };
 
 /** A departure line walked in queue order, back to front: `steps[i]` leaves `nodes[i]`. */
 interface LineWay {
@@ -504,21 +682,38 @@ function resolveWayIn(index: AirportIndex, taxi: Taxi, start: RouteStart): WayIn
       return { kind: 'ramp', describe: `a ramp entrance for ${terminal.id}`, terminal: terminal.id, handoffs };
     }
     case 'pad':
-    case 'penalty-box': {
-      const kind = to.kind === 'pad' ? 'pad' : 'penaltyBox';
+    case 'penalty-box':
+    case 'hardstand': {
+      const kind = HOLDING_KIND[to.kind];
       const name = to.name;
-      // Named by the area's id: the format has no short spoken name for one. Command names are
+      // A name matches the area's id, name or a spoken name ("Quebec box"). Command names are
       // uppercase and ids free-form ("padNorth"), so case is ignored.
       const areas = index.airport.holdingAreas.filter(
-        (a) => a.kind === kind && (name === null || a.id.toUpperCase() === name.toUpperCase()),
+        (a) => a.kind === kind && (name === null || holdingAreaNames(a).includes(name.toLowerCase())),
       );
-      const what = to.kind === 'pad' ? 'pad' : 'penalty box';
+      const what = HOLDING_WHAT[to.kind];
       if (areas.length === 0) {
         const reason = name === null ? `${index.airport.id} has no ${what}` : `no ${what} ${name} at ${index.airport.id}`;
         return { type: 'unable', reason };
       }
-      const describe = name !== null ? `${what} ${name}` : to.kind === 'pad' ? 'a pad' : 'the penalty box';
+      const describe = name !== null ? `${what} ${name}` : to.kind === 'pad' ? 'a pad' : `the ${what}`;
       return { kind: 'holding', describe, destination: to.kind, areas };
+    }
+    case 'hangar': {
+      const all = index.airport.hangars;
+      if (to.name === null) {
+        // "The company hangar": the one belonging to the aircraft's airline.
+        const airline = start.airline ?? null;
+        if (airline === null) return { type: 'unable', reason: "taxi to the company hangar: the aircraft's airline is unknown" };
+        const hangars = all.filter((h) => h.airlines.some((a) => a.toUpperCase() === airline.toUpperCase()));
+        if (hangars.length === 0) return { type: 'unable', reason: `no company hangar for ${airline} at ${index.airport.id}` };
+        return { kind: 'hangar', describe: `the ${airline} hangar`, hangars };
+      }
+      // A name matches the hangar's id, name or one of its airlines, ignoring case.
+      const name = to.name.toLowerCase();
+      const hangars = all.filter((h) => [h.id, h.name, ...h.airlines].some((n) => n.toLowerCase() === name));
+      if (hangars.length === 0) return { type: 'unable', reason: `no hangar ${to.name} at ${index.airport.id}` };
+      return { kind: 'hangar', describe: `hangar ${to.name}`, hangars };
     }
   }
 }
@@ -545,9 +740,31 @@ function tryWayIn(ctx: Context, node: NodeId, arrived: Edge | null, used: EdgeId
     }
     return null;
   }
+  if (wayIn.kind === 'hangar') {
+    const handoffs = new Set(ctx.index.airport.rampHandoffs.map((h) => h.node));
+    const hangarOf = (n: NodeId) => wayIn.hangars.find((h) => h.spots.includes(n));
+    // Unnamed taxiway edges, or ramp lanes that don't pass a ramp handoff (the ramp's own area).
+    const ok = (e: Edge) =>
+      (e.kind === 'taxiway' && e.name === undefined) || (e.kind === 'rampLane' && !handoffs.has(e.from) && !handoffs.has(e.to));
+    const found = leadIn(ctx.index, node, arrived, used, ok, (n) => hangarOf(n) !== undefined, offRouteNetwork(ctx.index));
+    if (found === null) return null;
+    if (found.kind === 'closed') return failed(ctx.via.length, used, found.reason);
+    const spot = found.steps.at(-1)?.to ?? node;
+    const hangar = hangarOf(spot);
+    if (!hangar) throw new Error(`lead-in ended off a hangar spot, at "${spot}"`);
+    return { kind: 'done', steps: found.steps, destination: { kind: 'hangar', hangar: hangar.id, spot } };
+  }
   if (wayIn.kind === 'holding') {
     const areaOf = (n: NodeId) => wayIn.areas.find((a) => a.spots.includes(n));
-    const found = leadIn(ctx.index, node, arrived, used, (e) => e.name === undefined, (n) => areaOf(n) !== undefined);
+    const found = leadIn(
+      ctx.index,
+      node,
+      arrived,
+      used,
+      (e) => e.kind === 'taxiway' && e.name === undefined,
+      (n) => areaOf(n) !== undefined,
+      offRouteNetwork(ctx.index),
+    );
     if (found === null) return null;
     if (found.kind === 'closed') return failed(ctx.via.length, used, found.reason);
     // With no steps, the aircraft is on a spot already.
@@ -558,7 +775,7 @@ function tryWayIn(ctx: Context, node: NodeId, arrived: Edge | null, used: EdgeId
   }
   let closed: string | null = null;
   for (const handoff of wayIn.handoffs) {
-    const found = leadIn(ctx.index, node, arrived, used, (e) => e.name === handoff.name, (n) => n === handoff.node);
+    const found = leadIn(ctx.index, node, arrived, used, (e) => e.kind === 'taxiway' && e.name === handoff.name, (n) => n === handoff.node, () => true);
     if (found?.kind === 'open') {
       return { kind: 'done', steps: found.steps, destination: { kind: 'ramp', terminal: wayIn.terminal, rampHandoff: handoff.id } };
     }
@@ -570,9 +787,18 @@ function tryWayIn(ctx: Context, node: NodeId, arrived: Edge | null, used: EdgeId
 type LeadIn = { kind: 'open'; steps: Step[] } | { kind: 'closed'; reason: string };
 
 /**
- * The shortest way from `start` to a goal node over the taxiway edges that pass `edgeOk`.
- * null: there is none. `closed`: there is one, but only through a closed edge, which the
- * reason names.
+ * A lead-in may pass only nodes off the route network: no named taxiway and no runway there.
+ * Otherwise a holding area's or hangar's unnamed lead-in could hop across connectors and other
+ * taxiways, and the aircraft would be finding its own way.
+ */
+function offRouteNetwork(index: AirportIndex): (node: NodeId) => boolean {
+  return (node) => !edgesAt(index, node).some((e) => e.kind === 'runway' || (e.kind === 'taxiway' && e.name !== undefined));
+}
+
+/**
+ * The shortest way from `start` to a goal node over the edges that pass `edgeOk`, through
+ * nodes (after `start`) that pass `passable`. null: there is none. `closed`: there is one, but
+ * only through a closed edge, which the reason names.
  */
 function leadIn(
   index: AirportIndex,
@@ -581,10 +807,11 @@ function leadIn(
   used: EdgeId[],
   edgeOk: (edge: Edge) => boolean,
   isGoal: (node: NodeId) => boolean,
+  passable: (node: NodeId) => boolean,
 ): LeadIn | null {
-  const open = shortestWay(index, start, arrived, used, (e) => e.kind === 'taxiway' && !e.closed && edgeOk(e), isGoal);
+  const open = shortestWay(index, start, arrived, used, (e) => !e.closed && edgeOk(e), isGoal, passable);
   if (open) return { kind: 'open', steps: open };
-  const any = shortestWay(index, start, arrived, used, (e) => e.kind === 'taxiway' && edgeOk(e), isGoal);
+  const any = shortestWay(index, start, arrived, used, edgeOk, isGoal, passable);
   if (!any) return null;
   let from = start;
   for (const step of any) {
@@ -606,6 +833,7 @@ function shortestWay(
   used: EdgeId[],
   edgeOk: (edge: Edge) => boolean,
   isGoal: (node: NodeId) => boolean,
+  passable: (node: NodeId) => boolean,
 ): Step[] | null {
   interface Label {
     node: NodeId;
@@ -622,6 +850,7 @@ function shortestWay(
     if (settled.has(key)) continue;
     settled.add(key);
     if (isGoal(label.node)) return label.steps;
+    if (label.node !== start && !passable(label.node)) continue;
     for (const edge of edgesAt(index, label.node)) {
       if (edge.id === label.via?.id || used.includes(edge.id) || !edgeOk(edge)) continue;
       if (label.steps.some((s) => s.edge.id === edge.id)) continue;

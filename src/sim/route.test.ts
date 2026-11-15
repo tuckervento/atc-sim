@@ -6,11 +6,14 @@ import { validateAirport } from '../airport/validate.ts';
 import type { Taxi } from './commands.ts';
 import { resolveRoute, type RoutePath, type RouteResult, type RouteStart } from './route.ts';
 import { parseTerse } from './terse.ts';
+import connector from './__fixtures__/connector.overrides.json' with { type: 'json' };
 import eLoop from './__fixtures__/e-loop.overrides.json' with { type: 'json' };
 
 const TEST = indexAirport(loadAirport(testAirport));
 /** TEST with E1 and E2 renamed E, so E meets B at both ends (see the fixture's description). */
 const E_LOOP = indexAirport(loadAirport(testAirport, eLoop));
+/** TEST with E1 unnamed, so B and E meet only through that unnamed connector (Q6). */
+const CONNECTOR = indexAirport(loadAirport(testAirport, connector));
 
 /** The taxi instruction of a terse command, written without its callsign: `taxi 27 via A`. */
 function taxi(text: string): Taxi {
@@ -88,6 +91,179 @@ describe('destinations', () => {
       loadAirport(testAirport, { formatVersion: 1, airport: 'TEST', rampHandoffs: { patch: [{ id: 'rhTC', use: 'departures' }] } }),
     );
     expect(route('taxi ramp T2 via A', offC(null), noEntrance)).toEqual(unable('no ramp entrance serves T2 at TEST'));
+  });
+});
+
+describe('hardstands and hangars (PLAN 1.5 stage b)', () => {
+  it("ends at a hardstand spot: B, G, then the hardstand's own unnamed lead-in to the nearest spot", () => {
+    // Eastbound on B at bE2. G runs south from bF to gS; hsS1 and hsS2 are 85 m on, a tie: the first wins.
+    const path = pathOf(route('taxi hardstand via B G', at('bE2', 'bC-bE2')));
+    expect(path.nodes).toEqual(['bE2', 'bF', 'gS', 'hsS1']);
+    expect(path.destination).toEqual({ kind: 'hardstand', holdingArea: 'hardstand', spot: 'hsS1' });
+  });
+
+  it('matches holding areas by spoken name, ignoring case (the terse parser uppercases names)', () => {
+    const named = (kind: 'hardstand' | 'penalty-box', name: string): Taxi => ({ type: 'taxi', to: { kind, name }, via: [{ taxiway: 'G', turn: null }], holdShort: [] });
+    expect(pathOf(resolveRoute(TEST, named('hardstand', 'THE HARDSTAND'), at('bF', 'bE2-bF'))).destination).toEqual({ kind: 'hardstand', holdingArea: 'hardstand', spot: 'hsS1' });
+    expect(pathOf(resolveRoute(TEST, named('hardstand', 'SOUTH HARDSTAND'), at('bF', 'bE2-bF'))).nodes).toEqual(['bF', 'gS', 'hsS1']);
+    expect(resolveRoute(TEST, named('hardstand', 'NORTH'), at('bF', 'bE2-bF'))).toEqual({ type: 'unable', reason: 'no hardstand NORTH at TEST' });
+  });
+
+  it("goes to the company hangar (no name) by the aircraft's airline, over the hangar's ramp-lane lead-in", () => {
+    // Westbound on A at aK. A ends at aW, where the Delta hangar's lead-in (a ramp lane) starts.
+    const path = pathOf(resolveRoute(TEST, taxi('taxi hangar via A'), { ...at('aK', 'aK-a7'), airline: 'DAL' }));
+    expect(path.nodes).toEqual(['aK', 'aW', 'hgD']);
+    expect(path.edges).toEqual(['aW-aK', 'aW-hgD']);
+    expect(path.destination).toEqual({ kind: 'hangar', hangar: 'hangarDAL', spot: 'hgD' });
+  });
+
+  it('is unable to find the company hangar with no airline or none for it; names match id, name or airline', () => {
+    const onA = (airline?: string | null) => ({ ...at('aK', 'aK-a7'), airline });
+    const unable = (reason: string) => ({ type: 'unable', reason });
+    expect(resolveRoute(TEST, taxi('taxi hangar via A'), onA())).toEqual(unable("taxi to the company hangar: the aircraft's airline is unknown"));
+    expect(resolveRoute(TEST, taxi('taxi hangar via A'), onA(null))).toEqual(unable("taxi to the company hangar: the aircraft's airline is unknown"));
+    expect(resolveRoute(TEST, taxi('taxi hangar via A'), onA('JBU'))).toEqual(unable('no company hangar for JBU at TEST'));
+    for (const name of ['DAL', 'hangarDAL']) {
+      expect(pathOf(resolveRoute(TEST, taxi(`taxi hangar ${name} via A`), onA('JBU'))).destination).toEqual({ kind: 'hangar', hangar: 'hangarDAL', spot: 'hgD' });
+    }
+    expect(resolveRoute(TEST, taxi('taxi hangar UAL via A'), onA())).toEqual(unable('no hangar UAL at TEST'));
+  });
+
+  it("never enters a hangar's lead-in through a ramp handoff: a hangar inside ramp 7 is unable", () => {
+    // With stub 7 unnamed, only the handoff at rb7 stands between A and ramp lane 7.
+    const inRamp = indexAirport(
+      loadAirport(testAirport, {
+        formatVersion: 1,
+        airport: 'TEST',
+        edges: { patch: [{ id: 'rb7-a7', name: null }] },
+        hangars: { add: [{ id: 'hg7', name: 'Ramp hangar', airlines: [], spots: ['g3'] }] },
+      }),
+    );
+    expect(resolveRoute(inRamp, taxi('taxi hangar hg7 via A'), at('aD', 'aD-aTB'))).toEqual({
+      type: 'unable',
+      reason: "taxiway A doesn't lead to hangar HG7 in the direction of travel",
+    });
+  });
+});
+
+describe('unnamed connectors count as turns (Q6)', () => {
+  it('the connector fixture is a valid airport', () => {
+    expect(validateAirport(CONNECTOR.airport).errors.map((e) => e.message)).toEqual([]);
+  });
+
+  it('acceptance: "B, then E" resolves over the unnamed connector that joins them', () => {
+    // South on D at dHS. West on B to bE1, round the connector to eW, east on E to the box.
+    const path = pathOf(route('taxi penalty via D B E', at('dHS', 'r1D-dHS'), CONNECTOR));
+    expect(path.nodes).toEqual(['dHS', 'bD', 'bE1', 'eW', 'e1', 'pbS1']);
+    expect(path.edges).toEqual(['dHS-bD', 'bE1-bD', 'bE1-eW', 'eW-e1', 'e1-pbS1']);
+    expect(path.destination).toEqual({ kind: 'penalty-box', holdingArea: 'penaltyBox', spot: 'pbS1' });
+  });
+
+  it('measures a turn direction through the connector: west on B, it curls left round onto E eastbound', () => {
+    const left = pathOf(route('taxi penalty via D B L:E', at('dHS', 'r1D-dHS'), CONNECTOR));
+    expect(left.nodes).toEqual(['dHS', 'bD', 'bE1', 'eW', 'e1', 'pbS1']);
+    expect(route('taxi penalty via D B R:E', at('dHS', 'r1D-dHS'), CONNECTOR)).toEqual({
+      type: 'unable',
+      reason: "taxiway E doesn't go right from bE1",
+    });
+  });
+
+  // E1 and E2 both unnamed: B and E are joined by a connector at each end.
+  const BOTH = indexAirport(loadAirport(testAirport, { ...connector, edges: { patch: [{ id: 'bE1-eW', name: null }, { id: 'bE2-eE', name: null }] } }));
+
+  it('is ambiguous when connectors reach the next taxiway both ways and no direction is given', () => {
+    expect(route('taxi penalty via D B E', at('dHS', 'r1D-dHS'), BOTH)).toEqual({
+      type: 'ambiguous',
+      node: 'bD',
+      taxiway: 'B',
+      edges: ['bE1-bD', 'bD-bC'],
+    });
+  });
+
+  it('turns at the first connector and never skips one; a jog onto a parallel taxiway turns the way it leaves', () => {
+    // West on B from bF: the first connector to E is at bE2, straight south (left), then right
+    // onto E westbound. The whole turn is nothing, so its side is the first turn's: left.
+    const offF = at('bF', 'bF-fH');
+    expect(pathOf(route('taxi penalty via B E', offF, BOTH)).nodes).toEqual(['bF', 'bE2', 'eE', 'e2', 'pbS2']);
+    expect(pathOf(route('taxi penalty via B L:E', offF, BOTH)).nodes).toEqual(['bF', 'bE2', 'eE', 'e2', 'pbS2']);
+    expect(route('taxi penalty via B R:E', offF, BOTH)).toEqual({ type: 'unable', reason: "taxiway E doesn't go right from bE2" });
+  });
+
+  it("never crosses a runway: an unnamed edge from F's hold onto 18/36, where Z starts, is no connector", () => {
+    const acrossRunway = indexAirport(
+      loadAirport(testAirport, {
+        formatVersion: 1,
+        airport: 'TEST',
+        nodes: { add: [{ id: 'zE', x: 1000, y: -200 }] },
+        edges: { patch: [{ id: 'fH-r2F', name: null }], add: [{ id: 'r2F-zE', kind: 'taxiway', name: 'Z', from: 'r2F', to: 'zE' }] },
+      }),
+    );
+    expect(route('taxi 27 via B F Z', at('bE2', 'bC-bE2'), acrossRunway)).toEqual({ type: 'unable', reason: "taxiways F and Z don't meet" });
+  });
+
+  it('is no connector when longer than CONNECTOR_MAX_M (E1 unnamed but bent out to 497 m)', () => {
+    const long = indexAirport(
+      loadAirport(testAirport, { formatVersion: 1, airport: 'TEST', edges: { patch: [{ id: 'bE1-eW', name: null, points: [[-1300, -260], [-1300, -340]] }] } }),
+    );
+    expect(route('taxi penalty via D B E', at('dHS', 'r1D-dHS'), long)).toEqual({ type: 'unable', reason: "taxiways B and E don't meet" });
+  });
+
+  it('is no connector for a hairpin: sharper than CONNECTOR_MAX_TURN_DEG from the heading it arrives with', () => {
+    // An unnamed edge from bD south-east to a new taxiway H: a 45° right turn eastbound on B, a
+    // 135° hairpin westbound.
+    const hairpin = indexAirport(
+      loadAirport(testAirport, {
+        formatVersion: 1,
+        airport: 'TEST',
+        nodes: { add: [{ id: 'hp', x: -200, y: -300 }, { id: 'hq', x: -200, y: -380 }] },
+        edges: { add: [{ id: 'bD-hp', kind: 'taxiway', from: 'bD', to: 'hp' }, { id: 'hp-hq', kind: 'taxiway', name: 'H', from: 'hp', to: 'hq' }] },
+        holdingAreas: { add: [{ id: 'padH', name: 'H pad', kind: 'pad', spots: ['hq'] }] },
+      }),
+    );
+    expect(pathOf(route('taxi pad padH via B H', at('bD', 'bE1-bD'), hairpin)).nodes).toEqual(['bD', 'hp', 'hq']);
+    expect(route('taxi pad padH via B H', at('bD', 'bD-bC'), hairpin)).toEqual({
+      type: 'unable',
+      reason: "taxiway B doesn't reach H in the direction of travel (they meet only through unnamed connectors from bD)",
+    });
+  });
+
+  it('is no connector with a fork in it: a stub off its middle makes it part of a network, not a turn', () => {
+    const forked = indexAirport(
+      loadAirport(testAirport, {
+        formatVersion: 1,
+        airport: 'TEST',
+        nodes: { add: [{ id: 'cM', x: -1140, y: -300 }, { id: 'cS', x: -1200, y: -300 }] },
+        edges: {
+          remove: ['bE1-eW'],
+          add: [
+            { id: 'bE1-cM', kind: 'taxiway', from: 'bE1', to: 'cM' },
+            { id: 'cM-eW', kind: 'taxiway', from: 'cM', to: 'eW' },
+            { id: 'cM-cS', kind: 'taxiway', from: 'cM', to: 'cS' },
+          ],
+        },
+      }),
+    );
+    expect(route('taxi penalty via D B E', at('dHS', 'r1D-dHS'), forked)).toEqual({ type: 'unable', reason: "taxiways B and E don't meet" });
+  });
+
+  it('takes the taxiway directly where it meets it, ignoring connectors from the same node', () => {
+    // G leaves bF directly; an unnamed edge from bF also reaches a second piece of G at gX.
+    const both = indexAirport(
+      loadAirport(testAirport, {
+        formatVersion: 1,
+        airport: 'TEST',
+        nodes: { add: [{ id: 'gX', x: 760, y: -300 }] },
+        edges: { add: [{ id: 'bF-gX', kind: 'taxiway', from: 'bF', to: 'gX' }, { id: 'gX-gS', kind: 'taxiway', name: 'G', from: 'gX', to: 'gS' }] },
+      }),
+    );
+    expect(pathOf(route('taxi hardstand via B G', at('bE2', 'bC-bE2'), both)).nodes).toEqual(['bE2', 'bF', 'gS', 'hsS1']);
+  });
+
+  it("explains a connector behind the aircraft: east on B, E's connector is back at bE1", () => {
+    expect(route('taxi penalty via B E', at('bD', 'bE1-bD'), CONNECTOR)).toEqual({
+      type: 'unable',
+      reason: "taxiway B doesn't reach E in the direction of travel (they meet only through unnamed connectors from bE1)",
+    });
   });
 });
 

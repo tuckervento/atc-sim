@@ -60,11 +60,13 @@ describe('TEST airport', () => {
     expect(west?.runways.find((u) => u.end === '27')?.roles).toEqual(['arrivals', 'departures']);
   });
 
-  it('has a numeric ramp lane, check-in names, a closed segment, a pad and a penalty box', () => {
+  it('has a numeric ramp lane, check-in names, a closed segment, a pad, a penalty box, a hardstand and a hangar', () => {
     expect(airport.edges.some((e) => e.kind === 'rampLane' && e.name === '7')).toBe(true);
     expect(airport.rampHandoffs.map((h) => h.name)).toEqual(['7', 'TB', 'TC']);
     expect(airport.edges.filter((e) => e.closed).map((e) => e.id)).toEqual(['cHS-bC']);
-    expect(new Set(airport.holdingAreas.map((h) => h.kind))).toEqual(new Set(['pad', 'penaltyBox']));
+    expect(new Set(airport.holdingAreas.map((h) => h.kind))).toEqual(new Set(['pad', 'penaltyBox', 'hardstand']));
+    expect(airport.holdingAreas.find((h) => h.kind === 'hardstand')?.entrances).toEqual(['G']);
+    expect(airport.hangars.map((h) => [h.id, h.airlines])).toEqual([['hangarDAL', ['DAL']]]);
   });
 });
 
@@ -166,6 +168,62 @@ describe('checks (one change to TEST each)', () => {
     const r = validateAirport(loadAirport({ ...testAirport, nodes: [...testAirport.nodes, first] }));
     expect(codes(r.errors)).toEqual(['duplicate-id']);
     expect(r.errors[0]?.ids).toEqual(['r1W']);
+  });
+});
+
+describe('hardstands, spoken names and hangars (PLAN 1.5 stage b)', () => {
+  const check = (overrides: Record<string, unknown>) =>
+    validateAirport(loadAirport(testAirport, { formatVersion: 1, airport: 'TEST', ...overrides }));
+
+  it('rejects a hardstand with no entrances', () => {
+    const r = check({ holdingAreas: { patch: [{ id: 'hardstand', entrances: null }] } });
+    expect(format(r.errors)).toEqual([
+      'holding-area-no-entrances: holding area "hardstand" ("South hardstand") is a hardstand but lists no entrances; list the taxiways it is entered from in "entrances"',
+    ]);
+  });
+
+  it("rejects an entrance that isn't a taxiway, or from which no spot is reached over unnamed taxiway edges", () => {
+    const r = check({ holdingAreas: { patch: [{ id: 'hardstand', entrances: ['G', 'B', 'ZZ'] }] } });
+    expect(format(r.errors)).toEqual([
+      'holding-area-entrance-invalid: holding area "hardstand" ("South hardstand"): no spot is reached from taxiway B over open, unnamed taxiway edges (the area\'s lead-in); remove the entrance or connect it',
+      'holding-area-entrance-invalid: holding area "hardstand" ("South hardstand"): entrance "ZZ" is not a taxiway',
+    ]);
+  });
+
+  it('rejects a holding spot that only ramp lanes reach', () => {
+    const r = check({ edges: { patch: [{ id: 'gS-hsS1', kind: 'rampLane' }] } });
+    expect(format(r.errors)).toEqual([
+      'holding-spot-unreachable: holding area "hardstand" ("South hardstand"): spot "hsS1" can\'t be reached from a named taxiway over open taxiway edges; ground taxis aircraft to it, so its lead-in must be taxiway edges',
+    ]);
+  });
+
+  it("rejects a hangar spot that's reached only through a ramp handoff (the ramp's area, not a lead-in)", () => {
+    const r = check({ hangars: { add: [{ id: 'hgB', name: 'B hangar', airlines: [], spots: ['g3'] }] } });
+    expect(format(r.errors)).toEqual([
+      'hangar-spot-unreachable: hangar "hgB" ("B hangar"): spot "g3" can\'t be reached from a named taxiway over open taxiway edges and its own lead-ins (ramp lanes that pass no ramp handoff)',
+    ]);
+  });
+
+  it('rejects an airline with two company hangars', () => {
+    const r = check({ hangars: { add: [{ id: 'hgY', name: 'Y hangar', airlines: ['DAL'], spots: ['hgD'] }] } });
+    expect(format(r.errors)).toEqual([
+      'hangar-airline-repeated: airline "DAL" has two company hangars, "hangarDAL" and "hgY"; a taxi to "the company hangar" must mean one',
+    ]);
+  });
+
+  it('rejects two areas of one kind answering to the same name (id, name or spoken name, ignoring case)', () => {
+    const r = check({ holdingAreas: { patch: [{ id: 'padWest', spokenNames: ['north PAD'] }] } });
+    expect(format(r.errors)).toEqual([
+      'holding-area-name-repeated: holding areas "padNorth" and "padWest" (both kind "pad") both answer to "north pad"; a taxi to a named pad must mean one',
+    ]);
+  });
+
+  it('accepts an unnamed runway exit (no "taxiway") along an unnamed edge, and still rejects a name mismatch', () => {
+    const exit = { nodes: { add: [{ id: 'xu', x: 1560, y: -60 }] }, edges: { add: [{ id: 'r1E-xu', kind: 'taxiway', from: 'r1E', to: 'xu' }] } };
+    expect(format(check({ ...exit, runwayExits: { add: [{ id: 'x9u', runwayEnd: '9', node: 'r1E', edge: 'r1E-xu' }] } }).errors)).toEqual([]);
+    expect(format(check({ ...exit, runwayExits: { add: [{ id: 'x9u', runwayEnd: '9', taxiway: 'U', node: 'r1E', edge: 'r1E-xu' }] } }).errors)).toEqual([
+      'runway-exit-name-mismatch: runway exit "x9u" is called "U" but its edge "r1E-xu" is named nothing',
+    ]);
   });
 });
 

@@ -45,7 +45,17 @@ export type Destination =
   /** A holding pad (C6). null: "the pad", unnamed; the sim picks it. */
   | { kind: 'pad'; name: string | null }
   /** The penalty box (C6). null: "the penalty box", unnamed; the sim picks it. */
-  | { kind: 'penalty-box'; name: string | null };
+  | { kind: 'penalty-box'; name: string | null }
+  /**
+   * Ground-controlled parking off the ramp, e.g. JFK's South Hardstand (Q, 2026-11-14).
+   * null: "the hardstand", unnamed; the sim picks it.
+   */
+  | { kind: 'hardstand'; name: string | null }
+  /**
+   * A hangar, e.g. 'DAL' or '17'. null: "the company hangar", the aircraft's own company's,
+   * which is how it's usually said (Q, 2026-11-15).
+   */
+  | { kind: 'hangar'; name: string | null };
 
 /**
  * C1, C2, C6: taxi to a destination via a route.

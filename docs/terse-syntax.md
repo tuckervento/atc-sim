@@ -22,6 +22,7 @@ Every object shown below was printed by the parser itself.
 | C4 | Hold position / continue | `JBU1123 hold`, `IBE626 continue` |
 | C5 | Cross runway(s) | `DAL4 cross 31R at KE` |
 | C6 | Holding pad / penalty box, incl. out of the departure line | `AFR23 taxi pad via L:KD`, `VIR3 taxi penalty via KF B` |
+| — | Hardstand / company hangar (Q, 2026-11-14) | `N123AB taxi hardstand via Q Q5`, `DAL4 taxi hangar via S` |
 | C7 | Handoff | `AFR23 monitor tower`, `UAE202 contact ramp 125.05` |
 | C8 | Correction | `DAL4 neg hs B`, `DLH405 neg turn R:KE` |
 | C9 | ATIS correction | `JBU615 atis P alt 2992` |
@@ -87,8 +88,8 @@ are equal exactly when they deep-equal.
 - **Case doesn't matter.** Keywords, turn prefixes and names can be any case. Names come out
   uppercase: `dal4 taxi 31l via a` gives callsign `DAL4`, runway `31L`, taxiway `A`.
 - **Keywords are reserved:** `taxi via hs hold continue cross at monitor contact tower ramp
-  pad penalty neg to turn atis alt say-again ground-stop release hold-for-release delay
-  request-crossing`. None of them can be a bare name (see `#` below).
+  pad penalty hardstand hangar neg to turn atis alt say-again ground-stop release
+  hold-for-release delay request-crossing`. None of them can be a bare name (see `#` below).
 - **Names** (taxiways, ramp lanes, ramps, pads, destinations) are a letter followed by
   letters and digits: `A`, `KE`, `C1`, `T4`, `D13`. Names with spaces or punctuation can't
   be written.
@@ -171,6 +172,7 @@ instruction   = "taxi" destination "via" route [ "hs" target { target } ]
               | "delay" minutes
 
 destination   = runway | "ramp" [name] | "pad" [name] | "penalty" [name]
+              | "hardstand" [name] | "hangar" [name]
 route         = routeItem { routeItem }
 routeItem     = [ "L:" | "R:" ] name
 target        = runway | name                          (bare digit-first token = runway)
@@ -202,6 +204,15 @@ The destination is one of:
 - `ramp [name]` (C2): `ramp T4`, or just `ramp` for the aircraft's own ramp
 - `pad [name]` (C6): a holding pad; unnamed means the sim picks one
 - `penalty [name]` (C6): the penalty box; unnamed means the sim picks one
+- `hardstand [name]`: ground-controlled parking off the ramp, e.g. JFK's South Hardstand;
+  unnamed means the sim picks one
+- `hangar [name]`: a hangar. Unnamed means **the company hangar**, the aircraft's own airline's,
+  which is how it's usually said (Q). A name matches a hangar's id, name or one of its
+  airlines, so `hangar DAL` is the Delta hangar.
+
+A named pad, penalty box or hardstand matches the area's id, name or one of its spoken names,
+ignoring case (`pad KILO`, `penalty QUEBEC`). A spoken name with a space ("Kilo pad") can't be
+typed as one name; the AI interpreter can still output it.
 
 `via` is required and takes at least one route item. `hs` is optional, appears at most once,
 and lists every hold-short of this clearance in spoken order.
@@ -223,6 +234,18 @@ JBU387 taxi ramp via KF R:A
 VIR3 taxi penalty via KF B
 → {"type":"taxi","to":{"kind":"penalty-box","name":null},
    "via":[{"taxiway":"KF","turn":null},{"taxiway":"B","turn":null}],"holdShort":[]}
+
+N123AB taxi hardstand via Q Q5
+→ {"type":"taxi","to":{"kind":"hardstand","name":null},
+   "via":[{"taxiway":"Q","turn":null},{"taxiway":"Q5","turn":null}],"holdShort":[]}
+
+DAL4 taxi hangar via A KF
+→ {"type":"taxi","to":{"kind":"hangar","name":null},
+   "via":[{"taxiway":"A","turn":null},{"taxiway":"KF","turn":null}],"holdShort":[]}
+
+DAL4 taxi hangar #17 via R:Q2
+→ {"type":"taxi","to":{"kind":"hangar","name":"17"},
+   "via":[{"taxiway":"Q2","turn":"right"}],"holdShort":[]}
 ```
 
 **Out of the departure line (C6).** "Air France two three, exit the line at the next left,
@@ -428,6 +451,9 @@ Examples, all of them tested:
 | `DAL4 cross 31R KE` | `expected runway or 'at' after '31R', got 'KE'` |
 | `DAL4 cross 31R at KE hs B` | `expected ',' before 'hs' (separate instructions with commas)` |
 | `DAL4 taxi 31L A R:KE` | `expected 'via' after '31L', got 'A'` |
+| `DAL4 taxi via A` | `expected runway, 'ramp', 'pad', 'penalty', 'hardstand' or 'hangar' after 'taxi', got 'via'` |
+| `DAL4 taxi hangar 17 via A` | `expected hangar name after 'hangar', got '17' (a bare number is a runway; write a name that starts with a digit as '#17')` |
+| `DAL4 taxi hardstand south` | `expected 'via' after 'south', got end of input` |
 | `DAL4 taxi 31L via A, R:KE` | `expected an instruction after ',', got 'R:KE'` |
 | `DAL4 taxi 31L via X:KE` | `unknown turn 'X:' in 'X:KE' (use L: or R:)` |
 | `DAL4 taxi 31L via A hs B hs K` | `duplicate 'hs' in taxi clearance; list every hold-short after one 'hs' (e.g. 'hs B 31R')` |

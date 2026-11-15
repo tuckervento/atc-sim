@@ -1,54 +1,217 @@
 {
   "formatVersion": 1,
   "airport": "KJFK",
-  "description": "Hand-curated on top of the OSM import (PLAN 1.5 stage a). Only items with a source; each is cited in docs/airports/KJFK-notes.md. Sources: FAA Chart Supplement NE 29 OCT-24 DEC 2026 (closures, displaced thresholds, tower frequencies); FAA airport diagram AL-610 cycle 2611 (CAT 2 HOLD); OSM hold ref '31R-APCH'; jfkairport.com terminal airline pages fetched 2026-11-14; Q's decisions (terminals T1/T4/T5/T7/T8, closures as data, the 31s). Still to come from Q (stage b): the 31L departure line and exits, arrival exits, pads, penalty box, ramp handoffs, missing and doubtful names.",
-  "set": {
-    "defaultConfiguration": "31s"
+  "description": "Hand-curated on top of the OSM import (PLAN 1.5). Each item is cited in docs/airports/KJFK-notes.md. Sources: FAA Chart Supplement NE 29 OCT-24 DEC 2026 (displaced thresholds, tower frequencies); FAA airport diagram AL-610 cycle 2611; jfkairport.com terminal airline pages fetched 2026-11-14; Q's decisions and Q's answers in docs/airports/KJFK-questions.md (check-in points, departure line, pads, penalty box, South Hardstand, hangars, stub names, holds, arrival exits, remote T4 stands). The ramp handoffs' nodes also set the base file's ramp boundary at import (tools/import-airport.ts): re-import after changing them. Spot nodes and lead-ins with ids starting 'x' are placed by hand (method in the notes).",
+  "set": {"defaultConfiguration": "31s"},
+  "nodes": {
+    "add": [
+      {"id": "xhD13L", "x": 1018, "y": 919.8},
+      {"id": "xkL1", "x": -105.2, "y": -2171.5},
+      {"id": "xkM", "x": -87.2, "y": -2141.3},
+      {"id": "xkL2", "x": -69.2, "y": -2111},
+      {"id": "xkS1", "x": -135.3, "y": -2153.6},
+      {"id": "xkS2", "x": -117.3, "y": -2123.4},
+      {"id": "xkS3", "x": -99.3, "y": -2093.1},
+      {"id": "xzE", "x": 1097.9, "y": -1837.7},
+      {"id": "xzS1", "x": 1084.8, "y": -1784.3},
+      {"id": "xzS2", "x": 1118.4, "y": -1879},
+      {"id": "xzS3", "x": 1108.5, "y": -1922.6},
+      {"id": "xsW", "x": -2134.1, "y": 760.3},
+      {"id": "xsE", "x": -1784.1, "y": 624.9},
+      {"id": "xgAAL", "x": -1554.5, "y": 1303.1},
+      {"id": "xgKAL", "x": -1545.4, "y": 1209.2},
+      {"id": "xgSIA", "x": -1249.9, "y": 962.2},
+      {"id": "xgANA", "x": -1119.6, "y": 1697.1},
+      {"id": "xgFDX1", "x": 108.7, "y": 2017.8},
+      {"id": "xgFDX2", "x": 74.9, "y": 2048.4},
+      {"id": "xgUAL", "x": 942.7, "y": 1263.4}
+    ]
   },
   "edges": {
     "patch": [
-      { "id": "w5786453-n45355700-n1702839850", "closed": { "reason": "Chart Supplement NE 29 OCT 2026: Twy Z btn Rwy 04L and 22R and Twy Y clsd UFN" } },
-      { "id": "w5786453-n1702839850-n13858896748", "closed": { "reason": "Chart Supplement NE 29 OCT 2026: Twy Z btn Rwy 04L and 22R and Twy Y clsd UFN" } },
-      { "id": "w551554017-n6242188066-n5326590474", "closed": { "reason": "Chart Supplement NE 29 OCT 2026: Twy VA clsd between Trml 7 apron and Twy A" } }
+      {"id": "w403398896-n4057452593-n1743728095", "name": "NA"},
+      {"id": "w403518279-n1744051799-n4058675893", "name": "TT"},
+      {"id": "w632238145-n455520844-n5969626538", "name": "A1"},
+      {"id": "w1011116770-n9328549521-n9328526607", "name": "W"},
+      {"id": "w1011144695-n6242188066-n9328838863", "name": "VA"},
+      {"id": "w1354563422-n5326590473-n12535504191", "name": "VA"}
+    ],
+    "add": [
+      {"id": "xD13L-n46582784-xhD13L", "kind": "taxiway", "name": "D", "from": "n46582784", "to": "xhD13L"},
+      {"id": "xD13L-xhD13L-n46582783", "kind": "taxiway", "name": "D", "from": "xhD13L", "to": "n46582783"},
+      {"id": "xM-n5969626740-n5969626822", "kind": "rampLane", "name": "M", "from": "n5969626740", "to": "n5969626822"},
+      {"id": "xk-n45352547-xkL1", "kind": "taxiway", "from": "n45352547", "to": "xkL1"},
+      {"id": "xk-xkL1-xkM", "kind": "taxiway", "from": "xkL1", "to": "xkM"},
+      {"id": "xk-xkM-xkL2", "kind": "taxiway", "from": "xkM", "to": "xkL2"},
+      {"id": "xk-xkL2-n4058549561", "kind": "taxiway", "from": "xkL2", "to": "n4058549561"},
+      {"id": "xk-xkL1-xkS1", "kind": "taxiway", "from": "xkL1", "to": "xkS1"},
+      {"id": "xk-xkM-xkS2", "kind": "taxiway", "from": "xkM", "to": "xkS2"},
+      {"id": "xk-xkL2-xkS3", "kind": "taxiway", "from": "xkL2", "to": "xkS3"},
+      {"id": "xz-n8025529446-xzE", "kind": "taxiway", "from": "n8025529446", "to": "xzE"},
+      {"id": "xz-xzE-xzS1", "kind": "taxiway", "from": "xzE", "to": "xzS1"},
+      {"id": "xz-xzE-xzS2", "kind": "taxiway", "from": "xzE", "to": "xzS2"},
+      {"id": "xz-xzE-xzS3", "kind": "taxiway", "from": "xzE", "to": "xzS3"},
+      {"id": "xs-n4066683422-xsW", "kind": "taxiway", "from": "n4066683422", "to": "xsW"},
+      {"id": "xs-n14158137963-xsE", "kind": "taxiway", "from": "n14158137963", "to": "xsE"},
+      {"id": "xg-n1744051796-xgAAL", "kind": "taxiway", "from": "n1744051796", "to": "xgAAL"},
+      {"id": "xg-n1744051796-xgKAL", "kind": "taxiway", "from": "n1744051796", "to": "xgKAL"},
+      {"id": "xg-n9349966638-xgSIA", "kind": "taxiway", "from": "n9349966638", "to": "xgSIA"},
+      {"id": "xg-n45365993-xgANA", "kind": "taxiway", "from": "n45365993", "to": "xgANA"},
+      {"id": "xg-n9328929685-xgFDX1", "kind": "taxiway", "from": "n9328929685", "to": "xgFDX1"},
+      {"id": "xg-n9328929685-xgFDX2", "kind": "taxiway", "from": "n9328929685", "to": "xgFDX2"},
+      {"id": "xg-n4452051906-xgUAL", "kind": "taxiway", "from": "n4452051906", "to": "xgUAL"}
+    ],
+    "remove": [
+      "w5824779-n46582783-n46582784"
     ]
   },
   "runways": {
     "patch": [
-      { "id": "4L/22R", "towerPosition": "twr-123.9", "ends": [{ "designator": "4L", "node": "n45288846", "displacedThresholdM": 140.2 }, { "designator": "22R", "node": "n5969622455", "displacedThresholdM": 1043.6 }] },
-      { "id": "4R/22L", "towerPosition": "twr-119.1" },
-      { "id": "13L/31R", "towerPosition": "twr-119.1", "ends": [{ "designator": "13L", "node": "n45291211", "displacedThresholdM": 276.5 }, { "designator": "31R", "node": "n45289927", "displacedThresholdM": 313 }] },
-      { "id": "13R/31L", "towerPosition": "twr-123.9", "ends": [{ "designator": "13R", "node": "n45287849", "displacedThresholdM": 623 }, { "designator": "31L", "node": "n45370885", "displacedThresholdM": 994.9 }] }
+      {"id": "4L/22R", "towerPosition": "twr-123.9", "ends": [{"designator": "4L", "node": "n45288846", "displacedThresholdM": 140.2}, {"designator": "22R", "node": "n5969622455", "displacedThresholdM": 1043.6}]},
+      {"id": "4R/22L", "towerPosition": "twr-119.1"},
+      {"id": "13L/31R", "towerPosition": "twr-119.1", "ends": [{"designator": "13L", "node": "n45291211", "displacedThresholdM": 276.5}, {"designator": "31R", "node": "n45289927", "displacedThresholdM": 313}]},
+      {"id": "13R/31L", "towerPosition": "twr-123.9", "ends": [{"designator": "13R", "node": "n45287849", "displacedThresholdM": 623}, {"designator": "31L", "node": "n45370885", "displacedThresholdM": 994.9}]}
+    ]
+  },
+  "runwayExits": {
+    "add": [
+      {"id": "x31L-MB", "runwayEnd": "31L", "taxiway": "MB", "node": "n4058790036", "edge": "w5786235-n4058790036-n13771028756"},
+      {"id": "x31L-MC", "runwayEnd": "31L", "taxiway": "MC", "node": "n45351201", "edge": "w5786268-n5969626550-n45351201"},
+      {"id": "x31L-MD", "runwayEnd": "31L", "taxiway": "MD", "node": "n2994349328", "edge": "w162541642-n2994349328-n4057444764"},
+      {"id": "x31L-PA", "runwayEnd": "31L", "taxiway": "PA", "node": "n4059869967", "edge": "w5786215-n4059869967-n4059869955"},
+      {"id": "x31L-PC", "runwayEnd": "31L", "taxiway": "PC", "node": "n4059010916", "edge": "w5786191-n5969626547-n4059010916"},
+      {"id": "x31L-PD", "runwayEnd": "31L", "taxiway": "PD", "node": "n4059010906", "edge": "w403551270-n5969626544-n4059010906"},
+      {"id": "x31L-PE", "runwayEnd": "31L", "taxiway": "PE", "node": "n4059010897", "edge": "w5787234-n5969626545-n4059010897"},
+      {"id": "x31L-PF", "runwayEnd": "31L", "taxiway": "PF", "node": "n4059010889", "edge": "w5786138-n4059010889-n5969626546"},
+      {"id": "x31R-D1", "runwayEnd": "31R", "taxiway": "D", "node": "n46582743", "edge": "w5824772-n46575776-n46582743"},
+      {"id": "x31R-D2", "runwayEnd": "31R", "taxiway": "D", "node": "n46582839", "edge": "w5824776-n46582839-n46582783"},
+      {"id": "x31R-U1787", "runwayEnd": "31R", "node": "n12782406379", "edge": "w1380633253-n12782406379-n46582889"},
+      {"id": "x31R-U1790", "runwayEnd": "31R", "node": "n12782406377", "edge": "w162539732-n45368577-n12782406377"},
+      {"id": "x31R-WW", "runwayEnd": "31R", "taxiway": "WW", "node": "n12782406381", "edge": "w1011156078-n13771028762-n12782406381"},
+      {"id": "x31R-W", "runwayEnd": "31R", "taxiway": "W", "node": "n13771028761", "edge": "w1356065547-n46582889-n13771028761"},
+      {"id": "x31R-U2212", "runwayEnd": "31R", "node": "n12782406404", "edge": "w1380633256-n9328929558-n12782406404"},
+      {"id": "x31R-U2311", "runwayEnd": "31R", "node": "n12782406386", "edge": "w1380633254-n13771028758-n12782406386"},
+      {"id": "x31R-V", "runwayEnd": "31R", "taxiway": "V", "node": "n13771028757", "edge": "w632238146-n9328929558-n13771028757"},
+      {"id": "x31R-C5", "runwayEnd": "31R", "taxiway": "C5", "node": "n13771028759", "edge": "w5784794-n13771028759-n12782406392"},
+      {"id": "x31R-U3", "runwayEnd": "31R", "taxiway": "U3", "node": "n12782366912", "edge": "w162498279-n8025529414-n12782366912"},
+      {"id": "x31R-C3", "runwayEnd": "31R", "taxiway": "C3", "node": "n12782366913", "edge": "w5784753-n12782366913-n4066683365"},
+      {"id": "x31R-U2", "runwayEnd": "31R", "taxiway": "U2", "node": "n45294540", "edge": "w5784737-n8025529413-n45294540"}
     ]
   },
   "holdShorts": {
     "patch": [
-      { "id": "h8025529446", "runways": ["4R/22L"], "towardEdge": "w5938318-n8025529446-n48857210" }
+      {"id": "h8025529446", "runways": ["4R/22L"], "towardEdge": "w5938318-n8025529446-n48857210"},
+      {"id": "h5607488397", "towardEdge": "w5786535-n5607488398-n5607488397"}
     ],
-    "remove": ["h5607488397"]
+    "add": [
+      {"id": "hxD13L", "kind": "runway", "runways": ["13L/31R"], "node": "xhD13L", "towardEdge": "xD13L-xhD13L-n46582783"},
+      {"id": "hxFA4R", "kind": "runway", "runways": ["4R/22L"], "node": "n45358355", "towardEdge": "w5786512-n45358355-n45357837"}
+    ]
+  },
+  "rampHandoffs": {
+    "add": [
+      {"id": "rhNA", "name": "NA", "node": "n1743728095", "use": "both", "terminals": ["T1"]},
+      {"id": "rhMA", "name": "MA", "node": "n4058612082", "use": "both", "terminals": ["T1"]},
+      {"id": "rhM", "name": "M", "node": "n5969626740", "use": "arrivals", "terminals": ["T1"]},
+      {"id": "rhKG", "name": "KG", "node": "n9316949013", "use": "arrivals", "terminals": ["T4"]},
+      {"id": "rhKF", "name": "KF", "node": "n3273891234", "use": "departures", "terminals": ["T4"]},
+      {"id": "rhHB", "name": "HB", "node": "n9317064941", "use": "departures", "terminals": ["T4"]},
+      {"id": "rhA10", "name": "A10", "node": "n1743805046", "use": "arrivals", "terminals": ["T4"]},
+      {"id": "rhG", "name": "G", "node": "n45377108", "use": "departures", "terminals": ["T4"]},
+      {"id": "rhDA", "name": "DA", "node": "n45368785", "use": "departures", "terminals": ["T5"]},
+      {"id": "rhA4", "name": "A4", "node": "n46582681", "use": "arrivals", "terminals": ["T5"]},
+      {"id": "rhD", "name": "D", "node": "n9328534742", "use": "departures", "terminals": ["T5"]},
+      {"id": "rhF", "name": "F", "node": "n5969626406", "use": "both", "terminals": ["T5"]},
+      {"id": "rhVV", "name": "VV", "node": "n1744034745", "use": "both", "terminals": ["T7"]},
+      {"id": "rhVA", "name": "VA", "node": "n9328838863", "use": "both", "terminals": ["T7"]},
+      {"id": "rhVA2", "name": "VA", "node": "n5326590473", "use": "both", "terminals": ["T7"]},
+      {"id": "rhA1", "name": "A1", "node": "n5969626538", "use": "both", "terminals": ["T7"]},
+      {"id": "rhW", "name": "W", "node": "n9328534916", "use": "both", "terminals": ["T7"]},
+      {"id": "rhW2", "name": "W", "node": "n9328526607", "use": "both", "terminals": ["T7"]},
+      {"id": "rhTA", "name": "TA", "node": "n9332675149", "use": "departures", "terminals": ["T8"]},
+      {"id": "rhNB", "name": "NB", "node": "n9332650390", "use": "both", "terminals": ["T8"]},
+      {"id": "rhNC", "name": "NC", "node": "n8025529430", "use": "arrivals", "terminals": ["T8"]},
+      {"id": "rhS", "name": "S", "node": "n9332675155", "use": "arrivals", "terminals": ["T8"]},
+      {"id": "rhSA", "name": "SA", "node": "n5763789087", "use": "arrivals", "terminals": ["T8"]},
+      {"id": "rhT", "name": "T", "node": "n8025529425", "use": "departures", "terminals": ["T8"]}
+    ]
   },
   "terminals": {
     "patch": [
-      { "id": "T1", "airlines": ["CCA", "AFR", "ANZ", "ASL", "AAR", "AUA", "RZO", "BEL", "CES", "MSR", "EVA", "GFA", "ITY", "KAL", "LOT", "DLH", "NOS", "PAL", "RAM", "SVA", "SAS", "SWR", "TAP", "THY", "VIV"] },
-      { "id": "T4", "airlines": ["AMX", "AEA", "AIC", "AIZ", "AVA", "BWA", "CAL", "CMP", "DAL", "ELY", "UAE", "ETD", "KQA", "KLM", "LAN", "SIA", "UZB", "VIR", "WJA", "CXA"] },
-      { "id": "T5", "airlines": ["JBU", "KAP", "SCX"] },
-      { "id": "T7", "airlines": ["ANA", "EIN", "CFG", "KAC", "NBT", "ICE"] },
-      { "id": "T8", "airlines": ["ASA", "AAL", "BAW", "CPA", "CSN", "FIN", "GLO", "HAL", "IBE", "JAL", "LVL", "QFA", "QTR", "RJA"] }
+      {"id": "T1", "airlines": ["CCA", "AFR", "ANZ", "ASL", "AAR", "AUA", "RZO", "BEL", "CES", "MSR", "EVA", "GFA", "ITY", "KAL", "LOT", "DLH", "NOS", "PAL", "RAM", "SVA", "SAS", "SWR", "TAP", "THY", "VIV"]},
+      {"id": "T4", "airlines": ["AMX", "AEA", "AIC", "AIZ", "AVA", "BWA", "CAL", "CMP", "DAL", "ELY", "UAE", "ETD", "KQA", "KLM", "LAN", "SIA", "UZB", "VIR", "WJA", "CXA"]},
+      {"id": "T5", "airlines": ["JBU", "KAP", "SCX"]},
+      {"id": "T7", "airlines": ["ANA", "EIN", "CFG", "KAC", "NBT", "ICE"]},
+      {"id": "T8", "airlines": ["ASA", "AAL", "BAW", "CPA", "CSN", "FIN", "GLO", "HAL", "IBE", "JAL", "LVL", "QFA", "QTR", "RJA"]}
+    ]
+  },
+  "gates": {
+    "add": [
+      {"id": "g744203534", "name": "72", "terminal": "T4", "node": "n6965049094"},
+      {"id": "g744203532", "name": "73 A380", "terminal": "T4", "node": "n6965049090"},
+      {"id": "g744203531", "name": "73A", "terminal": "T4", "node": "n6965049088"},
+      {"id": "g744203533", "name": "73B", "terminal": "T4", "node": "n6965049092"},
+      {"id": "g744203530", "name": "74", "terminal": "T4", "node": "n6965049086"},
+      {"id": "g744203536", "name": "78", "terminal": "T4", "node": "n6965049098"},
+      {"id": "g744203535", "name": "78B", "terminal": "T4", "node": "n6965049096"},
+      {"id": "g744203539", "name": "79", "terminal": "T4", "node": "n6965049104"},
+      {"id": "g744203540", "name": "79A", "terminal": "T4", "node": "n6965049106"},
+      {"id": "g744203538", "name": "79B", "terminal": "T4", "node": "n6965049102"},
+      {"id": "g1010401581", "name": "H1", "terminal": "T4", "node": "n9322616779"},
+      {"id": "g1010401582", "name": "H1A", "terminal": "T4", "node": "n9322616785"},
+      {"id": "g1010401583", "name": "H2", "terminal": "T4", "node": "n9322616789"},
+      {"id": "g1010401584", "name": "H3", "terminal": "T4", "node": "n9322616797"},
+      {"id": "g1010401585", "name": "H4", "terminal": "T4", "node": "n9322616802"},
+      {"id": "g1010401586", "name": "H5", "terminal": "T4", "node": "n9322616808"},
+      {"id": "g1010401587", "name": "H6", "terminal": "T4", "node": "n9322616812"},
+      {"id": "g1010401588", "name": "H7", "terminal": "T4", "node": "n9322616817"},
+      {"id": "g1010401590", "name": "H8", "terminal": "T4", "node": "n9322616823"},
+      {"id": "g1010401591", "name": "H9", "terminal": "T4", "node": "n9322616830"},
+      {"id": "g1010401592", "name": "H10", "terminal": "T4", "node": "n9322616834"},
+      {"id": "g1010401593", "name": "H11", "terminal": "T4", "node": "n9322616838"},
+      {"id": "g1010401595", "name": "H14", "terminal": "T4", "node": "n9322616849"}
+    ]
+  },
+  "holdingAreas": {
+    "add": [
+      {"id": "kilo", "name": "Kilo pad", "kind": "pad", "spokenNames": ["Kilo pad", "Kilo", "K pad"], "entrances": ["K"], "spots": ["xkS1", "xkS2", "xkS3"], "outline": [[-110.1, -2241.5], [-173.2, -2202.8], [-116.6, -2108.1], [-75.8, -2039.8], [8.3, -2016.5], [63.5, -1952.3]]},
+      {"id": "zulu", "name": "Zulu pad", "kind": "pad", "spokenNames": ["Zulu pad", "Zulu", "Z pad"], "entrances": ["Z"], "spots": ["xzS1", "xzS2", "xzS3"], "outline": [[1094, -1926.9], [1138.5, -1916.7], [1093.3, -1732.4], [1084.4, -1740.6], [1049.5, -1749.5]]},
+      {"id": "quebec", "name": "Penalty box", "kind": "penaltyBox", "spokenNames": ["penalty box", "the penalty box", "Quebec box", "Quebec"], "entrances": ["Q1", "Q2"], "spots": ["n5969625842", "n14158137907", "n14158137951", "n14158137952", "n14158137954", "n5969625810"]},
+      {"id": "south", "name": "South Hardstand", "kind": "hardstand", "spokenNames": ["South Hardstand", "hardstand", "the hardstand"], "entrances": ["PB", "Q5", "Q3"], "spots": ["n14158137994", "n14158137989", "xsE", "n4066683435", "xsW"], "outline": [[-1957.7, 693.6], [-1970.5, 700.2], [-1989, 707], [-2031.7, 633.5], [-2035.9, 626.6], [-1918.8, 556.7], [-1810.1, 491.7], [-1578.5, 353.2], [-1544.4, 410.1], [-1505, 478.5], [-1559.7, 511.1], [-1602.5, 571.2], [-1633.9, 615.8], [-1650.7, 647.6], [-1737.6, 808.4]]}
+    ]
+  },
+  "hangars": {
+    "add": [
+      {"id": "hgDAL", "name": "Delta hangar", "airlines": ["DAL"], "spots": ["n12546344193"], "outline": [[-1113.3, 2091.4], [-1110.1, 2091.4], [-1110.2, 2085.5], [-1113.2, 2085.5], [-1113.3, 2076.9], [-1136.3, 2077.2], [-1136.6, 2051.7], [-1119.4, 2051.5], [-1119.4, 2052.6], [-1112.6, 2052.5], [-1112.7, 2046.1], [-1136.7, 2046.4], [-1137.2, 1998.4], [-1119.9, 1998.2], [-1119.9, 1999.4], [-1113.5, 1999.3], [-1113.6, 1992.2], [-1137.3, 1992.5], [-1137.8, 1948.7], [-1118.6, 1948.5], [-1118.6, 1947.8], [-1118.3, 1947.8], [-1118.4, 1940.1], [-1101.6, 1939.9], [-1101.6, 1941.2], [-1100.9, 1941.2], [-1100.8, 1944.3], [-1091.4, 1944.2], [-1091.4, 1941.1], [-1090.5, 1941.1], [-1090.6, 1933.3], [-1088.9, 1933.2], [-1089, 1920.2], [-1138, 1920.7], [-1138.1, 1915], [-1251.2, 1916.2], [-1250.5, 1982], [-1245.3, 1982], [-1244.2, 2089.6], [-1152.9, 2088.6], [-1152.6, 2111], [-1135.7, 2110.8], [-1135.7, 2109.4], [-1132.8, 2109.3], [-1132.6, 2126.9], [-1112.8, 2126.7]]},
+      {"id": "hgAAL", "name": "American hangar", "airlines": ["AAL"], "spots": ["xgAAL"], "outline": [[-1352.7, 1403.5], [-1332.8, 1403.2], [-1332.8, 1399.6], [-1343.3, 1399.8], [-1344.1, 1343.3], [-1353.5, 1343.5], [-1353.8, 1320.5], [-1584, 1323.5], [-1583.5, 1357.5], [-1630.4, 1358.1], [-1629.7, 1407.7], [-1628.8, 1407.7], [-1628.6, 1422.4], [-1620.7, 1422.3], [-1620.9, 1407.6], [-1606.2, 1407.4], [-1606.1, 1413.9], [-1582.8, 1413.6], [-1582.5, 1438], [-1589.8, 1438.1], [-1589.7, 1452.1], [-1582.3, 1452], [-1582.2, 1463.4], [-1422.6, 1461.3], [-1351.9, 1460.4]]},
+      {"id": "hgJBU", "name": "JetBlue hangar", "airlines": ["JBU"], "spots": ["n4058675894"], "outline": [[-367.6, 1188.5], [-340.2, 1139.8], [-334.5, 1129.7], [-254, 1175.8], [-286.9, 1234.2]]},
+      {"id": "hgKAL", "name": "Korean Air hangar", "airlines": ["KAL"], "spots": ["xgKAL"], "outline": [[-1522.9, 1188], [-1519.9, 1188], [-1520.5, 1144.3], [-1522.5, 990], [-1524.8, 990], [-1524.8, 989.3], [-1545.8, 989.6], [-1545.8, 990.4], [-1613.8, 991.3], [-1612.8, 1072], [-1615.4, 1074.4], [-1619, 1079.5], [-1621.2, 1085.3], [-1621.9, 1091.4], [-1621.7, 1094], [-1620, 1100], [-1616.9, 1105.4], [-1612.4, 1109.7], [-1611.4, 1189.4], [-1543, 1188.4], [-1543, 1189.3], [-1522.9, 1189]]},
+      {"id": "hgSIA", "name": "Singapore hangar", "airlines": ["SIA"], "spots": ["xgSIA"], "outline": [[-1213.7, 1192.7], [-1213.7, 1194.7], [-1209.5, 1194.6], [-1203.4, 1192.8], [-1202.1, 1192.2], [-1196.8, 1188.7], [-1196.9, 1179.5], [-1206, 1179.7], [-1208.4, 997.3], [-1198.9, 997.2], [-1199, 986.8], [-1206.5, 983.3], [-1207.3, 983], [-1216.4, 981.6], [-1216.4, 983.7], [-1223.7, 983.8], [-1223.8, 981.9], [-1276.7, 982.5], [-1276.6, 994.5], [-1269.5, 994.4], [-1269.5, 997.1], [-1275.8, 997.2], [-1273.8, 1157], [-1273.5, 1180.5], [-1267.5, 1180.4], [-1267.5, 1183.5], [-1274.2, 1183.6], [-1274, 1195.5], [-1220.9, 1194.8], [-1220.9, 1192.8]]},
+      {"id": "hgANA", "name": "ANA hangar", "airlines": ["ANA"], "spots": ["xgANA"], "outline": [[-1139.5, 1699.1], [-1185.4, 1699.5], [-1185.4, 1700.3], [-1184.8, 1760.7], [-1268, 1761.5], [-1275.1, 1761.6], [-1274.4, 1825.8], [-1191.1, 1824.9], [-1191.4, 1794.3], [-1161.8, 1793.9], [-1161, 1793.9], [-1161.4, 1761.6], [-1138.9, 1761.4], [-1139.5, 1700]]},
+      {"id": "hgFDX", "name": "FedEx hangar", "airlines": ["FDX"], "spots": ["xgFDX1", "xgFDX2"], "outline": [[401.6, 1948.4], [367.1, 1890.4], [147.6, 2020.9], [146.4, 2018.9], [76.9, 2059.6], [81.2, 2066.6], [79.1, 2067.9], [84.5, 2077], [105.5, 2064.6], [101.7, 2058.3], [152, 2028.4], [182.1, 2078.9], [266.3, 2028.8], [389.3, 1955.7]]},
+      {"id": "hgUAL", "name": "United Cargo hangar", "airlines": ["UAL"], "spots": ["xgUAL"], "outline": [[1016.7, 1200.8], [983.7, 1145.4], [927.5, 1178.8], [915.1, 1158], [908.8, 1161.7], [907.2, 1159.1], [906.8, 1159.3], [905.5, 1157.2], [900, 1160.5], [901.3, 1162.6], [900.6, 1163], [902.3, 1165.8], [899.7, 1167.4], [942.8, 1239.6], [945.1, 1243.5], [1015.5, 1201.5]]},
+      {"id": "hgDHL", "name": "DHL Cargo hangar", "airlines": [], "spots": ["n9020941108"], "outline": [[-1471.9, 800.3], [-1471.8, 810.3], [-1469.5, 810.3], [-1451.4, 810], [-1451.5, 791.9], [-1421.2, 791.5], [-1420.7, 812.2], [-1291.6, 810.4], [-1291.5, 789.8], [-1201.5, 788.5], [-1201.6, 786.7], [-1202.7, 697.6], [-1207.1, 697.5], [-1206.9, 698.8], [-1217, 698.8], [-1216.6, 726.4], [-1464.4, 729.7], [-1464.3, 744.9], [-1472.8, 745], [-1471.8, 796], [-1479.1, 796], [-1479.1, 787.3], [-1479.6, 787.2], [-1479.7, 776.5], [-1487.9, 776.7], [-1487.8, 779.6], [-1490.7, 779.6], [-1490.5, 787], [-1500, 787.5], [-1499.4, 833.9], [-1478.9, 833.6], [-1479, 800.4]]}
+    ]
+  },
+  "departureLines": {
+    "add": [
+      {"id": "line31L", "runwayEnd": "31L", "holdShort": "h8025529445", "edges": ["w586977161-n45355700-n45357551", "w162541297-n46547996-n45355700", "w162541297-n4057398125-n46547996", "w162541291-n10709945044-n4057398125", "w162541291-n4068921630-n10709945044", "w5938318-n4068921630-n8025529445"], "exits": [{"taxiway": "H", "node": "n4057398125", "edge": "w5786464-n45361442-n4057398125"}, {"taxiway": "J", "node": "n4068921630", "edge": "w5786911-n5324450221-n4068921630"}]}
     ]
   },
   "configurations": {
     "add": [
-      { "id": "31s", "name": "Land 31L and 31R, depart 31L", "runways": [{ "end": "31L", "roles": ["arrivals", "departures"] }, { "end": "31R", "roles": ["arrivals"] }] }
+      {"id": "31s", "name": "Land 31L and 31R, depart 31L", "runways": [{"end": "31L", "roles": ["arrivals", "departures"], "arrivalExits": ["x31L-MB", "x31L-MC", "x31L-MD", "x31L-PA", "x31L-PC", "x31L-PD", "x31L-PE", "x31L-PF"]}, {"end": "31R", "roles": ["arrivals"], "arrivalExits": ["x31R-D1", "x31R-D2", "x31R-U1787", "x31R-U1790", "x31R-WW", "x31R-W", "x31R-U2212", "x31R-U2311", "x31R-V", "x31R-C5", "x31R-U3", "x31R-C3", "x31R-U2"]}]}
     ]
   },
   "towerPositions": {
     "add": [
-      { "id": "twr-123.9", "name": "Kennedy Tower 123.9 (4L/22R, 13R/31L)", "frequency": "123.9" },
-      { "id": "twr-119.1", "name": "Kennedy Tower 119.1 (4R/22L, 13L/31R)", "frequency": "119.1" }
+      {"id": "twr-123.9", "name": "Kennedy Tower 123.9 (4L/22R, 13R/31L)", "frequency": "123.9"},
+      {"id": "twr-119.1", "name": "Kennedy Tower 119.1 (4R/22L, 13L/31R)", "frequency": "119.1"}
     ]
   },
   "areas": {
     "patch": [
-      { "id": "w284907690", "name": "Terminal 8" }
+      {"id": "w284907690", "name": "Terminal 8"}
     ]
   }
 }

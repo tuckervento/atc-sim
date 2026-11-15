@@ -1,0 +1,8 @@
+{
+  "formatVersion": 1,
+  "airport": "TEST",
+  "description": "TEST with E1 unnamed: B and E then meet only through an unnamed connector, bE1-eW (224 m, curving left from westbound B round onto eastbound E). Route tests use it for Q's Q6 rule: an unnamed connector between two consecutive route taxiways counts as the turn from one onto the other.",
+  "edges": {
+    "patch": [{ "id": "bE1-eW", "name": null }]
+  }
+}

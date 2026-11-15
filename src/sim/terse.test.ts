@@ -154,6 +154,29 @@ describe('C1/C2/C6 taxi', () => {
   });
 });
 
+describe('hardstands and hangars (PLAN 1.5 stage b)', () => {
+  it('taxi to the hardstand, unnamed or named', () => {
+    expect(instructions('N123AB taxi hardstand via Q Q5', 'N123AB')).toEqual([
+      { type: 'taxi', to: { kind: 'hardstand', name: null }, via: [{ taxiway: 'Q', turn: null }, { taxiway: 'Q5', turn: null }], holdShort: [] },
+    ]);
+    expect(instructions('N123AB taxi hardstand south via Q5', 'N123AB')).toEqual([
+      { type: 'taxi', to: { kind: 'hardstand', name: 'SOUTH' }, via: [{ taxiway: 'Q5', turn: null }], holdShort: [] },
+    ]);
+  });
+});
+
+describe('hangars (PLAN 1.5 stage b)', () => {
+  it("taxi to the company hangar (unnamed: the aircraft's own company's) or a named one", () => {
+    expect(instructions('DAL4 taxi hangar via A KF', 'DAL4')).toEqual([
+      { type: 'taxi', to: { kind: 'hangar', name: null }, via: [{ taxiway: 'A', turn: null }, { taxiway: 'KF', turn: null }], holdShort: [] },
+    ]);
+    expect(instructions('DAL4 taxi hangar #17 via R:Q2, hold', 'DAL4')).toEqual([
+      { type: 'taxi', to: { kind: 'hangar', name: '17' }, via: [{ taxiway: 'Q2', turn: 'right' }], holdShort: [] },
+      { type: 'hold-position' },
+    ]);
+  });
+});
+
 describe('C3 hold short', () => {
   it('standalone, a runway', () => {
     expect(instructions('ASA93 hs 4R', 'ASA93')).toEqual([
@@ -419,7 +442,13 @@ describe('malformed input gives a specific error', () => {
     ['DAL4 cross 31R at', "expected taxiway after 'at', got end of input"],
     ['DAL4 cross 31R at KE hs B', "expected ',' before 'hs' (separate instructions with commas)"],
     ['DAL4 taxi 31L A R:KE', "expected 'via' after '31L', got 'A'"],
-    ['DAL4 taxi via A', "expected runway, 'ramp', 'pad' or 'penalty' after 'taxi', got 'via'"],
+    ['DAL4 taxi via A', "expected runway, 'ramp', 'pad', 'penalty', 'hardstand' or 'hangar' after 'taxi', got 'via'"],
+    [
+      'DAL4 taxi hangar 17 via A',
+      "expected hangar name after 'hangar', got '17' (a bare number is a runway; write a name that starts with a digit as '#17')",
+    ],
+    ['DAL4 taxi hardstand south', "expected 'via' after 'south', got end of input"],
+    ['DAL4 taxi hangar L:A via B', "a turn (L:/R:) is only allowed on route items, got 'L:A' after 'hangar'"],
     ['DAL4 taxi 31L via', "expected taxiway after 'via', got end of input"],
     ['DAL4 taxi 31L via A, R:KE', "expected an instruction after ',', got 'R:KE'"],
     ['DAL4 taxi 31L via A,', "expected an instruction after ',', got end of input"],

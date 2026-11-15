@@ -13,9 +13,17 @@
 // - Topology repairs, each reported: a taxiway drawn across a runway without a shared node
 //   gets one at the crossing (reusing a vertex within CROSSING_SNAP_M); a taxiway that
 //   dead-ends within RUNWAY_JOIN_M of a runway centerline has its end node joined to the runway.
-// - Edge kind: runway ways → `runway`; taxiway ways → `taxiway`; taxilane ways → `taxiway` when
-//   their name is also carried by a taxiway way (the same named taxiway continuing), else
-//   `rampLane`; parking_position lead-ins → `rampLane`, unnamed. Names are `ref`, else `name`.
+// - Edge kind: runway ways → `runway`. The rest depends on whether the overrides file curates
+//   ramp check-in points (its ramp handoffs, passed in as `rampBoundary`):
+//   - With them (the ramp boundary rule): the movement area is every non-runway edge reachable
+//     from a runway without passing a check-in node; it's `taxiway`, and everything behind the
+//     check-in points is `rampLane`. OSM's way class is ignored, because OSM's taxiway/taxilane
+//     split doesn't follow the boundary (at JFK many check-in marks sit mid-taxilane). So
+//     changing the check-in points means re-importing.
+//   - Without them (a first import): taxiway ways → `taxiway`; taxilane ways → `taxiway` when
+//     their name is also carried by a taxiway way (the same named taxiway continuing), else
+//     `rampLane`; parking_position lead-ins → `rampLane`.
+//   Parking lead-ins stay unnamed. Names are `ref`, else `name`.
 // - Runways: grouped by `ref`, designators without leading zeros, ends assigned by the
 //   centerline's true bearing against the designator.
 // - Hold-shorts: see holds.ts.
@@ -91,7 +99,17 @@ interface GraphWay {
   nodes: string[];
 }
 
-export function convertOverpass(id: string, rawValue: unknown): ConvertResult {
+export interface ConvertOptions {
+  /**
+   * The ramp check-in points (node ids), from the overrides file's ramp handoffs. When given,
+   * they set the ramp boundary: every non-runway edge reachable from a runway without passing
+   * one of them is `taxiway` (ground's), and every other one is `rampLane` (behind a check-in
+   * point, the ramp's). Without them, OSM's way class decides (see the header).
+   */
+  rampBoundary?: string[];
+}
+
+export function convertOverpass(id: string, rawValue: unknown, options: ConvertOptions = {}): ConvertResult {
   const raw = readOverpass(rawValue);
   const warnings: string[] = [];
   const lines: string[] = [];
@@ -330,6 +348,21 @@ export function convertOverpass(id: string, rawValue: unknown): ConvertResult {
       runwayWays.set(runway, [...(runwayWays.get(runway) ?? []), g.way]);
     }
   }
+  if (options.rampBoundary !== undefined) {
+    const boundary = new Set(options.rampBoundary);
+    const missing = options.rampBoundary.filter((n) => !usedNodes.has(n));
+    if (missing.length > 0) throw new Error(`ramp boundary node(s) ${missing.join(', ')} are not on the graph`);
+    const kindsBefore = new Map(edges.map((e) => [e.id, e.kind]));
+    const movement = movementArea(edges, boundary);
+    for (const e of edges) if (e.kind !== 'runway') e.kind = movement.has(e.id) ? 'taxiway' : 'rampLane';
+    const changed = (from: EdgeKind, to: EdgeKind) => edges.filter((e) => kindsBefore.get(e.id) === from && e.kind === to);
+    const toRamp = changed('taxiway', 'rampLane');
+    const toTaxiway = changed('rampLane', 'taxiway');
+    lines.push(
+      `ramp boundary: ${boundary.size} check-in node(s) from the overrides file; ${toRamp.length} edge(s) behind them became rampLane (${countBy(toRamp.map((e) => e.name ?? '(unnamed)'))}), ${toTaxiway.length} unnamed or lane edge(s) reached from the runways became taxiway`,
+    );
+  }
+
   const nodes: Node[] = [...usedNodes].sort(compareIds).map((n) => {
     const [x, y] = pos.get(n) as Point;
     return { id: n, x, y };
@@ -461,6 +494,7 @@ export function convertOverpass(id: string, rawValue: unknown): ConvertResult {
     terminals: [...terminals.values()].sort((p, q) => compareIds(p.id, q.id)),
     gates,
     holdingAreas: [],
+    hangars: [],
     departureLines: [],
     configurations: [],
     towerPositions: [],
@@ -502,6 +536,32 @@ export function convertOverpass(id: string, rawValue: unknown): ConvertResult {
   lines.push(`total edge length ${(lengths / 1000).toFixed(1)} km`);
 
   return { airport: draft, report: { lines, warnings }, context: { movementBoundary, otherStands, holdRefs } };
+}
+
+/**
+ * The movement area: ids of the non-runway edges reachable from any runway node without passing
+ * a `boundary` node. A boundary node is reached but not passed, so the edges on its far side
+ * (the ramp) stay outside.
+ */
+function movementArea(edges: Edge[], boundary: Set<string>): Set<string> {
+  const at = new Map<string, Edge[]>();
+  for (const e of edges) for (const n of [e.from, e.to]) at.set(n, [...(at.get(n) ?? []), e]);
+  const reached = new Set(edges.filter((e) => e.kind === 'runway').flatMap((e) => [e.from, e.to]));
+  const queue = [...reached];
+  const movement = new Set<string>();
+  for (let node = queue.shift(); node !== undefined; node = queue.shift()) {
+    if (boundary.has(node)) continue;
+    for (const e of at.get(node) ?? []) {
+      if (e.kind === 'runway') continue;
+      movement.add(e.id);
+      const next = e.from === node ? e.to : e.from;
+      if (!reached.has(next)) {
+        reached.add(next);
+        queue.push(next);
+      }
+    }
+  }
+  return movement;
 }
 
 /**

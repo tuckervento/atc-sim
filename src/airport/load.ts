@@ -37,6 +37,7 @@ import {
   type Edge,
   type EdgeKind,
   type Gate,
+  type Hangar,
   type HoldingArea,
   type HoldingAreaKind,
   type HoldShort,
@@ -268,7 +269,7 @@ const AIRPORT_KEYS = ['formatVersion', 'id', 'name', 'reference', 'source', 'def
 const EDGE_KINDS: readonly EdgeKind[] = ['runway', 'taxiway', 'rampLane'];
 const HOLD_SHORT_KINDS: readonly HoldShortKind[] = ['runway', 'ils', 'lahso', 'intermediate'];
 const RAMP_HANDOFF_USES: readonly RampHandoffUse[] = ['departures', 'arrivals', 'both'];
-const HOLDING_AREA_KINDS: readonly HoldingAreaKind[] = ['pad', 'penaltyBox'];
+const HOLDING_AREA_KINDS: readonly HoldingAreaKind[] = ['pad', 'penaltyBox', 'hardstand'];
 const RUNWAY_ROLES: readonly RunwayRole[] = ['arrivals', 'departures'];
 const AREA_KINDS: readonly AreaKind[] = ['apron', 'terminalBuilding', 'building'];
 
@@ -307,6 +308,7 @@ function decodeAirport(raw: Raw, issues: string[]): Airport {
     terminals: f.list('terminals', decodeTerminal),
     gates: f.list('gates', decodeGate),
     holdingAreas: f.list('holdingAreas', decodeHoldingArea),
+    hangars: f.list('hangars', decodeHangar),
     departureLines: f.list('departureLines', decodeDepartureLine),
     configurations: f.list('configurations', decodeConfiguration),
     towerPositions: f.list('towerPositions', decodeTowerPosition),
@@ -366,13 +368,9 @@ function decodeRunwayEnd(f: Fields): RunwayEnd {
 
 function decodeRunwayExit(f: Fields): RunwayExit {
   f.checkKeys(['id', 'runwayEnd', 'taxiway', 'node', 'edge']);
-  return {
-    id: f.str('id'),
-    runwayEnd: f.str('runwayEnd'),
-    taxiway: f.str('taxiway'),
-    node: f.str('node'),
-    edge: f.str('edge'),
-  };
+  const exit: RunwayExit = { id: f.str('id'), runwayEnd: f.str('runwayEnd'), node: f.str('node'), edge: f.str('edge') };
+  setIfDefined(exit, 'taxiway', f.optStr('taxiway'));
+  return exit;
 }
 
 function decodeHoldShort(f: Fields): HoldShort {
@@ -417,15 +415,24 @@ function decodeGate(f: Fields): Gate {
 }
 
 function decodeHoldingArea(f: Fields): HoldingArea {
-  f.checkKeys(['id', 'name', 'kind', 'spots', 'outline']);
+  f.checkKeys(['id', 'name', 'kind', 'spokenNames', 'entrances', 'spots', 'outline']);
   const area: HoldingArea = {
     id: f.str('id'),
     name: f.str('name'),
     kind: f.oneOf('kind', HOLDING_AREA_KINDS),
     spots: f.strArray('spots'),
   };
+  setIfDefined(area, 'spokenNames', f.optStrArray('spokenNames'));
+  setIfDefined(area, 'entrances', f.optStrArray('entrances'));
   setIfDefined(area, 'outline', f.optPoints('outline'));
   return area;
+}
+
+function decodeHangar(f: Fields): Hangar {
+  f.checkKeys(['id', 'name', 'airlines', 'spots', 'outline']);
+  const hangar: Hangar = { id: f.str('id'), name: f.str('name'), airlines: f.strArray('airlines'), spots: f.strArray('spots') };
+  setIfDefined(hangar, 'outline', f.optPoints('outline'));
+  return hangar;
 }
 
 function decodeDepartureLine(f: Fields): DepartureLine {
