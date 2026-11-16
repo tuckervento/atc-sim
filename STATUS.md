@@ -1,10 +1,10 @@
 # STATUS
 
-_Last updated: 2026-11-15 (cycle 9 started: 1.12, the ramp rework and 1.13 in parallel)_
+_Last updated: 2026-11-15 (cycle 9: 1.12 and the ramp rework done; 1.13 built, finishing next)_
 
 ## Snapshot
 
-17 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.11. **LGA imports as a format check** (1.6), and **the map renders any airport** (1.7, Q checked it against the FAA diagram). **The simulated tower** (1.10, now at about 37 takeoffs an hour on 31L alongside 15 landings) **and the simulated ramp** (1.11) run.
+18 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.12. **LGA imports as a format check** (1.6), and **the map renders any airport** (1.7, Q checked it against the FAA diagram). **The simulated tower** (1.10, about 37 takeoffs an hour on 31L alongside 15 landings), **the reworked ramp** (1.11, with granular locks) and **the rule checks and score** (1.12) run. **The browser app (1.13) plays KJFK live with typed commands**; its counters, manual-test doc and Q's run are left.
 
 **Phase 0's picks (Q signed off 2026-11-14):**
 - speech-to-text: Deepgram Nova-3
@@ -13,9 +13,34 @@ _Last updated: 2026-11-15 (cycle 9 started: 1.12, the ramp rework and 1.13 in pa
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-In progress: 1.12, the ramp rework, and 1.13 (partly). Next: the rest of 1.13, then 1.14.
+In progress: 1.13 (the rest). Next: 1.14.
 
 ## Completed
+
+- [x] Ramp rework, with cross-shaped footprints and arrival priority — done 2026-11-15 (one subagent in its own worktree, a second in the main checkout; merged and finished by me). Verified by me on `main` with 1.12 and 1.13 merged:
+  - typecheck exit 0, **409 of 409** (38 files, 59.6 s)
+  - **No false collisions:** the 50-seed tower safety scenario with 1.12's collision filter (the agent's sweep, re-run by me) gives 0 overlap episodes and 0 ended sessions on TEST and KJFK. Before, TEST had 5 episodes in seeds 4, 13, 20 and 32.
+  - **1.12's forced runway collision** is still detected (`rules.test.ts`, unedited).
+  - **The agent's figures:**
+    - KJFK A320 usable gates 123 → 147, B77W 58 → 73
+    - T4 alley (3 out, 3 in) 17–20 min → median 8.0, worst 10.2 (bound 11). Q accepted the time.
+    - T4 pushbacks about 120 an hour
+  - **Existing tests changed:**
+    - The rework's ramp tests, each listed in the rework's choices.
+    - `session.test.ts`: T7 now has traffic. My edit, approved by Q.
+    - `sim.test.ts`'s footprint test: LEAD1 and WING1 no longer overlap under the cross shape (approved by Q).
+    - The seed-4 ramp test that asserted the old departure-first order, deleted by Q's decision. The new arrival-first test covers the same setup.
+  - **The parked-footprint cache** in `rules.ts` (my change, Q's decision): `ramp-safety.test.ts` 57.4 s → 40.6 s. Two guard tests come first (a parked aircraft moved along its track; its track replaced at the same `s`), and each is killed by its mutation.
+  - **Scan:** 0 key or personal-info hits across 46 files.
+- [x] 1.12 — Rule checks and score counters — done 2026-11-15 (subagent, own worktree; merged by me). Verified by me:
+  - In the worktree: typecheck exit 0, 335 of 335. No `Math.random`, clock or timers in `rules.ts` or `score.ts`.
+  - **Acceptance, one test each,** which I read:
+    - a forced runway collision is detected and ends the session, naming both aircraft, where, and who was moving them
+    - a crossing without approval counts exactly once
+    - a nose-to-nose standoff is detected after `GRIDLOCK_S` and not before
+    - a scripted 60-minute timeline gives the exact totals and rates
+  - Plus: the same seed gives the same hash with an ended session.
+  - **Its sweep found false collisions,** which I reproduced: 26 overlapping parked E175 pairs at KJFK. They're fixed by the ramp rework above.
 
 - [x] 1.11 — Simulated ramp — done 2026-11-15 (subagent, own worktree; merged by me). Verified by me:
   - In the worktree: typecheck exit 0, 319 of 319. On `main` with the 1.10 follow-ups merged: typecheck exit 0, **322 of 322** across 22 files (26 s).
@@ -229,9 +254,19 @@ In progress: 1.12, the ramp rework, and 1.13 (partly). Next: the rest of 1.13, t
 
 ## In Progress
 
-- [ ] 1.12 — Rule checks and score counters (subagent, own worktree).
-- [ ] Ramp rework (subagent, own worktree): pushback may swing into neighbouring stands or onto taxiways, and granular locks in a controller-agnostic reservation module.
-- [ ] 1.13 — Playable in the browser (subagent, own worktree), all but the counters. The counters, the manual-test doc and Q's run follow 1.12.
+- [ ] 1.13 — Playable in the browser. **Built and merged** (subagent, own worktree): the real-time loop, the terse console, click to select with T for crossings, the event log, pause and 1×/2×/4× speed, and traffic streams from deterministic seeds.
+  - **Verified by me in Chrome:**
+    - bound to `[::1]:5173` only
+    - at 4×, departures check in, including from T7, and arrivals call clear of 31L and 31R
+    - a malformed command shows its error and keeps the text; a valid one is echoed and answered
+    - no console messages
+  - **Not verified by me:** T after a canvas click, since the DevTools tools can't click a canvas by position. The agent verified it with synthetic pointer events, and a real click on the agent's tab, which it took to be Q's, selected an aircraft.
+  - **Left:**
+    - wire the counters to `score.ts` (the interface is in `src/web/game/counters.ts`)
+    - a sim export for which types can depart from a terminal, replacing the app's startup probe (Q)
+    - log holding short (Q)
+    - parked arrivals turn around or tow to a hangar and despawn (Q; needed for 1.14)
+    - `docs/phase1-manual-test.md`, then Q's run
 
 ## Blocked
 
@@ -841,8 +876,65 @@ In progress: 1.12, the ramp rework, and 1.13 (partly). Next: the rest of 1.13, t
   - **1.12's plan carries** 1.10's questions 3 and 7 (runway areas at intersections, airborne footprints).
   - **1.14 waits** for 1.12's checks and the reworked ramp. Tower's crossing-runway rules (TEST 36/27) were not picked.
 
+- 2026-11-15 — **Q's answers during cycle 9:**
+  - **False collisions (from 1.12's sweep): "Cross-shaped footprint + stand rule".** Collisions use the aircraft's plan shape (fuselage, wings, tailplane), not the span × length box. The ramp parks an aircraft only where its footprint clears its neighbours'. Both were handed to the running ramp-rework agent, which owns `footprint.ts` for this cycle.
+    - Evidence: the 1.12 agent's sweep found false overlaps in a TEST departure queue at the aE corner (seeds 4, 13, 20 and 32), and between adjacent parked KJFK stands. My own check found 26 overlapping pairs with an E175 parked as an arrival at each of the 154 KJFK gates that take one.
+  - **1.13:**
+    1. **Add a sim export** saying which types can depart from a terminal, replacing the app's startup probe. After the ramp rework.
+    2. **Log holding short** in the event log. Once voice arrives (Phase 2), Q expects the pilot to remind them "after a couple minutes" if they haven't been talking to them. PRD §4.2.5 says about 30 s at a departure hold; Q's "a couple minutes" is the general version.
+    3. **Parked arrivals** must "either depart again, or go to the hangar (despawn)": a turnaround back into a departure, or a tow to a hangar that removes the aircraft. That's needed before 1.14's soak.
+
+- 2026-11-15 — **1.12 choices** (reference: `rules.ts`, `score.ts`):
+  - **Session:** `world.session` is running, or ended with the first cause and tick. A `session-ended` event is emitted once.
+    - **After the end, `step` keeps advancing;** only the rules and score stop counting. Existing tests make aircraft overlap or cross on purpose.
+    - A cause lists each aircraft with its controller, and an `origin` (`player`, `sim` or `mixed`). That's who controlled them, not whose fault it was.
+  - **Collision:** any two ground footprints overlap. Airborne aircraft and those on final are skipped. A sim-caused collision ends the session too, tagged `origin: 'sim'`, so the bug is seen.
+  - **Unauthorized crossing:** `entered-runway` with `cleared: true` and no current approval for that aircraft at that hold line, checked at the end of the tick.
+  - **Gridlock:** a cycle of stopped aircraft, each within `RESTART_M` of its `blockedBy`, lasting `GRIDLOCK_S` = 60 s.
+  - **Score:** departures at `took-off`, arrivals at `arrived-at-gate`. `getScore` gives the total, the rate per hour and the 15-minute peak per hour, each for departures, arrivals and combined.
+  - **Open for Q:**
+    1. Is `origin` (controllers only) enough for the end screen, or should fault be derived?
+    2. A collision cause lists runway areas, so a crash on 27 at C also names 18/36 (1.10 Q3).
+    3. Count an `entered-runway` with `cleared: false` too?
+    4. Keep running after the end, rather than freezing `step`?
+    5. An approval covers only its own hold line. Crossing the same runway at another line counts as unauthorized. OK?
+- 2026-11-15 — **Ramp rework choices** (reference: the headers of `reservations.ts` and `ramp.ts`):
+  - **`reservations.ts`, controller-agnostic:**
+    - A movement is a body plus legs, cut into segments of about 10 m. Segments are granted ahead of the nose and given back behind the tail.
+    - **Deadlock:** a banker's-style check grants a segment only if the moving records can still finish in some order.
+    - Parked aircraft are permanent reservations. That's the occupancy-aware stand rule.
+    - The header documents how an automated ground controller would plug in (Q's future "player as tower").
+  - **Pushback:** a lane plan is used if one exists. Otherwise the tail may swing into a neighbouring stand, which the departure claims, or onto a taxiway (at most 80 m, only with no ground or tower aircraft within 250 m).
+    - Of the 37 gates an A320 still can't use: 29 stands are too short, 7 gate nodes sit mid-lane (1.5 data), and 1 has no pushback.
+  - **Cross footprint** (`footprint.ts`, Q): fuselage 0.11 L wide; wing the full span, from 0.30 L back, 0.40 W deep; tailplane 0.40 W across the last 0.20 L. These are the agent's proportions from published dimensions as it recalls them. `footprintOf` returns all 12 corners, with `.parts` for part-against-part tests.
+  - **Arrival priority** (Q: "arriving plane should take priority unless the pushback is opening a gate for the incoming plane"):
+    - A departure yields to arrivals taken in no later than its ready tick, which is a fixed set, so it can't starve. Q kept it that way.
+    - A gate-freeing departure goes first.
+    - Priority never interrupts a movement that's under way.
+  - **TDD:** the ramp rewrite and the caching speedups had no test written first; the rewritten ramp tests were written after the code. Engine and footprint tests were mutation-checked.
+  - **Merge:** 1.12 and the rework both added state to `world.ts` and `sim.ts`. I merged them by hand (`git merge-file`, 3 conflicts, both sides kept). 401 then passed once the session test was fixed.
+  - **Open for Q:**
+    1. Arrivals waiting at an entrance get no priority.
+    2. Gate turnover: an arrival can't be assigned a gate whose departure is about to push, so the gate-freeing exception never happens at the ramp today.
+    3. The stand rule holds a parked footprint's convex outline, not the exact cross, so some neighbours still can't be filled together.
+    4. A taxiway push's reserved stretch ahead isn't seen by the player's traffic.
+    5. T1-3's taxiway fallback is a 390 m push.
+- 2026-11-15 — **1.13 choices so far** (reference: `src/web/game/`):
+  - **Scheduler:** at most 8 ticks per frame; a larger backlog is dropped.
+  - **Keys:** T requests a crossing, P pauses, Escape deselects or leaves the console.
+  - **Traffic:** KJFK has 6 arrivals an hour per landing runway and 3 departures an hour per terminal. Airlines and types come from the agent's own table of about 35 airlines, from memory.
+  - **Counters slot:** `Counters { observe(events, sim); read() }`, showing "—" until wired.
+  - **Startup probe:** which types can depart where, found by throwaway one-tick sims. Q wants a sim export instead.
+- 2026-11-15 — **Q's decisions, end of cycle 9:**
+  - Delete the old seed-4 ramp test.
+  - Keep arrival priority as built.
+  - Cache parked footprints.
+  - Accept the alley time.
+  - Fix the T7 session test.
+- 2026-11-15 — **The 1.12 worktree is locked.** Git refuses to remove it: "locked working tree, lock reason: claude agent … (pid 14982)". That's this session's own process. I haven't forced it, and its work is merged. Its branch has 0 unique commits.
+
 ## Next Up
 
-- 1.13, the rest: wire the counters to `score.ts`, write `docs/phase1-manual-test.md`, then Q's run.
-- 1.14 — Scoring-path and soak tests (needs 1.12 and the reworked ramp).
+- 1.13, the rest: the counters, the type export, logging holding short, arrivals turning around or despawning at a hangar, `docs/phase1-manual-test.md`, then Q's run.
+- 1.14 — Scoring-path and soak tests (needs 1.12, done, and the arrival turnaround or despawn).
 - Open for Q, none blocking: 1.6's questions 4–6 and 8; 1.10's 3–7 (5 matters for 1.14); the follow-ups' 2–6; 1.11's 5–9; 1.7's 2–5; 1.9's three; 1.5's five. All are in their Deviations entries.
