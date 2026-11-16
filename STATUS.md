@@ -1,6 +1,6 @@
 # STATUS
 
-_Last updated: 2026-11-15 (cycle 9: 1.12 and the ramp rework done; 1.13 built, finishing next)_
+_Last updated: 2026-11-16 (cycle 10 started: finishing 1.13)_
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ _Last updated: 2026-11-15 (cycle 9: 1.12 and the ramp rework done; 1.13 built, f
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-In progress: 1.13 (the rest). Next: 1.14.
+In progress: finishing 1.13 for Q's manual test (cycle 10). Next: 1.14.
 
 ## Completed
 
@@ -261,8 +261,9 @@ In progress: 1.13 (the rest). Next: 1.14.
     - a malformed command shows its error and keeps the text; a valid one is echoed and answered
     - no console messages
   - **Not verified by me:** T after a canvas click, since the DevTools tools can't click a canvas by position. The agent verified it with synthetic pointer events, and a real click on the agent's tab, which it took to be Q's, selected an aircraft.
-  - **Left:**
+  - **Left, cycle 10** (one subagent, own worktree, in this order):
     - wire the counters to `score.ts` (the interface is in `src/web/game/counters.ts`)
+    - a session-ended banner with the cause (my call: 1.12 ends sessions, and the app doesn't show it yet)
     - a sim export for which types can depart from a terminal, replacing the app's startup probe (Q)
     - log holding short (Q)
     - parked arrivals turn around or tow to a hangar and despawn (Q; needed for 1.14)
@@ -932,6 +933,12 @@ In progress: 1.13 (the rest). Next: 1.14.
   - Accept the alley time.
   - Fix the T7 session test.
 - 2026-11-15 — **The 1.12 worktree is locked.** Git refuses to remove it: "locked working tree, lock reason: claude agent … (pid 14982)". That's this session's own process. I haven't forced it, and its work is merged. Its branch has 0 unique commits.
+
+- 2026-11-16 — **Cycle 10: finishing 1.13,** one subagent in its own worktree. The order is: the export, then turnaround or tow, then the web parts, then the manual-test doc with a scripted twin.
+  - **The scripted twin** runs the doc's exact commands on its seed in a test, so the doc can't drift from what works.
+  - **Turnaround defaults (my proposal, options):**
+    - 35–60 min for narrowbodies, 75–120 min for widebodies
+    - 80% depart again (same aircraft, new flight number), 20% towed to a hangar (removed, gate freed)
 
 ## Next Up
 
