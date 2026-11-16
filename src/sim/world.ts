@@ -298,6 +298,12 @@ export interface RampState {
   streams: DepartureStreamState[];
   /** The ramp's aircraft, and arrivals waiting at an entrance for it. In the order taken. */
   aircraft: RampAircraft[];
+  /**
+   * Turnarounds (ramp.ts): their own generator, seeded from the session's seed, so drawing a
+   * parked arrival's turnaround doesn't shift what the main one gives everything else; and how
+   * many arrivals have turned into departures so far (the next one's number, for its callsign).
+   */
+  turnarounds: { rng: Rng; turned: number };
 }
 
 export interface DepartureStreamState {
@@ -335,6 +341,12 @@ export interface RampAircraft {
   swingInto: GateId | null;
   /** While the ramp taxis it slowly: its pilot's own taxi speed, given back at the check-in. */
   pilotCruiseMps: number | null;
+  /**
+   * An arrival parked at its gate by the ramp: the tick its turnaround is due, and what it does
+   * then (ramp.ts, "Turnarounds"). null otherwise: a departure, an arrival not yet parked, one
+   * added parked (addAircraft), or with turnarounds off.
+   */
+  turnaround: { tick: number; then: 'depart' | 'tow' } | null;
 }
 
 /** What the flight is here to do. The map colours aircraft by it. */
@@ -515,6 +527,14 @@ export type SimEvent =
   | (AircraftEvent & { type: 'ramp-accepted'; rampHandoff: RampHandoffId; gate: GateId })
   /** Stopped at its gate, parked: an arrival's scoring point (PRD §4.3). */
   | (AircraftEvent & { type: 'arrived-at-gate'; gate: GateId })
+  /**
+   * Ramp: a parked arrival (`callsign`) has turned around, and leaves again as a new flight: the
+   * same aircraft, type and airline, now the departure `newCallsign`, parked at `gate`. The
+   * arrival has left the sim; the departure boards, then asks to push (ramp.ts, "Turnarounds").
+   */
+  | (AircraftEvent & { type: 'turnaround'; gate: GateId; newCallsign: string })
+  /** Ramp: a parked arrival was towed from `gate` to a hangar, and has left the sim. Its gate is free. */
+  | (AircraftEvent & { type: 'towed-to-hangar'; gate: GateId })
   /**
    * The player's crossing clearance took it past a runway hold line without a current tower
    * approval for that line (rules.ts, PRD §4.5). Counted in `world.rules`.

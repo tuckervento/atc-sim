@@ -21,6 +21,9 @@
 //   createSim(index, { seed: 1, departures: [{ perHour: 12, flight: (n) => ({ callsign: `JBU${n + 1}`, type: 'A320', terminal: 'T1' }) }] });
 //   addAircraft(sim, { callsign: 'DAL4', type: 'A320', at: { kind: 'gate', gate: 'T1-1' } });
 //   getGate(sim, 'T1-1').occupant;         // 'DAL4'
+// An arrival the ramp has parked turns around after a while (ramp.ts, "Turnarounds"): it leaves
+// again as a new departure from its gate (`turnaround`, with the new callsign), or is towed to a
+// hangar and removed (`towed-to-hangar`). `turnaround: false` in the options turns that off.
 //
 // Rule checks and score (rules.ts, score.ts, PLAN 1.12) run every tick. A collision or a gridlock
 // ends the session; the counters are plain data for the live display and the end report:
@@ -35,7 +38,7 @@ import type { Taxi } from './commands.ts';
 import { hashOf } from './hash.ts';
 import { KNOT_MPS, moveTaxiing, PILOT_SPEED_SPREAD, TAXI_SPEED_KT, updateRunways } from './movement.ts';
 import { APPROACH_SPEED_MPS, dropAircraft, FINAL_SPAWN_M, finalOfArrival, initialTowerState, placeOnFinal, towerDecide, towerMove, towerSetup, towerSpawns, type TowerOptions } from './tower.ts';
-import { adoptAtGate, gateOccupant, initialRampState, placeAtGate, rampDecide, rampDrop, rampMove, rampSetup, rampSpawns, type RampOptions } from './ramp.ts';
+import { adoptAtGate, gateOccupant, initialRampState, placeAtGate, rampDecide, rampDrop, rampMove, rampSetup, rampSpawns, rampTurnarounds, type RampOptions } from './ramp.ts';
 import { checkRules, initialRulesState } from './rules.ts';
 import { initialScore, recordScore, scoreView, type ScoreView } from './score.ts';
 import { dropMovement, initialReservations, updateReservations } from './reservations.ts';
@@ -44,7 +47,7 @@ import { runwayAreas, runwaysOccupied } from './occupancy.ts';
 import { createRng, nextInRange } from './rng.ts';
 import type { RoutePath, RouteStart } from './route.ts';
 import { buildTrack, placeOf, pointOf, type Track } from './track.ts';
-import type { Advisories, Aircraft, AircraftStatus, Controller, CrossingClearance, Role, Session, Sim, SimEvent, UnauthorizedCrossing } from './world.ts';
+import { emit, type Advisories, type Aircraft, type AircraftStatus, type Controller, type CrossingClearance, type Role, type Session, type Sim, type SimEvent, type UnauthorizedCrossing } from './world.ts';
 
 export { AIRCRAFT_TYPES, type AircraftTypeCode } from './aircraft-types.ts';
 export { applyCommand } from './apply.ts';
@@ -52,7 +55,8 @@ export { footprintOf, footprintsOverlap, polygonsOverlap } from './footprint.ts'
 export { GRIDLOCK_S } from './rules.ts';
 export { PEAK_WINDOW_S, type Rates, type ScoreView } from './score.ts';
 export { TICK_HZ, TICK_S } from './movement.ts';
-export type { DepartureFlight, DepartureStream, RampOptions } from './ramp.ts';
+export { canDepartFrom } from './ramp.ts';
+export type { DepartureFlight, DepartureStream, RampOptions, TurnaroundInbound, TurnaroundOptions } from './ramp.ts';
 export type { ArrivalFlight, ArrivalStream, TowerOptions } from './tower.ts';
 export type { Advisories, AircraftStatus, Controller, CrossingClearance, Motion, Role, RuleOrigin, RuleParty, Session, SessionEndCause, Sim, SimEvent, UnauthorizedCrossing } from './world.ts';
 
@@ -75,7 +79,7 @@ export function createSim(index: AirportIndex, options: SimOptions): Sim {
     rng: createRng(options.seed),
     aircraft: [],
     tower: initialTowerState(tower),
-    ramp: initialRampState(ramp),
+    ramp: initialRampState(ramp, options.seed),
     session: { state: 'running' } as const,
     rules: initialRulesState(),
     score: initialScore(),
@@ -243,8 +247,9 @@ export function removeAircraft(sim: Sim, callsign: string): void {
  * 1. The tick count goes up. Events of this tick carry the new count.
  * 2. The controllers decide, on the state as the last tick left it: the tower's arrival streams
  *    spawn, then the tower decides (towerDecide); the reservations give back what movements have
- *    left and grant them more ahead (updateReservations); the ramp's departure streams spawn at
- *    gates, then the ramp decides (rampDecide).
+ *    left and grant them more ahead (updateReservations); parked arrivals due to turn around do
+ *    (rampTurnarounds: towed and removed, or removed and added back as a departure); the ramp's
+ *    departure streams spawn at gates, then the ramp decides (rampDecide).
  * 3. Every body's place is taken (traffic.ts): the start of this tick's movement.
  * 4. Aircraft that taxi move (movement.ts), each planning from those places. That includes the
  *    ramp's on ramp lanes.
@@ -265,6 +270,15 @@ function advance(sim: Sim): void {
   }
   towerDecide(sim);
   updateReservations(sim);
+  for (const due of rampTurnarounds(sim)) {
+    removeAircraft(sim, due.callsign);
+    if (due.kind === 'tow') {
+      emit(sim, { type: 'towed-to-hangar', tick: sim.world.tick, callsign: due.callsign, gate: due.gate });
+      continue;
+    }
+    addAircraft(sim, { callsign: due.newCallsign, type: due.type, airline: due.airline, role: 'departure', at: { kind: 'gate', gate: due.gate } });
+    emit(sim, { type: 'turnaround', tick: sim.world.tick, callsign: due.callsign, gate: due.gate, newCallsign: due.newCallsign });
+  }
   for (const { callsign, type, airline, gate } of rampSpawns(sim)) addAircraft(sim, { callsign, type, airline: airline ?? null, at: { kind: 'gate', gate } });
   rampDecide(sim);
   const occupancy = occupancyOf(sim);

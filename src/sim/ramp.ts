@@ -8,7 +8,8 @@
 // - Arrivals: a ground aircraft handed to ramp ("monitor ramp") and stopped at a ramp entrance at
 //   the end of its taxi there gets a free gate at its terminal, preferring its airline's. Once it
 //   can get its whole body off the entrance, ramp takes it (`ramp-accepted`) and taxis it in; at
-//   the gate it emits `arrived-at-gate` (1.12's arrival scoring point) and stays parked.
+//   the gate it emits `arrived-at-gate` (1.12's arrival scoring point) and parks, until its
+//   turnaround (below).
 // It decides at the start of each tick, after the tower and after the reservations have been
 // brought up to date, and moves its pushbacks after movement.ts has moved the taxiing aircraft
 // (sim.ts, `advance`; world.ts, "Controllers"). Its ramp-lane taxiing is movement.ts's (motion
@@ -86,8 +87,41 @@
 // - Metering, release times and gate-availability delays (Phase 3); tugs and towing.
 // - Fairness: an older request that's refused doesn't stop a younger one whose way is free,
 //   except by arrival priority (above).
-// - An aircraft parked for good (an arrival) whose footprint is in a wider aircraft's way, at a
-//   short stand, keeps that one from being admitted until it's removed (1.14's turnaround).
+// - A parked arrival whose footprint is in a wider aircraft's way, at a short stand, keeps that
+//   one from being admitted until it turns around or is towed (below), or is removed.
+//
+// Turnarounds (cycle 10; Q: parked arrivals "either depart again, or go to the hangar
+// (despawn)"). An arrival the ramp parks at its gate (`arrived-at-gate`) draws, from the
+// turnarounds' own generator (world.ramp.turnarounds, seeded from the session's seed so it
+// doesn't shift the main one's draws), a time at the gate and what it does then:
+// - Depart again: the same aircraft, type and airline as a new flight. sim.ts removes the arrival
+//   (removeAircraft: its gate, its reservation and everything held about it go) and adds the
+//   departure at the same gate under a new callsign (`turnaround`, with it). It's an ordinary
+//   departure from there: it boards (PUSH_READY_S), asks to push, taxis out and checks in. The
+//   score counted the arrival under its callsign at the gate, and counts the departure under the
+//   new one at takeoff: two flights, each once, and no callsign changes on a live aircraft, so
+//   nothing keyed by callsign (tower, ramp, reservations, rules, score) needs to follow a rename.
+//   While it couldn't push back now (every stand its pushback swings into is taken), it waits,
+//   parked, and goes once one is free. Its callsign is drawn when it goes.
+// - Towed to a hangar: removed (removeAircraft), its gate free (`towed-to-hangar`). No tow is
+//   drawn moving: Phase 3's tugs would.
+// Only arrivals the ramp parked turn around. One added parked (addAircraft at a gate, role
+// arrival) stays for good: tests use them as fillers. `RampOptions.turnaround: false` turns it
+// off. New callsigns come from `TurnaroundOptions.callsign`; the app's traffic passes its own,
+// from its flight-number permutation (src/web/game/traffic.ts), so they're unique in a session.
+// The default is the inbound's number plus one, for tests.
+//
+// Turnaround values (my proposal, Q to confirm; options, TurnaroundOptions):
+// - TURNAROUND_NARROWBODY_S 35–60 min and TURNAROUND_WIDEBODY_S 75–120 min at the gate, uniform.
+//   Mine, from the usual published figures: about 30–45 min for a short-haul narrowbody, 1.5–2 h
+//   or more for a long-haul widebody; a little longer at a busy hub. Phase 3's schedules replace it.
+// - WIDEBODY_SPAN_M 36: a widebody has a wingspan of 36 m or more, ICAO aerodrome reference code D
+//   and up (codes: C is 24 m up to 36 m, D 36 m up to 52 m). The span, not the type, because it's
+//   what the sim has for every type: every narrowbody it knows spans 35.8 m or less (A320 family,
+//   737s, E175) and every widebody 47.6 m or more (B763 up), so any threshold between gives the
+//   same split; 36 is the code boundary.
+// - TURNAROUND_DEPART_SHARE 0.8: 80% depart again, 20% towed. Mine: most aircraft at a hub gate
+//   leave again on their next flight; the rest are parked overnight or for maintenance.
 //
 // Values [Builder] (PRD §8.3: "behavior details are [Proposal]"), with their basis. "Mine" means
 // my own reasoning, not a source.
@@ -114,7 +148,7 @@ import { AIRCRAFT_TYPES, isAircraftType, type AircraftTypeCode } from './aircraf
 import { footprintOf } from './footprint.ts';
 import { DECEL_MPS2, KNOT_MPS, safeSpeed, STOP_SNAP_M, TICK_HZ, TICK_S } from './movement.ts';
 import { admit, dropMovement, finishMovement, holdsEnd, parkedConflict, reserveParked, reservedStop, SEGMENT_M, setLeg, type Leg, type ParkedSpec } from './reservations.ts';
-import { nextFloat, nextInRange } from './rng.ts';
+import { createRng, nextFloat, nextInRange } from './rng.ts';
 import { nodeAt } from './stops.ts';
 import { buildTrack, placeOf, type Track } from './track.ts';
 import { emit, type Aircraft, type RampAircraft, type RampState, type Sim } from './world.ts';
@@ -123,6 +157,15 @@ import { emit, type Aircraft, type RampAircraft, type RampState, type Sim } from
 export const PUSH_READY_S: readonly [min: number, max: number] = [30, 90];
 /** A departure stream's spacing varies by this fraction either way, from the seeded RNG. */
 export const DEPARTURE_JITTER = 0.15;
+/** Turnaround time at the gate, seconds, for a narrowbody and a widebody (the header's "Turnarounds"). */
+export const TURNAROUND_NARROWBODY_S: readonly [min: number, max: number] = [35 * 60, 60 * 60];
+export const TURNAROUND_WIDEBODY_S: readonly [min: number, max: number] = [75 * 60, 120 * 60];
+/** A widebody, for its turnaround time: a wingspan of this or more, meters (ICAO aerodrome code D and up). */
+export const WIDEBODY_SPAN_M = 36;
+/** The share of parked arrivals that depart again; the rest are towed to a hangar. */
+export const TURNAROUND_DEPART_SHARE = 0.8;
+/** Mixed into the session's seed for the turnarounds' own generator. Any fixed value: it only has to differ from 0. */
+const TURNAROUND_SEED_MIX = 0x7a3a0d17;
 /** Pushback: the tug's top speed backward, and its acceleration and braking. */
 export const PUSH_SPEED_MPS = 1.5;
 export const PUSH_ACCEL_MPS2 = 0.3;
@@ -171,6 +214,41 @@ export interface DepartureStream {
 
 export interface RampOptions {
   departures?: DepartureStream[];
+  /** Parked arrivals turn around or are towed (the header's "Turnarounds"). Default: on, with the defaults there. false: they stay parked for good. */
+  turnaround?: TurnaroundOptions | false;
+}
+
+/** How parked arrivals turn around (the header's "Turnarounds"). Each field defaults as there. */
+export interface TurnaroundOptions {
+  /** Time at the gate for a narrowbody (wingspan under WIDEBODY_SPAN_M), seconds: drawn uniformly from [min, max]. */
+  narrowbodyS?: readonly [min: number, max: number];
+  /** Time at the gate for a widebody (wingspan WIDEBODY_SPAN_M or more), seconds. */
+  widebodyS?: readonly [min: number, max: number];
+  /** The share of arrivals that depart again, 0–1; the rest are towed to a hangar. */
+  departShare?: number;
+  /**
+   * The new flight's callsign, for the `n`th arrival to turn into a departure (0, 1, …). It must
+   * be unique in the session: no other aircraft may hold it then (addAircraft throws), and the
+   * caller's own flights shouldn't use it. Default: the inbound's flight number plus one, its
+   * airline's usual pairing (DAL401 in, DAL402 out); for a callsign that isn't letters then a
+   * number, it throws.
+   */
+  callsign?: (n: number, inbound: TurnaroundInbound) => string;
+}
+
+/** The arrival that's turning around, for TurnaroundOptions.callsign. */
+export interface TurnaroundInbound {
+  callsign: string;
+  type: AircraftTypeCode;
+  airline: string | null;
+  gate: GateId;
+}
+
+interface Turnaround {
+  narrowbodyS: readonly [number, number];
+  widebodyS: readonly [number, number];
+  departShare: number;
+  callsign: (n: number, inbound: TurnaroundInbound) => string;
 }
 
 /**
@@ -202,6 +280,10 @@ export interface RampSetup {
   readonly departureTracks: Map<string, { plan: DeparturePlan; push: Track; out: Track }>;
   /** A waiting arrival's way in, by its record (wayInFor). Not state: derived from it. */
   readonly waysIn: WeakMap<RampAircraft, { track: Track; s: number }>;
+  /** canDepartFrom's answers, by `<terminal>|<type>`. */
+  readonly canDepart: Map<string, boolean>;
+  /** How parked arrivals turn around. null: they don't (RampOptions.turnaround false). */
+  readonly turnaround: Turnaround | null;
 }
 
 export function rampSetup(index: AirportIndex, options: RampOptions): RampSetup {
@@ -220,11 +302,40 @@ export function rampSetup(index: AirportIndex, options: RampOptions): RampSetup 
     if (first !== undefined) standsByFirstEdge.set(first, stand);
   }
   const handoffNodes = new Set(index.airport.rampHandoffs.map((h) => h.node));
-  return { stands, standEdges, standsByFirstEdge, handoffNodes, plans: new Map(), arrivalWays: new Map(), streams, departureTracks: new Map(), waysIn: new WeakMap() };
+  const turnaround = turnaroundOf(options.turnaround);
+  return { stands, standEdges, standsByFirstEdge, handoffNodes, plans: new Map(), arrivalWays: new Map(), streams, departureTracks: new Map(), waysIn: new WeakMap(), canDepart: new Map(), turnaround };
 }
 
-export function initialRampState(setup: RampSetup): RampState {
-  return { streams: setup.streams.map((s) => ({ nextTick: Math.round((s.firstAtS ?? 0) * TICK_HZ), count: 0 })), aircraft: [] };
+/** The turnaround settings, defaults filled in, or null for off. Throws for a span or share that makes no sense. */
+function turnaroundOf(options: TurnaroundOptions | false | undefined): Turnaround | null {
+  if (options === false) return null;
+  const t: Turnaround = {
+    narrowbodyS: options?.narrowbodyS ?? TURNAROUND_NARROWBODY_S,
+    widebodyS: options?.widebodyS ?? TURNAROUND_WIDEBODY_S,
+    departShare: options?.departShare ?? TURNAROUND_DEPART_SHARE,
+    callsign: options?.callsign ?? nextFlightNumber,
+  };
+  for (const [name, [lo, hi]] of [['narrowbodyS', t.narrowbodyS], ['widebodyS', t.widebodyS]] as const) {
+    if (!(lo >= 0 && hi >= lo)) throw new Error(`turnaround ${name}: expected 0 ≤ min ≤ max seconds, got [${lo}, ${hi}]`);
+  }
+  if (!(t.departShare >= 0 && t.departShare <= 1)) throw new Error(`turnaround departShare: expected 0–1, got ${t.departShare}`);
+  return t;
+}
+
+/** The default new callsign: the inbound's flight number plus one, "DAL401" → "DAL402". */
+function nextFlightNumber(_n: number, inbound: TurnaroundInbound): string {
+  const m = /^([A-Z]+)([0-9]+)$/.exec(inbound.callsign);
+  if (!m) throw new Error(`${inbound.callsign}: the default turnaround callsign needs letters then a flight number; give RampOptions.turnaround.callsign`);
+  return `${m[1]}${Number(m[2]) + 1}`;
+}
+
+/** `seed`: the session's, for the turnarounds' own generator. */
+export function initialRampState(setup: RampSetup, seed: number): RampState {
+  return {
+    streams: setup.streams.map((s) => ({ nextTick: Math.round((s.firstAtS ?? 0) * TICK_HZ), count: 0 })),
+    aircraft: [],
+    turnarounds: { rng: createRng((seed ^ TURNAROUND_SEED_MIX) | 0), turned: 0 },
+  };
 }
 
 /**
@@ -369,7 +480,7 @@ export function adoptAtGate(sim: Sim, callsign: string, gateId: GateId, role: 'd
   const swingInto = plans && !('unable' in plans) && plan !== null ? (plans[plan]?.swing ?? null) : null;
   const blocker = reserveParked(sim, parkedAt(sim, callsign, gateId, ac.type));
   if (blocker !== null) throw new Error(`${callsign}: parked at ${gateId}, in the way of ${blocker}`);
-  sim.world.ramp.aircraft.push({ callsign, phase: role === 'departure' ? 'at-gate' : 'parked', gate: gateId, since: tick, readyTick, rampHandoff: null, pushTo: null, plan, swingInto, pilotCruiseMps: null });
+  sim.world.ramp.aircraft.push({ callsign, phase: role === 'departure' ? 'at-gate' : 'parked', gate: gateId, since: tick, readyTick, rampHandoff: null, pushTo: null, plan, swingInto, pilotCruiseMps: null, turnaround: null });
 }
 
 /** Forgets an aircraft that's leaving the sim: its gate, the stand it claimed, and its gate hold are free. */
@@ -429,6 +540,23 @@ export function departurePlanFor(sim: Sim, gate: GateId, type: AircraftTypeCode)
   const first = plans[0];
   if (!first) throw new Error(`gate ${gate}: an empty plan list`);
   return first;
+}
+
+/**
+ * Whether a `type` can depart from `terminal` at all: some gate of it fits the type and has a
+ * pushback (departurePlanFor). That's a question about the airport, not the moment: the answer is
+ * the same on an empty airport and a full one (a stream's departure then waits for a gate). For
+ * traffic that only flies what can leave (the app's, 1.13). Throws for an unknown terminal.
+ * Cached, by terminal and type.
+ */
+export function canDepartFrom(sim: Sim, terminal: TerminalId, type: AircraftTypeCode): boolean {
+  const key = `${terminal}|${type}`;
+  const known = sim.ramp.canDepart.get(key);
+  if (known !== undefined) return known;
+  if (!sim.index.airport.terminals.some((t) => t.id === terminal)) throw new Error(`no terminal ${terminal} at ${sim.index.airport.id}`);
+  const can = sim.index.airport.gates.some((g) => g.terminal === terminal && !('unable' in departurePlanFor(sim, g.id, type)));
+  sim.ramp.canDepart.set(key, can);
+  return can;
 }
 
 /**
@@ -725,7 +853,7 @@ function callArrivals(sim: Sim): void {
     if (gate === null) continue;
     const blocker = reserveParked(sim, parkedAt(sim, gateHoldId(ac.callsign), gate, ac.type));
     if (blocker !== null) throw new Error(`${ac.callsign}: gate ${gate} was free, but holding it is in the way of ${blocker}`);
-    ramp.aircraft.push({ callsign: ac.callsign, phase: 'called', gate, since: sim.world.tick, readyTick: null, rampHandoff: handoff.id, pushTo: null, plan: null, swingInto: null, pilotCruiseMps: null });
+    ramp.aircraft.push({ callsign: ac.callsign, phase: 'called', gate, since: sim.world.tick, readyTick: null, rampHandoff: handoff.id, pushTo: null, plan: null, swingInto: null, pilotCruiseMps: null, turnaround: null });
   }
 }
 
@@ -926,6 +1054,54 @@ function startTaxiOut(sim: Sim, r: RampAircraft): void {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Turnarounds
+
+/** When a just-parked arrival's turnaround is due, and what it does then, from the turnarounds' generator. null: they're off. */
+function drawTurnaround(sim: Sim, ac: Aircraft): RampAircraft['turnaround'] {
+  const t = sim.ramp.turnaround;
+  if (t === null) return null;
+  const rng = sim.world.ramp.turnarounds.rng;
+  const [lo, hi] = ac.wingspanM >= WIDEBODY_SPAN_M ? t.widebodyS : t.narrowbodyS;
+  const atGateS = nextInRange(rng, lo, hi);
+  const then = nextFloat(rng) < t.departShare ? 'depart' : 'tow';
+  return { tick: sim.world.tick + Math.round(atGateS * TICK_HZ), then };
+}
+
+/** A turnaround due now, for sim.ts to carry out (it adds and removes aircraft). */
+export type TurnaroundDue =
+  | { kind: 'tow'; callsign: string; gate: GateId }
+  | { kind: 'depart'; callsign: string; gate: GateId; newCallsign: string; type: AircraftTypeCode; airline: string | null };
+
+/**
+ * The parked arrivals whose turnaround is due this tick, oldest record first: each to be towed
+ * (removed), or to leave the sim as an arrival and be added back at its gate as the departure
+ * `newCallsign`. One due to depart waits, parked, while it couldn't push back now: the stand its
+ * pushback swings into is taken (choosePlan). Its new callsign is drawn when it goes.
+ */
+export function rampTurnarounds(sim: Sim): TurnaroundDue[] {
+  const t = sim.ramp.turnaround;
+  if (t === null) return [];
+  const due: TurnaroundDue[] = [];
+  for (const r of sim.world.ramp.aircraft) {
+    if (r.phase !== 'parked' || r.turnaround === null || sim.world.tick < r.turnaround.tick) continue;
+    if (r.turnaround.then === 'tow') {
+      due.push({ kind: 'tow', callsign: r.callsign, gate: r.gate });
+      continue;
+    }
+    const ac = aircraftOf(sim, r.callsign);
+    if (choosePlan(sim, r.gate, ac.type) === null) continue;
+    // Its own reservation is left out of this check (the same id): as a departure it holds the same footprint.
+    const blocker = parkedConflict(sim, parkedAt(sim, r.callsign, r.gate, ac.type));
+    if (blocker !== null) throw new Error(`${r.callsign}: parked at ${r.gate}, but parking there again is in the way of ${blocker}`);
+    const turned = sim.world.ramp.turnarounds;
+    const newCallsign = t.callsign(turned.turned, { callsign: r.callsign, type: ac.type, airline: ac.airline, gate: r.gate });
+    turned.turned += 1;
+    due.push({ kind: 'depart', callsign: r.callsign, gate: r.gate, newCallsign, type: ac.type, airline: ac.airline });
+  }
+  return due;
+}
+
+// ---------------------------------------------------------------------------------------------
 // Moving the ramp's aircraft
 
 /**
@@ -961,7 +1137,7 @@ export function rampMove(sim: Sim): void {
 function park(sim: Sim, r: RampAircraft, ac: Aircraft): void {
   finishMovement(sim, ac.callsign);
   Object.assign(ac, { motion: 'controller', status: 'parked', cruiseMps: r.pilotCruiseMps ?? ac.cruiseMps, blockedBy: null });
-  Object.assign(r, { phase: 'parked', since: sim.world.tick, pilotCruiseMps: null });
+  Object.assign(r, { phase: 'parked', since: sim.world.tick, pilotCruiseMps: null, turnaround: drawTurnaround(sim, ac) });
   emit(sim, { type: 'arrived-at-gate', tick: sim.world.tick, callsign: ac.callsign, gate: r.gate });
 }
 
