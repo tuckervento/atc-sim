@@ -25,10 +25,140 @@
         color: var(--text);
         font: 14px/1.4 system-ui, sans-serif;
       }
-      #app,
-      .map {
+      #app {
         position: fixed;
         inset: 0;
+        --side: 400px;
+      }
+      /* The map leaves the right-hand side to the game panel. */
+      .map {
+        position: fixed;
+        inset: 0 var(--side) 0 0;
+      }
+      .side {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: var(--side);
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        background: #0a0e14;
+        border-left: 1px solid var(--edge);
+      }
+      .side button {
+        font: inherit;
+        color: var(--text);
+        background: #1b2430;
+        border: 1px solid var(--edge);
+        border-radius: 4px;
+        padding: 2px 8px;
+        cursor: pointer;
+      }
+      .side button.on {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .side .bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--edge);
+      }
+      .side .bar h1 {
+        flex: 1 1 100%;
+        margin: 0;
+        font-size: 14px;
+      }
+      .side .clock {
+        font: bold 16px ui-monospace, Menlo, monospace;
+        min-width: 7.5em;
+      }
+      .side .clock.paused {
+        color: #f5c518;
+      }
+      .side .speeds {
+        display: flex;
+        gap: 4px;
+      }
+      .side .counters {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 2px 12px;
+        margin: 0;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--edge);
+        font-size: 13px;
+      }
+      .side .counters dt {
+        color: var(--dim);
+      }
+      .side .counters dd {
+        margin: 0;
+        font-family: ui-monospace, Menlo, monospace;
+      }
+      .side .fatal {
+        margin: 0;
+        padding: 6px 10px;
+        background: #3a1212;
+        color: var(--error);
+      }
+      .side .log {
+        flex: 1;
+        overflow-y: auto;
+        margin: 0;
+        padding: 6px 10px;
+        list-style: none;
+        font: 12px/1.45 ui-monospace, Menlo, monospace;
+      }
+      .side .log time {
+        color: var(--dim);
+      }
+      .side .log .pilot {
+        color: #d5dde6;
+      }
+      .side .log .tower {
+        color: #ffb454;
+      }
+      .side .log .unable {
+        color: var(--error);
+      }
+      .side .log .info {
+        color: #7fd1a7;
+      }
+      .side .log .player {
+        color: var(--accent);
+      }
+      .side .console {
+        padding: 8px 10px;
+        border-top: 1px solid var(--edge);
+      }
+      .side .console input {
+        box-sizing: border-box;
+        width: 100%;
+        font: 14px ui-monospace, Menlo, monospace;
+        color: var(--text);
+        background: #111821;
+        border: 1px solid var(--edge);
+        border-radius: 4px;
+        padding: 6px 8px;
+      }
+      .side .console input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .side .console .error {
+        margin: 4px 0 0;
+        color: var(--error);
+        font: 12px ui-monospace, Menlo, monospace;
+      }
+      .side .console .hint {
+        margin: 4px 0 0;
+        color: var(--dim);
+        font-size: 11px;
       }
       .map-canvas {
         display: block;

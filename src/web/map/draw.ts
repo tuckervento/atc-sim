@@ -3,9 +3,10 @@
 
 import type { Point, RunwayRole } from '../../airport/types.ts';
 import type { MapAircraft } from './aircraft.ts';
-import { chooseLabels, type LabelKind, type MeasureLabel, type PlacedLabel, type ScreenBox } from './labels.ts';
+import { BLOCK_DX, BLOCK_DY, BLOCK_LINE_PX, dataBlockLayout, type DataBlock } from './datablock.ts';
+import { chooseLabels, type LabelKind, type MeasureLabel, type PlacedLabel } from './labels.ts';
 import type { Scene, ScenePlace, SceneRunway } from './scene.ts';
-import { AIRCRAFT_FONT, LABEL_FONT, MIN_AIRCRAFT_PX, MIN_WIDTH_PX, PALETTE, roleColor, RUNWAY_USE_COLOR } from './style.ts';
+import { AIRCRAFT_FONT, LABEL_FONT, MIN_AIRCRAFT_PX, MIN_WIDTH_PX, PALETTE, roleColor, RUNWAY_USE_COLOR, SELECTED_COLOR } from './style.ts';
 import { worldToScreen, type Viewport } from './view.ts';
 
 /** Box padding around label text, px. */
@@ -28,7 +29,15 @@ export function labelMeasurer(ctx: CanvasRenderingContext2D): MeasureLabel {
   };
 }
 
-export function drawMap(ctx: CanvasRenderingContext2D, scene: Scene, view: Viewport, aircraft: MapAircraft[], measure: MeasureLabel): void {
+export function drawMap(
+  ctx: CanvasRenderingContext2D,
+  scene: Scene,
+  view: Viewport,
+  aircraft: MapAircraft[],
+  measure: MeasureLabel,
+  /** The selected aircraft's callsign, highlighted. */
+  selected: string | null = null,
+): void {
   ctx.fillStyle = PALETTE.background;
   ctx.fillRect(0, 0, view.widthPx, view.heightPx);
   const px = (p: Point) => worldToScreen(view, p);
@@ -82,42 +91,43 @@ export function drawMap(ctx: CanvasRenderingContext2D, scene: Scene, view: Viewp
   }
 
   // Aircraft data blocks first in layout, so map labels make room for them.
-  const blocks = aircraft.map((ac) => dataBlock(ctx, ac, view));
+  const blocks = aircraftBlocks(ctx, aircraft, view);
   const labels = chooseLabels(scene.labels, view, measure, blocks.map((b) => b.box));
   const activeEnds = activeEndRoles(scene);
   for (const label of labels) drawLabel(ctx, label, activeEnds.get(label.text));
 
   aircraft.forEach((ac, i) => {
-    drawAircraft(ctx, ac, view);
     const block = blocks[i];
+    if (ac.callsign === selected) drawSelection(ctx, ac, view, block);
+    drawAircraft(ctx, ac, view);
     if (block) drawDataBlock(ctx, ac, block);
   });
 }
 
-/** Data block: two lines up and to the right of the nose, joined to it by a leader line. */
-interface DataBlock {
-  lines: [string, string];
-  /** Left edge and first baseline, px. */
-  left: number;
-  baseline: number;
-  box: ScreenBox;
+/** Every aircraft's data block as drawMap draws it: for drawing, and for click-to-select (hit.ts). */
+export function aircraftBlocks(ctx: CanvasRenderingContext2D, aircraft: readonly MapAircraft[], view: Viewport): DataBlock[] {
+  ctx.font = AIRCRAFT_FONT;
+  const width = (text: string) => ctx.measureText(text).width;
+  return aircraft.map((ac) => dataBlockLayout(ac, view, width));
 }
 
-const BLOCK_DX = 14;
-const BLOCK_DY = -22;
-const BLOCK_LINE_PX = 14;
-
-function dataBlock(ctx: CanvasRenderingContext2D, ac: MapAircraft, view: Viewport): DataBlock {
+/** The selected aircraft (PLAN 1.13): a ring round its shape and a frame round its data block, under both. */
+function drawSelection(ctx: CanvasRenderingContext2D, ac: MapAircraft, view: Viewport, block: DataBlock | undefined): void {
   const [x, y] = worldToScreen(view, ac.nose);
-  const lines: [string, string] = [ac.callsign, `${ac.type} ${ac.destination}`];
-  ctx.font = AIRCRAFT_FONT;
-  const width = Math.max(...lines.map((l) => ctx.measureText(l).width));
-  const left = x + BLOCK_DX;
-  const baseline = y + BLOCK_DY;
-  // From the first line's cap height to below the second line's baseline.
-  const top = baseline - 11;
-  const bottom = baseline + BLOCK_LINE_PX + 4;
-  return { lines, left, baseline, box: { x: left + width / 2, y: (top + bottom) / 2, widthPx: width, heightPx: bottom - top } };
+  const k = Math.max(view.scale, MIN_AIRCRAFT_PX / ac.lengthM);
+  const rad = ((ac.headingDeg ?? 0) * Math.PI) / 180;
+  // The shape's middle: half its length back from the nose (the nose itself with no heading).
+  const back = ac.headingDeg === null ? 0 : (ac.lengthM * k) / 2;
+  const [cx, cy] = [x - Math.sin(rad) * back, y + Math.cos(rad) * back];
+  ctx.strokeStyle = SELECTED_COLOR;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, (Math.max(ac.lengthM, ac.wingspanM) * k) / 2 + 5, 0, 2 * Math.PI);
+  ctx.stroke();
+  if (block) {
+    const { x: bx, y: by, widthPx, heightPx } = block.box;
+    ctx.strokeRect(bx - widthPx / 2 - 3, by - heightPx / 2 - 1, widthPx + 6, heightPx + 2);
+  }
 }
 
 function drawDataBlock(ctx: CanvasRenderingContext2D, ac: MapAircraft, block: DataBlock): void {

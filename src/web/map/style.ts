@@ -15,6 +15,9 @@ export const RUNWAY_USE_COLOR: Record<RunwayRole, string> = {
  */
 export const DELAYED_COLOR = '#ff5fd2';
 
+/** The selected aircraft's ring and data-block frame: white, apart from every role color. */
+export const SELECTED_COLOR = '#ffffff';
+
 const ROLE_COLOR: Record<AircraftRole, string> = {
   departure: RUNWAY_USE_COLOR.departures,
   arrival: RUNWAY_USE_COLOR.arrivals,

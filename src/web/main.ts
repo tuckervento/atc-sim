@@ -1,14 +1,22 @@
-// The web app's entry: the airport map chosen by `?airport=<ID>` (PLAN 1.7), with mock
-// traffic until the sim runs in the browser (1.13).
+// The web app's entry (PLAN 1.7, 1.13): the airport map chosen by `?airport=<ID>`, with the sim
+// running on it in real time from `?seed=<n>` (default 1). Wiring only: the session (game/
+// session.ts) runs the sim, the map draws it, the side panel (game/ui.ts) holds the clock, the
+// counters, the log and the dev console.
 
-import { indexAirport } from '../airport/graph.ts';
 import { AirportLoadError } from '../airport/load.ts';
 import type { Airport } from '../airport/types.ts';
+import { withCallsign } from './game/console.ts';
+import { counterRows } from './game/counters.ts';
+import { formatSimTime } from './game/event-log.ts';
+import { hotkeyFor } from './game/hotkeys.ts';
+import { parseSeedParam } from './game/params.ts';
+import { advance, createSession, drawnAircraft, requestCrossing, startupLines, submit, type Session } from './game/session.ts';
+import { buildSidePanel, type SidePanel } from './game/ui.ts';
 import { AIRPORT_IDS, loadMapAirport, parseAirportParam } from './map/airports.ts';
-import { demoAircraft } from './map/demo.ts';
-import { mountMap } from './map/map-view.ts';
+import { mountMap, type MapHandle } from './map/map-view.ts';
 import { buildScene } from './map/scene.ts';
 import { DELAYED_COLOR, RUNWAY_USE_COLOR } from './map/style.ts';
+import { TICK_HZ } from '../sim/sim.ts';
 
 const app = document.querySelector<HTMLDivElement>('#app');
 if (!app) throw new Error('index.html is missing the #app element');
@@ -20,6 +28,11 @@ async function start(): Promise<void> {
     showError(chosen.message, []);
     return;
   }
+  const seed = parseSeedParam(window.location.search);
+  if (!seed.ok) {
+    showError(seed.message, []);
+    return;
+  }
   let airport: Airport;
   try {
     airport = await loadMapAirport(chosen.id);
@@ -28,14 +41,82 @@ async function start(): Promise<void> {
     else showError(`${chosen.id} could not be loaded: ${e instanceof Error ? e.message : String(e)}`, []);
     throw e;
   }
-  document.title = `${airport.id} map — ATC Ground`;
-  const scene = buildScene(airport);
-  const aircraft = demoAircraft(airport.id, indexAirport(airport));
+  document.title = `${airport.id} — ATC Ground`;
+  play(airport, seed.seed);
+}
 
-  const map = document.createElement('div');
-  map.className = 'map';
-  root.replaceChildren(map, legend(airport, () => handle.fit()));
-  const handle = mountMap(map, scene, aircraft);
+function play(airport: Airport, seed: number): void {
+  const session = createSession(airport, { seed });
+  let selected: string | null = null;
+
+  const mapBox = document.createElement('div');
+  mapBox.className = 'map';
+  const panel: SidePanel = buildSidePanel(`${airport.id} · seed ${seed}`, {
+    onSubmit(text) {
+      const result = submit(session, text);
+      if (!result.ok) return result.error;
+      panel.appendLines(result.lines);
+      panel.setInput(selected ? withCallsign('', selected) : '');
+      return null;
+    },
+    onTogglePause: () => togglePause(),
+    onSpeed(speed) {
+      session.controls.speed = speed;
+      panel.setSpeed(speed);
+    },
+  });
+  root.replaceChildren(mapBox, legend(airport, () => map.fit()), panel.element);
+  const map: MapHandle = mountMap(mapBox, buildScene(airport), drawnAircraft(session), { onPick: select });
+  panel.setSpeed(session.controls.speed);
+  panel.appendLines(startupLines(session));
+
+  function select(callsign: string | null): void {
+    selected = callsign;
+    map.setSelected(callsign);
+    if (callsign) panel.setInput(withCallsign(panel.getInput(), callsign));
+  }
+
+  function togglePause(): void {
+    session.controls.paused = !session.controls.paused;
+    refreshClock(session, panel);
+  }
+
+  window.addEventListener('keydown', (ev) => {
+    const target = ev.target;
+    const inTextField = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement;
+    const key = hotkeyFor({ key: ev.key, inTextField, ctrl: ev.ctrlKey, meta: ev.metaKey, alt: ev.altKey, repeat: ev.repeat });
+    if (key === null) return;
+    ev.preventDefault();
+    if (key === 'toggle-pause') togglePause();
+    else if (key === 'deselect') select(null);
+    else if (selected) panel.appendLines(requestCrossing(session, selected));
+  });
+
+  let last: number | null = null;
+  const frame = (now: number) => {
+    // The first frame has no previous one; rAF timestamps can also sit a hair before the last.
+    const dtS = last === null ? 0 : Math.max(0, (now - last) / 1000);
+    last = now;
+    try {
+      panel.appendLines(advance(session, dtS));
+    } catch (e) {
+      // A sim bug: stop the clock, say so, and keep the page as it was for a look.
+      const message = e instanceof Error ? e.message : String(e);
+      panel.showFatal(`The sim stopped on an error: ${message}`);
+      throw e;
+    }
+    const aircraft = drawnAircraft(session);
+    if (selected !== null && !aircraft.some((a) => a.callsign === selected)) select(null);
+    map.setAircraft(aircraft);
+    refreshClock(session, panel);
+    panel.setCounters(counterRows(session.counters.read()));
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+
+function refreshClock(session: Session, panel: SidePanel): void {
+  panel.setClock(formatSimTime(session.sim.world.tick / TICK_HZ), session.controls.paused);
 }
 
 function legend(airport: Airport, onFit: () => void): HTMLElement {
@@ -58,7 +139,7 @@ function legend(airport: Airport, onFit: () => void): HTMLElement {
     list.append(item);
   }
   box.append(list);
-  box.append(el('p', 'hint', 'Drag to pan · wheel to zoom · traffic is a mock'));
+  box.append(el('p', 'hint', 'Drag to pan · wheel to zoom · click an aircraft to select it'));
   const fit = el('button', '', 'Fit airport');
   fit.addEventListener('click', onFit);
   box.append(fit);

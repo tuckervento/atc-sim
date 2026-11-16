@@ -2,7 +2,8 @@
 // drag, zoom by wheel around the cursor. Redraws on the next animation frame after a change.
 
 import type { MapAircraft } from './aircraft.ts';
-import { drawMap, labelMeasurer } from './draw.ts';
+import { aircraftBlocks, drawMap, labelMeasurer } from './draw.ts';
+import { hitTest } from './hit.ts';
 import type { Scene } from './scene.ts';
 import { fitView, panBy, zoomAt, type Viewport } from './view.ts';
 
@@ -11,15 +12,25 @@ const FIT_PADDING_PX = 40;
 /** Zoom per wheel pixel: a typical 100 px notch is ×1.16. */
 const WHEEL_ZOOM_PER_PX = 0.0015;
 
+/** Pointer travel under this between press and release is a click, not a drag, px. */
+const CLICK_SLOP_PX = 4;
+
 export interface MapHandle {
   /** Replaces the aircraft drawn (1.13 calls this every frame). */
   setAircraft(aircraft: MapAircraft[]): void;
+  /** Highlights an aircraft, or none. */
+  setSelected(callsign: string | null): void;
   /** Back to the whole-airport view. */
   fit(): void;
   getView(): Viewport;
 }
 
-export function mountMap(container: HTMLElement, scene: Scene, initialAircraft: MapAircraft[]): MapHandle {
+export interface MapOptions {
+  /** A click (not a drag) on the map: the aircraft under it (hit.ts), or null for none. */
+  onPick?: (callsign: string | null) => void;
+}
+
+export function mountMap(container: HTMLElement, scene: Scene, initialAircraft: MapAircraft[], options: MapOptions = {}): MapHandle {
   const canvas = document.createElement('canvas');
   canvas.className = 'map-canvas';
   container.append(canvas);
@@ -28,6 +39,7 @@ export function mountMap(container: HTMLElement, scene: Scene, initialAircraft: 
   const measure = labelMeasurer(ctx);
 
   let aircraft = initialAircraft;
+  let selected: string | null = null;
   let view: Viewport = fitView(scene.bounds, container.clientWidth, container.clientHeight, FIT_PADDING_PX);
   let fitted = true;
   let frame = 0;
@@ -38,7 +50,7 @@ export function mountMap(container: HTMLElement, scene: Scene, initialAircraft: 
       frame = 0;
       const dpr = window.devicePixelRatio || 1;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawMap(ctx, scene, view, aircraft, measure);
+      drawMap(ctx, scene, view, aircraft, measure, selected);
     });
   };
 
@@ -71,32 +83,45 @@ export function mountMap(container: HTMLElement, scene: Scene, initialAircraft: 
     { passive: false },
   );
 
-  let drag: { x: number; y: number; pointer: number } | null = null;
+  // A press that moves less than CLICK_SLOP_PX before release is a click: it picks an aircraft.
+  // Beyond that it's a drag, and pans (and picks nothing).
+  let drag: { x: number; y: number; pointer: number; travelPx: number } | null = null;
   canvas.addEventListener('pointerdown', (ev) => {
     if (ev.button !== 0) return;
-    drag = { x: ev.clientX, y: ev.clientY, pointer: ev.pointerId };
+    drag = { x: ev.clientX, y: ev.clientY, pointer: ev.pointerId, travelPx: 0 };
     canvas.setPointerCapture(ev.pointerId);
     canvas.classList.add('dragging');
   });
   canvas.addEventListener('pointermove', (ev) => {
     if (!drag || ev.pointerId !== drag.pointer) return;
     view = panBy(view, ev.clientX - drag.x, ev.clientY - drag.y);
+    drag.travelPx += Math.hypot(ev.clientX - drag.x, ev.clientY - drag.y);
     drag.x = ev.clientX;
     drag.y = ev.clientY;
     fitted = false;
     redraw();
   });
-  const endDrag = (ev: PointerEvent) => {
+  const endDrag = (ev: PointerEvent, released: boolean) => {
     if (!drag || ev.pointerId !== drag.pointer) return;
+    const click = released && drag.travelPx < CLICK_SLOP_PX;
     drag = null;
     canvas.classList.remove('dragging');
+    if (click && options.onPick) {
+      const rect = canvas.getBoundingClientRect();
+      const blocks = aircraftBlocks(ctx, aircraft, view).map((b) => b.box);
+      options.onPick(hitTest(aircraft, view, [ev.clientX - rect.left, ev.clientY - rect.top], blocks));
+    }
   };
-  canvas.addEventListener('pointerup', endDrag);
-  canvas.addEventListener('pointercancel', endDrag);
+  canvas.addEventListener('pointerup', (ev) => endDrag(ev, true));
+  canvas.addEventListener('pointercancel', (ev) => endDrag(ev, false));
 
   return {
     setAircraft(next) {
       aircraft = next;
+      redraw();
+    },
+    setSelected(callsign) {
+      selected = callsign;
       redraw();
     },
     fit() {
