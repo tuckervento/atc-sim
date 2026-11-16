@@ -114,8 +114,9 @@ export interface ArrivalStreamState {
   count: number;
   /**
    * On a runway that also takes departures: whether a departure has started its takeoff roll
-   * since the last arrival was spawned. While a departure waits and this is false, the next
-   * arrival is held back, so landings and takeoffs interleave.
+   * since the last arrival was spawned, with no arrival for this end still on final (so behind
+   * that one). While a departure waits and this is false, the next arrival is held back, so
+   * landings and takeoffs interleave.
    */
   departureSinceArrival: boolean;
 }

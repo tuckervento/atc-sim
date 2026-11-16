@@ -14,8 +14,41 @@
 // is clear of the runway, and a departure from line-up until lift-off. A movement starts only
 // when no other ground aircraft is in its runway's area (occupancy.ts) and no other movement
 // depends on it: they share a runway, or one's path passes through the other's runway's area
-// (an intersection). So tower never puts two aircraft on a runway at once. Each runway is one
-// resource: no crossing downfield behind a landing aircraft, and no line-up behind one.
+// (an intersection). No crossing downfield behind a landing aircraft.
+//
+// The exceptions are same-runway separation from FAA Order JO 7110.65BB (faa.gov's HTML
+// edition, chapter 3 sections 9 and 10, read 2026-11-15; which change it carries wasn't
+// checked), for a departure and other traffic using the same runway end. Every aircraft in AIRCRAFT_TYPES is Category III (3-9-6 note: "all other aircraft"), so
+// the distances are 6,000 ft.
+// - Line up and wait (LUAW, 3-9-4): "when takeoff clearances cannot be issued because of
+//   traffic", a departure lines up behind traffic from its end that is past its line-up spot (its
+//   tail past the departure's nose stop): a departure on its takeoff roll, or an arrival that has
+//   landed and is rolling out. Behind a landing aircraft is 3-9-4c2(b): allowed at facilities
+//   with safety logic in full core alert, unless the weather is below ceiling 800 ft or
+//   visibility 2 miles. Tower applies it at every airport, as if each had that system in VMC;
+//   JFK has ASDE-X (from memory, not re-checked). Only one departure lines up or waits at a
+//   time on a runway end (3-9-4: no simultaneous LUAW on one runway between sunrise and sunset
+//   unless the local assist/local monitor position is staffed). 7110.65 letters its
+//   subparagraphs in its stylesheet, so letters here are counted from the HTML's lists; 3-10-6's
+//   own reference to "3-10-5e2" agrees with that count.
+// - Takeoff roll (3-9-6): not until a departure ahead is airborne 6,000 ft ahead or past the
+//   runway's end (3-9-6a), nor until an arrival ahead is clear of the runway (3-9-6b); and the
+//   spacing below.
+// - Landing clearance (3-10-5e1, as at a facility without safety logic: stricter than e2): never
+//   with a departure lining up or waiting on the runway. A departure from its end on its roll,
+//   or airborne, is no bar if, by tower's prediction, it will be airborne 6,000 ft past the
+//   threshold, or past the runway's end, when the arrival crosses the threshold (3-10-3b;
+//   anticipating separation, 3-10-6). Once rolling, the prediction is exact.
+// - So a departure lines up only if, by tower's estimate, it rolls DEPARTURE_MARGIN_S before
+//   the next arrival's decision point on its end, and reaches that 6,000 ft point
+//   DEPARTURE_MARGIN_S before the arrival's threshold. The estimate includes the wait for an
+//   arrival ahead to be clear, from that arrival's own rollout run forward with no traffic.
+// - Arrivals on an intersecting runway it depends on keep the older, conservative rule: the
+//   departure lifts off DEPARTURE_MARGIN_S before their decision point (3-10-4's
+//   intersecting-runway rules aren't modelled).
+// - Interleave: while departures wait, an arrival stream holds its next arrival until a
+//   departure has rolled behind the last one (with none still on final), so there's at least one
+//   takeoff between landings, and often two.
 //
 // Values [Builder] (PRD §8.4: "within 'feels like JFK'"), with their basis. "Mine" means my own
 // reasoning, not a source.
@@ -36,7 +69,8 @@
 //   nearest clear exit beyond them, braked to at 1.2 (it then rolls to it at exit speed). An exit
 //   needing more than 3.5 is never used. Farther exits are left out because they're slow: on
 //   31L, PC to PF take 74–83 s from threshold to clear, against 40–61 s for MB to PA, and the
-//   next arrival's decision point comes 80 s after the last one's threshold.
+//   next arrival's decision point comes 80 s after the last one's threshold. (TEST's 36 takes F,
+//   1,300 m in, at about 2.4 m/s², since Q had 18/36 lengthened to 2,000 m.)
 // - EXIT_SPEEDS_KT: 40 kt through an exit turning 30° or less off the centerline, 30 kt at
 //   45°, 10 kt at 90°, linear between; sharper than 90° uses movement.ts's taxi turn speeds.
 //   Mine: rapid exits are taken at about 30–50 kt, right-angle turn-offs at taxi-turn speed.
@@ -48,8 +82,11 @@
 // - Takeoff: 2.0 m/s² to lift-off at 150 kt (about 39 s, 1,500 m); heavies 1.6 m/s² to 165 kt
 //   (about 53 s, 2,250 m). Mine: typical jet takeoff rolls are 30–50 s.
 // - DEPARTURE_SPACING_S 60 between takeoff rolls on a runway, 120 behind a heavy. Mine for the
-//   60; the 2 minutes behind a heavy is the FAA wake-turbulence departure interval (7110.65,
-//   from memory).
+//   60: 3-9-6a alone would allow about 43 s (the leader 6,000 ft down at 2.0 m/s²), and line-up
+//   behind a roll already makes it about 45 s. The 2 minutes behind a heavy is 7110.65BB 3-9-6,
+//   wake turbulence: 2 minutes behind wake Category B or D on the same runway, 3 behind A
+//   (the A388 is A, from memory; tower gives every heavy 2 minutes, by Q's decision).
+// - SAME_RUNWAY_CAT_III_M 6,000 ft (1,829 m): 3-9-6a and 3-10-3b, either aircraft Category III.
 // - MIN_ARRIVAL_SPACING_S 100 between arrivals on final for one runway: about 3.75 NM at
 //   135 kt. Mine: JFK runs about 3–4 NM; less, and a slow exit sends the next one around.
 // - Arrival streams: one every 3600/perHour s, ±ARRIVAL_JITTER 15% from the seeded RNG, never
@@ -57,8 +94,9 @@
 // - CROSSING_WINDOW_S 80: an arrival within 80 s of its threshold holds a crossing of its
 //   runway. Mine: 20 s for the decision point, about 45 s for a crosser to start and clear,
 //   about 10 s for the player to pass the clearance on, and a few to spare.
-// - DEPARTURE_MARGIN_S 15: a departure lines up only if, by tower's estimate, it lifts off at
-//   least 15 s before the next arrival's decision point. Mine.
+// - DEPARTURE_MARGIN_S 15: the margin on tower's line-up estimates (the runway rule above). Mine.
+//   Measured on KJFK 31L and TEST 27 with a full queue, 15 and 30 arrivals an hour, seeds 1–3:
+//   lift-off is never later than the estimate (at most 3.4 s earlier).
 // - APPROVAL_TIMEOUT_S 60: an approval not used within a minute is cancelled. Mine.
 
 import { edgeLength, edgePolyline, edgesAt, otherEnd, type AirportIndex } from '../airport/graph.ts';
@@ -111,6 +149,8 @@ export const ARRIVAL_JITTER = 0.15;
 export const CROSSING_WINDOW_S = 80;
 export const DEPARTURE_MARGIN_S = 15;
 export const APPROVAL_TIMEOUT_S = 60;
+/** 6,000 ft: same-runway separation when either aircraft is Category III (7110.65 3-9-6a, 3-10-3b). */
+export const SAME_RUNWAY_CAT_III_M = 6000 * 0.3048;
 
 const APPROACH_MPS = APPROACH_SPEED_KT * KNOT_MPS;
 /** An arrival on final flies this speed, m/s. */
@@ -300,12 +340,11 @@ function canSpawn(sim: Sim, runwayEnd: RunwayEndDesignator, departureSinceArriva
     const waiting = sim.world.tower.departures.some((d) => d.runwayEnd === runwayEnd && ['arrived', 'holding-short', 'lining-up', 'lined-up'].includes(aircraftOf(sim, d.callsign).status));
     if (waiting) return false;
   }
-  // A departure already lining up must be airborne well before this one's decision point.
-  const decisionTick = sim.world.tick + Math.round((FINAL_SPAWN_M / APPROACH_MPS - DECISION_S) * TICK_HZ);
+  // A departure already lining up or rolling must leave this one its separation (departureFits).
+  const thresholdTick = sim.world.tick + Math.round((FINAL_SPAWN_M / APPROACH_MPS) * TICK_HZ);
   for (const d of sim.world.tower.departures) {
-    if (d.airborneByTick === null || aircraftOf(sim, d.callsign).airborne) continue;
-    if (!dependent(end.runway, end.areas, setupOf(sim, d.runwayEnd).runway, setupOf(sim, d.runwayEnd).areas)) continue;
-    if (decisionTick < d.airborneByTick + DEPARTURE_MARGIN_S * TICK_HZ) return false;
+    if (d.airborneByTick === null) continue;
+    if (!fits(sim, runwayEnd, thresholdTick, departureTimes(sim, d), DEPARTURE_MARGIN_S)) return false;
   }
   return true;
 }
@@ -381,11 +420,22 @@ function decideLanding(sim: Sim, arrival: TowerArrival): void {
 
 /** Why an arrival can't land now, or null. */
 function landingBlocked(sim: Sim, ac: Aircraft, end: RunwayEndSetup): string | null {
-  const onRunway = groundAircraftOn(sim, end.runway, ac.callsign);
+  // A departure from this end on its roll, or airborne, is no bar if it will be airborne 6,000 ft
+  // past the threshold by the time this one crosses it (7110.65 3-10-3b, anticipated: 3-10-6).
+  // One lining up or waiting is (3-10-5e1): it's still a movement below.
+  const inS = (end.thresholdM - ac.s) / APPROACH_MPS;
+  const departing = sim.world.tower.departures.flatMap((d) => {
+    const dac = aircraftOf(sim, d.callsign);
+    return d.runwayEnd === end.end && (dac.status === 'taking-off' || dac.status === 'airborne') ? [dac] : [];
+  });
+  const late = departing.find((dac) => thresholdClearS(end, dac) > inS);
+  if (late) return `${late.callsign} departing`;
+  const ahead = departing.map((dac) => dac.callsign);
+  const onRunway = groundAircraftOn(sim, end.runway, ac.callsign, ahead);
   if (onRunway) return `${onRunway} on the runway`;
   const crossing = sim.world.tower.approvals.find((a) => a.entered && a.areas.includes(end.runway));
   if (crossing) return `${crossing.callsign} crossing`;
-  const movement = activeMovements(sim).find((m) => m.callsign !== ac.callsign && dependent(end.runway, end.areas, m.runway, m.areas));
+  const movement = activeMovements(sim).find((m) => m.callsign !== ac.callsign && !ahead.includes(m.callsign) && dependent(end.runway, end.areas, m.runway, m.areas));
   if (movement) return `${movement.callsign} on the runway`;
   return null;
 }
@@ -442,7 +492,15 @@ function lineUp(sim: Sim, ac: Aircraft, d: TowerDeparture): void {
   if (entry < 0) throw new Error(`${ac.callsign}: hold ${hold.id} leads onto runway ${end.runway} away from its centerline`);
   const pathEdges = [...onto.edges, ...end.edges.slice(entry)];
   const areas = new Set<RunwayId>(pathEdges.flatMap((e) => sim.runwayAreas.get(e) ?? []));
-  if (departureBlocked(sim, ac, end, [...areas], 'line-up') !== null) return;
+  // Line up and wait behind traffic from this end that is past the spot (7110.65 3-9-4): a
+  // departure on its takeoff roll, or a landed arrival rolling out.
+  const lineupCenterlineAt = (end.nodeAt[entry] ?? NaN) + ac.lengthM + LINEUP_MARGIN_M;
+  // (An arrival's track starts at the runway end's node, so its `s` is its centerline distance.)
+  const passed = [
+    ...rollingAhead(sim, d).filter((a) => centerlineAt(end, a) - a.lengthM >= lineupCenterlineAt),
+    ...rollingOut(sim, d.runwayEnd).filter((a) => a.s - a.lengthM >= lineupCenterlineAt),
+  ].map((a) => a.callsign);
+  if (departureBlocked(sim, ac, end, [...areas], 'line-up', passed) !== null) return;
 
   const place = placeOf(ac.track, ac.s);
   if (place.kind !== 'node') throw new Error(`${ac.callsign}: a waiting departure isn't on a node`);
@@ -456,17 +514,16 @@ function lineUp(sim: Sim, ac: Aircraft, d: TowerDeparture): void {
   const lineupAt = nodeAt(track, place.i - t0 + onto.edges.length) + ac.lengthM + LINEUP_MARGIN_M;
   if (lineupAt >= track.lengthM) throw new Error(`${ac.callsign}: runway ${end.end} is too short to line up on`);
 
-  // Estimated lift-off: line up, the pause, any wait for spacing, then the roll.
+  // Estimated lift-off: line up, the pause, any wait for spacing or for an arrival ahead to be
+  // clear (3-9-6b; startRoll sees it the tick after), then the roll.
   const perf = takeoffOf(ac);
   const lineupS = 1.1 * travelTime(lineupAt - s, LINEUP_MPS, ACCEL_MPS2, DECEL_MPS2);
-  const rollStart = Math.max(sim.world.tick + (lineupS + ROLL_DELAY_S) * TICK_HZ, spacingTick(sim, end.runway));
+  const arrivalsClear = sim.world.tower.arrivals.filter((a) => passed.includes(a.callsign)).map((a) => predictedClearTick(sim, aircraftOf(sim, a.callsign), a) + 1);
+  const rollStart = Math.max(sim.world.tick + (lineupS + ROLL_DELAY_S) * TICK_HZ, spacingTick(sim, end.runway), ...arrivalsClear);
   const airborneBy = Math.ceil(rollStart + (perf.liftoffMps / perf.accelMps2) * TICK_HZ);
+  const clearBy = rollStart + thresholdClearFromS(end, perf, lineupCenterlineAt, 0) * TICK_HZ;
   for (const a of sim.world.tower.arrivals) {
-    if (a.committed) continue;
-    const ae = setupOf(sim, a.runwayEnd);
-    if (!dependent(end.runway, [...areas], ae.runway, ae.areas)) continue;
-    const decisionTick = sim.world.tick + (toThreshold(sim, a) / APPROACH_MPS - DECISION_S) * TICK_HZ;
-    if (decisionTick < airborneBy + DEPARTURE_MARGIN_S * TICK_HZ) return;
+    if (!a.committed && !departureFits(sim, a, d.runwayEnd, end.runway, [...areas], rollStart, airborneBy, clearBy)) return;
   }
 
   Object.assign(ac, { track, s, clearance: null, crossings: [], holdPosition: false, motion: 'controller', status: 'lining-up', blockedBy: null });
@@ -476,11 +533,20 @@ function lineUp(sim: Sim, ac: Aircraft, d: TowerDeparture): void {
 }
 
 /** Why a departure can't line up or roll now (its path passes the `areas`), or null. */
-function departureBlocked(sim: Sim, ac: Aircraft, end: RunwayEndSetup, areas: RunwayId[], start: 'line-up' | 'roll'): string | null {
-  const onRunway = groundAircraftOn(sim, end.runway, ac.callsign);
+function departureBlocked(sim: Sim, ac: Aircraft, end: RunwayEndSetup, areas: RunwayId[], start: 'line-up' | 'roll', passed: readonly string[] = []): string | null {
+  // `passed`: traffic ahead it may line up and wait behind (lineUp). Rolling, nothing is passed:
+  // a departure ahead is in the way until airborne (3-9-6a), an arrival until clear (3-9-6b).
+  const d = sim.world.tower.departures.find((x) => x.callsign === ac.callsign);
+  const onRunway = groundAircraftOn(sim, end.runway, ac.callsign, passed);
   if (onRunway) return `${onRunway} on the runway`;
-  const movement = activeMovements(sim).find((m) => m.callsign !== ac.callsign && dependent(end.runway, areas, m.runway, m.areas));
+  const movement = activeMovements(sim).find((m) => m.callsign !== ac.callsign && !passed.includes(m.callsign) && dependent(end.runway, areas, m.runway, m.areas));
   if (movement) return `${movement.callsign} on the runway`;
+  if (start === 'roll' && d) {
+    // Airborne ahead: at least the Category III distance (7110.65 3-9-6a).
+    const at = centerlineAt(end, ac);
+    const close = departuresAhead(sim, d).find((a) => a.airborne && centerlineAt(end, a) - at < SAME_RUNWAY_CAT_III_M);
+    if (close) return `${close.callsign} too close ahead`;
+  }
   if (sim.world.tower.approvals.some((a) => a.areas.includes(end.runway))) return 'crossing approved';
   // A held crossing goes before a departure that hasn't started to line up: crossings are quick,
   // and would wait out every departure otherwise. One already on the runway goes first.
@@ -494,23 +560,100 @@ function startRoll(sim: Sim, ac: Aircraft, d: TowerDeparture): void {
   if (sim.world.tick < spacingTick(sim, end.runway)) return;
   const areas = movementAreas(sim, ac);
   if (departureBlocked(sim, ac, end, areas, 'roll') !== null) return;
-  // It must be airborne before any arrival's decision point; if not, it waits (and that one goes around).
+  // Rolling now, it must leave each arrival its separation (departureFits, with no margin: from
+  // here the roll is certain); if not, it waits (and that one goes around).
   const perf = takeoffOf(ac);
   const airborneTick = sim.world.tick + (perf.liftoffMps / perf.accelMps2) * TICK_HZ;
+  const clearTick = sim.world.tick + thresholdClearS(end, ac) * TICK_HZ;
   for (const a of sim.world.tower.arrivals) {
-    if (a.committed) continue;
-    const ae = setupOf(sim, a.runwayEnd);
-    if (!dependent(end.runway, areas, ae.runway, ae.areas)) continue;
-    if (sim.world.tick + (toThreshold(sim, a) / APPROACH_MPS - DECISION_S) * TICK_HZ < airborneTick) return;
+    if (!a.committed && !departureFits(sim, a, d.runwayEnd, end.runway, areas, sim.world.tick, airborneTick, clearTick, 0)) return;
   }
   ac.status = 'taking-off';
   const heavy = HEAVY_TYPES.includes(ac.type);
   const rolls = sim.world.tower.rolls.filter((r) => r.runway !== end.runway);
   sim.world.tower.rolls = [...rolls, { runway: end.runway, tick: sim.world.tick, heavy }];
+  // It counts for the interleave only behind the last arrival: with none still on final here.
+  // (One rolling ahead of an arrival on final leaves no takeoff between that one and the next.)
+  const onFinal = sim.world.tower.arrivals.some((a) => a.runwayEnd === d.runwayEnd && aircraftOf(sim, a.callsign).airborne);
   for (const stream of sim.world.tower.streams) {
-    if (stream.runwayEnd === d.runwayEnd) stream.departureSinceArrival = true;
+    if (stream.runwayEnd === d.runwayEnd && !onFinal) stream.departureSinceArrival = true;
   }
   emit(sim, { type: 'takeoff-roll', tick: sim.world.tick, callsign: ac.callsign, runwayEnd: d.runwayEnd });
+}
+
+/**
+ * Whether a departure from `runwayEnd` (on `runway`, its path through `areas`) rolling at tick
+ * `rollStart`, airborne by `airborneBy` and 6,000 ft past the threshold by `clearBy`, leaves
+ * arrival `a` its separation, with `marginS` to spare on tower's estimates:
+ * - Landing on the same end: rolling before its landing clearance (7110.65 3-10-5e1), and
+ *   airborne 6,000 ft past the threshold, or past the runway's end, before it crosses the
+ *   threshold (3-10-3b).
+ * - Landing on another runway it depends on (an intersection): airborne before its decision
+ *   point. The intersecting-runway rules (3-10-4) aren't modelled, so this stays conservative.
+ */
+function departureFits(sim: Sim, a: TowerArrival, runwayEnd: RunwayEndDesignator, runway: RunwayId, areas: RunwayId[], rollStart: number, airborneBy: number, clearBy: number, marginS = DEPARTURE_MARGIN_S): boolean {
+  const thresholdTick = sim.world.tick + (toThreshold(sim, a) / APPROACH_MPS) * TICK_HZ;
+  return fits(sim, a.runwayEnd, thresholdTick, { runwayEnd, runway, areas, rollStart, airborneBy, clearBy }, marginS);
+}
+
+interface DepartureTimes {
+  runwayEnd: RunwayEndDesignator;
+  runway: RunwayId;
+  areas: RunwayId[];
+  /** Ticks: the roll starts, it lifts off, it's 6,000 ft past the threshold (thresholdClearS). */
+  rollStart: number;
+  airborneBy: number;
+  clearBy: number;
+}
+
+/** departureFits, for an arrival on `arrivalEnd` crossing its threshold at `thresholdTick`. */
+function fits(sim: Sim, arrivalEnd: RunwayEndDesignator, thresholdTick: number, dep: DepartureTimes, marginS: number): boolean {
+  const ae = setupOf(sim, arrivalEnd);
+  if (!dependent(dep.runway, dep.areas, ae.runway, ae.areas)) return true;
+  const decisionTick = thresholdTick - DECISION_S * TICK_HZ;
+  const margin = marginS * TICK_HZ;
+  if (arrivalEnd === dep.runwayEnd) return dep.rollStart + margin <= decisionTick && dep.clearBy + margin <= thresholdTick;
+  return dep.airborneBy + margin <= decisionTick;
+}
+
+/** Tower's estimates for a departure lining up, lined up or rolling (airborneByTick set). */
+function departureTimes(sim: Sim, d: TowerDeparture): DepartureTimes {
+  const ac = aircraftOf(sim, d.callsign);
+  const end = setupOf(sim, d.runwayEnd);
+  const perf = takeoffOf(ac);
+  if (d.airborneByTick === null || d.lineupAt === null) throw new Error(`${d.callsign}: no line-up estimate`);
+  const base = { runwayEnd: d.runwayEnd, runway: end.runway, areas: end.areas };
+  if (ac.status === 'taking-off' || ac.status === 'airborne') {
+    const now = sim.world.tick;
+    return { ...base, rollStart: now, airborneBy: now + Math.max(0, (perf.liftoffMps - ac.v) / perf.accelMps2) * TICK_HZ, clearBy: now + thresholdClearS(end, ac) * TICK_HZ };
+  }
+  const rollStart = d.airborneByTick - (perf.liftoffMps / perf.accelMps2) * TICK_HZ;
+  const lineupCenterlineAt = (end.nodeAt.at(-1) ?? NaN) - (ac.track.lengthM - d.lineupAt);
+  return { ...base, rollStart, airborneBy: d.airborneByTick, clearBy: rollStart + thresholdClearFromS(end, perf, lineupCenterlineAt, 0) * TICK_HZ };
+}
+
+/**
+ * Seconds until departure `ac` (from `end`) is airborne and 6,000 ft past the landing threshold,
+ * or past the runway's end if that's nearer (7110.65 3-10-3b): from its place and speed now.
+ */
+function thresholdClearS(end: RunwayEndSetup, ac: Aircraft): number {
+  return thresholdClearFromS(end, takeoffOf(ac), centerlineAt(end, ac), ac.v);
+}
+
+/** The same, for a departure at centerline distance `at` doing `v` (at or past lift-off speed: airborne). */
+function thresholdClearFromS(end: RunwayEndSetup, perf: { accelMps2: number; liftoffMps: number }, at: number, v: number): number {
+  const liftoff = Math.max(0, (perf.liftoffMps - v) / perf.accelMps2);
+  return Math.max(liftoff, timeToReach(v, perf.accelMps2, Math.max(0, thresholdTarget(end) - at)));
+}
+
+/** Where a departure counts as clear for an arrival on `end` (3-10-3b): the nearer of 6,000 ft past the threshold and the runway's end. */
+function thresholdTarget(end: RunwayEndSetup): number {
+  return Math.min(end.thresholdM + SAME_RUNWAY_CAT_III_M, end.nodeAt.at(-1) ?? NaN);
+}
+
+/** Seconds to cover `d` from speed `v`, accelerating at `a`. */
+function timeToReach(v: number, a: number, d: number): number {
+  return (-v + Math.sqrt(v * v + 2 * a * d)) / a;
 }
 
 /** The first tick a takeoff roll may start on `runway`, for spacing behind the last one. */
@@ -678,31 +821,11 @@ function moveArrival(sim: Sim, occupancy: Occupancy, ac: Aircraft, arrival: Towe
     ac.s += APPROACH_MPS * TICK_S;
     return;
   }
-  let vMax = ac.s < exit.nodeAt ? safeSpeed(exit.nodeAt - ac.s, exit.speedMps, exit.decelMps2) : exit.speedMps;
-  for (const bend of ac.track.bends) {
-    if (bend.at <= Math.max(ac.s, exit.edgeEndAt)) continue;
-    if (bend.at > ac.s + LOOKAHEAD_M) break;
-    vMax = Math.min(vMax, safeSpeed(bend.at - ac.s, turnSpeedMps(bend.deflectionDeg), LEADOFF_DECEL_MPS2));
-  }
   let stopAt = exit.stopAt;
   const traffic = trafficStop(sim.index, occupancy, ac, LOOKAHEAD_M);
   if (traffic !== null && traffic.at < stopAt) stopAt = traffic.at;
-  vMax = Math.min(vMax, safeSpeed(stopAt - ac.s, 0, LEADOFF_DECEL_MPS2));
   ac.blockedBy = traffic !== null && traffic.at < exit.stopAt ? traffic.behind : null;
-
-  let v: number;
-  if (ac.airborne) {
-    v = ac.v; // no braking in the air
-  } else {
-    v = Math.min(ac.v + ACCEL_MPS2 * TICK_S, vMax);
-    v = Math.max(v, ac.v - ROLLOUT_DECEL_MAX_MPS2 * TICK_S, 0);
-  }
-  let s = ac.s + v * TICK_S;
-  if (s >= stopAt - STOP_SNAP_M && v <= LEADOFF_DECEL_MPS2 * TICK_S) {
-    s = Math.max(ac.s, Math.min(s, stopAt));
-    if (s >= stopAt - STOP_SNAP_M) [s, v] = [stopAt, 0];
-  }
-  [ac.s, ac.v] = [s, v];
+  [ac.s, ac.v] = rolloutStep(ac.track, ac.s, ac.v, ac.airborne, exit, stopAt);
 
   const base = { tick: sim.world.tick, callsign: ac.callsign, runwayEnd: arrival.runwayEnd };
   if (ac.airborne && ac.s >= touchdownAt) {
@@ -720,6 +843,52 @@ function moveArrival(sim: Sim, occupancy: Occupancy, ac: Aircraft, arrival: Towe
     sim.world.tower.arrivals = sim.world.tower.arrivals.filter((a) => a !== arrival);
     emit(sim, { ...base, type: 'clear-of-runway', exit: exit.taxiway, exitId: exit.id });
   }
+}
+
+/**
+ * One tick of an arrival's rollout and lead-off, from nose `s` at speed `v`: braking to `exit`,
+ * slowing for the bends past its first edge, and stopping by `stopAt`. Returns the new [s, v].
+ */
+function rolloutStep(track: Track, s0: number, v0: number, airborne: boolean, exit: PlannedExit, stopAt: number): [s: number, v: number] {
+  let vMax = s0 < exit.nodeAt ? safeSpeed(exit.nodeAt - s0, exit.speedMps, exit.decelMps2) : exit.speedMps;
+  for (const bend of track.bends) {
+    if (bend.at <= Math.max(s0, exit.edgeEndAt)) continue;
+    if (bend.at > s0 + LOOKAHEAD_M) break;
+    vMax = Math.min(vMax, safeSpeed(bend.at - s0, turnSpeedMps(bend.deflectionDeg), LEADOFF_DECEL_MPS2));
+  }
+  vMax = Math.min(vMax, safeSpeed(stopAt - s0, 0, LEADOFF_DECEL_MPS2));
+
+  let v: number;
+  if (airborne) {
+    v = v0; // no braking in the air
+  } else {
+    v = Math.min(v0 + ACCEL_MPS2 * TICK_S, vMax);
+    v = Math.max(v, v0 - ROLLOUT_DECEL_MAX_MPS2 * TICK_S, 0);
+  }
+  let s = s0 + v * TICK_S;
+  if (s >= stopAt - STOP_SNAP_M && v <= LEADOFF_DECEL_MPS2 * TICK_S) {
+    s = Math.max(s0, Math.min(s, stopAt));
+    if (s >= stopAt - STOP_SNAP_M) [s, v] = [stopAt, 0];
+  }
+  return [s, v];
+}
+
+/**
+ * The tick an arrival rolling out will be clear (its tail past the exit's clear point), running
+ * its rollout forward with no traffic in its way. Traffic can only make it later.
+ */
+function predictedClearTick(sim: Sim, ac: Aircraft, arrival: TowerArrival): number {
+  const exit = arrival.exit;
+  if (!exit) throw new Error(`${ac.callsign}: rolling out with no exit`);
+  const touchdownAt = setupOf(sim, arrival.runwayEnd).thresholdM + TOUCHDOWN_M;
+  let [s, v, airborne, tick] = [ac.s, ac.v, ac.airborne, sim.world.tick];
+  while (s - ac.lengthM < exit.clearAt) {
+    [s, v] = rolloutStep(ac.track, s, v, airborne, exit, exit.stopAt);
+    if (airborne && s >= touchdownAt) airborne = false;
+    tick += 1;
+    if (v === 0 && s - ac.lengthM < exit.clearAt) throw new Error(`${ac.callsign}: its rollout stops short of clear`);
+  }
+  return tick;
 }
 
 /** Moves a departure one tick. Returns true when it has left (past the runway's far end). */
@@ -818,9 +987,40 @@ function dependent(runwayA: RunwayId, areasA: RunwayId[], runwayB: RunwayId, are
   return runwayA === runwayB || areasA.includes(runwayB) || areasB.includes(runwayA);
 }
 
-/** A ground aircraft (other than `except`) whose body is in `runway`'s area, or null. */
-function groundAircraftOn(sim: Sim, runway: RunwayId, except: string): string | null {
-  return sim.world.aircraft.find((a) => a.callsign !== except && !a.airborne && a.runways.includes(runway))?.callsign ?? null;
+/** A ground aircraft (other than `except` and `ignore`) whose body is in `runway`'s area, or null. */
+function groundAircraftOn(sim: Sim, runway: RunwayId, except: string, ignore: readonly string[] = []): string | null {
+  return sim.world.aircraft.find((a) => a.callsign !== except && !ignore.includes(a.callsign) && !a.airborne && a.runways.includes(runway))?.callsign ?? null;
+}
+
+/** The other departures from `d`'s runway end that have started their takeoff roll: on the roll or airborne. */
+function departuresAhead(sim: Sim, d: TowerDeparture): Aircraft[] {
+  return sim.world.tower.departures.flatMap((x) => {
+    if (x === d || x.runwayEnd !== d.runwayEnd) return [];
+    const ac = aircraftOf(sim, x.callsign);
+    return ac.status === 'taking-off' || ac.status === 'airborne' ? [ac] : [];
+  });
+}
+
+/** Arrivals on `runwayEnd` cleared to land, landed, and not yet clear: rolling out. */
+function rollingOut(sim: Sim, runwayEnd: RunwayEndDesignator): Aircraft[] {
+  return sim.world.tower.arrivals.flatMap((a) => {
+    if (a.runwayEnd !== runwayEnd || !a.committed || a.clear) return [];
+    const ac = aircraftOf(sim, a.callsign);
+    return ac.airborne ? [] : [ac];
+  });
+}
+
+/** Of those, the ones still on the ground, on the roll. */
+function rollingAhead(sim: Sim, d: TowerDeparture): Aircraft[] {
+  return departuresAhead(sim, d).filter((a) => !a.airborne);
+}
+
+/**
+ * Where a departure's nose is along its runway end's centerline (`nodeAt`'s distances): its
+ * track ends with the centerline, at the far end.
+ */
+function centerlineAt(end: RunwayEndSetup, ac: Aircraft): number {
+  return (end.nodeAt.at(-1) ?? NaN) - (ac.track.lengthM - ac.s);
 }
 
 /** How the runways are said: the end in use in the configuration, else the first end. */

@@ -95,6 +95,8 @@ function run(scenario: Scenario, seed: number, ticks: number, check: boolean): {
   const next = scenario.flows.map((_, i) => Math.round(hash01(seed, i) * 600));
   const count = scenario.flows.map(() => 0);
   const removeAt = new Map<string, number>();
+  /** Each tower arrival's place and clearance at the end of the last tick, for `landingConflicts`. */
+  const landings = new Map<string, { s: number; committed: boolean }>();
   /** Aircraft holding short of a runway, waiting for the player to ask. */
   const toAsk = new Set<string>();
   const flowOf = (callsign: string) => scenario.flows.find((f) => callsign.startsWith(f.prefix) && /\d$/.test(callsign));
@@ -135,18 +137,28 @@ function run(scenario: Scenario, seed: number, ticks: number, check: boolean): {
       }
       if (e.type === 'arrived' && e.destination.kind !== 'runway') removeAt.set(e.callsign, sim.world.tick);
       if (e.type === 'entered-runway' && !e.cleared) stats.conflicts.push(`${e.tick}: ${e.callsign} entered ${e.runways.join(' ')} uncleared`);
+      if (check && e.type === 'takeoff-roll') stats.conflicts.push(...rollConflicts(sim, e.callsign));
     }
     for (const [callsign, at] of removeAt) {
       if (sim.world.tick < at) continue;
       removeAircraft(sim, callsign);
       removeAt.delete(callsign);
     }
-    if (check) stats.conflicts.push(...conflicts(sim));
+    if (check) stats.conflicts.push(...conflicts(sim), ...landingConflicts(sim, landings));
   }
   return { sim, stats };
 }
 
-/** Tower movements sharing their runway's area with another ground aircraft, and overlaps involving tower's aircraft. */
+/**
+ * Tower movements sharing their runway's area with another ground aircraft, and overlaps
+ * involving tower's aircraft. One pair isn't a conflict: a departure lining up or waiting
+ * behind traffic from the same end that is ahead of it, on its takeoff roll or rolling out
+ * after landing. That's line up and wait (FAA JO 7110.65BB 3-9-4; behind a landing aircraft,
+ * 3-9-4c2(b), at a facility with safety logic in full core alert). The waiting one may roll only
+ * once a departure ahead is airborne 6,000 ft ahead (3-9-6a, `rollConflicts`) or an arrival ahead
+ * is clear (3-9-6b); if it rolled sooner, it would be 'taking-off' on the runway with the other,
+ * which this flags.
+ */
 function conflicts(sim: Sim): string[] {
   const found: string[] = [];
   const ground = sim.world.aircraft.filter((a) => !a.airborne);
@@ -154,7 +166,8 @@ function conflicts(sim: Sim): string[] {
     if (!['landing', 'lining-up', 'lined-up', 'taking-off'].includes(ac.status)) continue;
     const runway = towerRunway(sim, ac.callsign);
     for (const other of ground) {
-      if (other !== ac && other.runways.includes(runway)) found.push(`${sim.world.tick}: ${ac.callsign} (${ac.status}) and ${other.callsign} (${other.status}) on ${runway}`);
+      if (other === ac || !other.runways.includes(runway) || luawBehind(sim, ac, other) || luawBehind(sim, other, ac)) continue;
+      found.push(`${sim.world.tick}: ${ac.callsign} (${ac.status}) and ${other.callsign} (${other.status}) on ${runway}`);
     }
   }
   for (let i = 0; i < ground.length; i++) {
@@ -167,6 +180,99 @@ function conflicts(sim: Sim): string[] {
   return found;
 }
 
+/**
+ * `follower`, a departure, is lining up or lined up behind `leader`, from the same runway end and
+ * ahead of it: a departure on its takeoff roll, or an arrival that has landed and is rolling out.
+ */
+function luawBehind(sim: Sim, follower: Aircraft, leader: Aircraft): boolean {
+  const f = departureOf(sim, follower.callsign);
+  if (!f || !['lining-up', 'lined-up'].includes(follower.status)) return false;
+  const l = departureOf(sim, leader.callsign);
+  if (l) return l.runwayEnd === f.runwayEnd && leader.status === 'taking-off' && toRunwayEnd(leader) < toRunwayEnd(follower);
+  const arrival = sim.world.tower.arrivals.find((a) => a.callsign === leader.callsign);
+  if (!arrival || arrival.runwayEnd !== f.runwayEnd || leader.status !== 'landing') return false;
+  return centerlineOfArrival(leader) - leader.lengthM > centerlineOfDeparture(sim, f.runwayEnd, follower);
+}
+
+/**
+ * Landing clearances and threshold crossings since the last tick, against 7110.65BB:
+ * - Cleared to land (committed) only with no departure lining up or holding in position on the
+ *   runway (3-10-5e1).
+ * - Crossing the threshold only with no other ground aircraft on the runway, and each departure
+ *   from its end, if still in the sim, airborne at least 6,000 ft past the threshold or past
+ *   the runway's end (3-10-3b, Category III).
+ */
+function landingConflicts(sim: Sim, before: Map<string, { s: number; committed: boolean }>): string[] {
+  const found: string[] = [];
+  for (const a of sim.world.tower.arrivals) {
+    const ac = sim.world.aircraft.find((x) => x.callsign === a.callsign);
+    const end = sim.tower.ends.get(a.runwayEnd);
+    if (!ac || !end) throw new Error(`${a.callsign}: tower's arrival, not in the sim`);
+    const was = before.get(a.callsign);
+    if (a.committed && was?.committed === false) {
+      for (const other of sim.world.aircraft) {
+        const d = departureOf(sim, other.callsign);
+        if (d && sim.tower.ends.get(d.runwayEnd)?.runway === end.runway && ['lining-up', 'lined-up'].includes(other.status)) {
+          found.push(`${sim.world.tick}: ${a.callsign} cleared to land with ${other.callsign} ${other.status}`);
+        }
+      }
+    }
+    if (was !== undefined && was.s < end.thresholdM && ac.s >= end.thresholdM) {
+      const runwayEndAt = end.nodeAt.at(-1) ?? NaN;
+      for (const other of sim.world.aircraft) {
+        if (other === ac) continue;
+        if (!other.airborne && other.runways.includes(end.runway)) found.push(`${sim.world.tick}: ${a.callsign} crossed the threshold with ${other.callsign} on the runway`);
+        // Departures that have started their roll; one lining up or waiting is on the runway (above).
+        if (departureOf(sim, other.callsign)?.runwayEnd !== a.runwayEnd || !['taking-off', 'airborne'].includes(other.status)) continue;
+        const at = centerlineOfDeparture(sim, a.runwayEnd, other);
+        if (!other.airborne || (at - end.thresholdM < 6000 * 0.3048 && at < runwayEndAt)) {
+          found.push(`${sim.world.tick}: ${a.callsign} crossed the threshold with ${other.callsign} ${other.airborne ? 'airborne' : 'on the ground'} ${(at - end.thresholdM).toFixed(0)} m past it`);
+        }
+      }
+    }
+  }
+  before.clear();
+  for (const a of sim.world.tower.arrivals) before.set(a.callsign, { s: sim.world.aircraft.find((x) => x.callsign === a.callsign)?.s ?? NaN, committed: a.committed });
+  return found;
+}
+
+/** An arrival's distance along its runway end's centerline: its track starts at the end's node. */
+function centerlineOfArrival(ac: Aircraft): number {
+  return ac.s;
+}
+
+/** A departure's distance along its runway end's centerline: its track ends at the far end. */
+function centerlineOfDeparture(sim: Sim, runwayEnd: string, ac: Aircraft): number {
+  const end = sim.tower.ends.get(runwayEnd);
+  if (!end) throw new Error(`runway ${runwayEnd} isn't in use`);
+  return (end.nodeAt.at(-1) ?? NaN) - toRunwayEnd(ac);
+}
+
+/**
+ * At the start of `callsign`'s takeoff roll: each departure from its runway end that is ahead
+ * of it, and still in the sim, must be airborne at least 6,000 ft ahead (7110.65BB 3-9-6a,
+ * Category III). Those on the ground are `conflicts`' to flag.
+ */
+function rollConflicts(sim: Sim, callsign: string): string[] {
+  const d = departureOf(sim, callsign);
+  const ac = sim.world.aircraft.find((a) => a.callsign === callsign);
+  if (!d || !ac) throw new Error(`${callsign}: rolling, but not tower's departure`);
+  return sim.world.aircraft.flatMap((other) => {
+    if (other === ac || !other.airborne || departureOf(sim, other.callsign)?.runwayEnd !== d.runwayEnd) return [];
+    const gap = toRunwayEnd(ac) - toRunwayEnd(other);
+    return gap < 6000 * 0.3048 ? [`${sim.world.tick}: ${callsign} rolled with ${other.callsign} airborne ${gap.toFixed(0)} m ahead`] : [];
+  });
+}
+
+/** A departure's distance to its track's end, the runway's far end. */
+function toRunwayEnd(ac: Aircraft): number {
+  return ac.track.lengthM - ac.s;
+}
+
+function departureOf(sim: Sim, callsign: string) {
+  return sim.world.tower.departures.find((d) => d.callsign === callsign);
+}
+
 function towerRunway(sim: Sim, callsign: string): RunwayId {
   const end = sim.world.tower.arrivals.find((a) => a.callsign === callsign)?.runwayEnd ?? sim.world.tower.departures.find((d) => d.callsign === callsign)?.runwayEnd;
   const runway = end === undefined ? undefined : sim.tower.ends.get(end)?.runway;
@@ -174,7 +280,9 @@ function towerRunway(sim: Sim, callsign: string): RunwayId {
   return runway;
 }
 
-function nose(ac: Sim['world']['aircraft'][number]): [number, number] {
+type Aircraft = Sim['world']['aircraft'][number];
+
+function nose(ac: Aircraft): [number, number] {
   const i = Math.max(0, ac.track.pointAt.findIndex((d) => d >= ac.s));
   const p = ac.track.points[i] ?? ac.track.points[0];
   return p ? [p[0], p[1]] : [0, 0];

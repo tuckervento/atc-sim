@@ -57,13 +57,30 @@ describe('arrivals', () => {
     expect(drainEvents(sim).map((e) => e.type)).toEqual(['command-applied']);
   });
 
-  it("fails loudly for a runway end whose configured exits can't be reached braking at the maximum (TEST 36: F is 700 m in)", () => {
+  it('36 lands and exits at F, clear of the runway (TEST, west flow; Q, 2026-11-15: 18/36 lengthened)', () => {
     const sim = createSim(TEST, { seed: 1 });
+    addAircraft(sim, { callsign: 'BAW175', type: 'A320', at: { kind: 'final', runwayEnd: '36', distanceM: 3000 } });
+    const events = runUntil(sim, (e) => e.type === 'clear-of-runway', 3000).filter((e) => e.callsign === 'BAW175');
+    expect(events.map((e) => e.type)).toEqual(['landed', 'crossed-runway', 'clear-of-runway']);
+    expect(events.find((e) => e.type === 'clear-of-runway')).toMatchObject({ runwayEnd: '36', exit: 'F', exitId: 'x36F' });
+    const baw = getAircraft(sim, 'BAW175');
+    expect(baw).toMatchObject({ controller: 'ground', status: 'idle', airborne: false, speedMps: 0 });
+    expect(sim.world.aircraft[0]?.runways).toEqual([]);
+    // Stopped on F, its tail past F's hold line (fH, x = 810), west of the runway.
+    expect(baw.nose[0]).toBeLessThanOrEqual(810 - baw.lengthM);
+    // A stream on 36 is fine too.
+    expect(() => createSim(TEST, { seed: 1, arrivals: [{ runwayEnd: '36', perHour: 10, flight: (n) => ({ callsign: `BAW${n + 1}`, type: 'A320' }) }] })).not.toThrow();
+  });
+
+  it("fails loudly for a runway end whose configured exits can't be reached braking at the maximum (TEST with 18/36 at its old 1,400 m: F is 700 m in)", () => {
+    // The 36 end back at (900, −900), where it was before Q lengthened 18/36.
+    const short = indexAirport(loadAirport(testAirport, { formatVersion: 1, airport: 'TEST', nodes: { patch: [{ id: 'r2S', x: 900, y: -900 }] } }));
+    const sim = createSim(short, { seed: 1 });
     const message = /no configured exit of runway 36 can be reached braking at most 3\.5 m\/s² from touchdown 300 m past the threshold \(x36F at 700 m past the threshold needs 6\.0 m\/s²\)/;
     expect(() => addAircraft(sim, { callsign: 'BAW175', type: 'A320', at: { kind: 'final', runwayEnd: '36', distanceM: 3000 } })).toThrow(message);
     expect(sim.world.aircraft).toEqual([]);
     expect(sim.world.tower.arrivals).toEqual([]);
-    expect(() => createSim(TEST, { seed: 1, arrivals: [{ runwayEnd: '36', perHour: 10, flight: (n) => ({ callsign: `BAW${n + 1}`, type: 'A320' }) }] })).toThrow(message);
+    expect(() => createSim(short, { seed: 1, arrivals: [{ runwayEnd: '36', perHour: 10, flight: (n) => ({ callsign: `BAW${n + 1}`, type: 'A320' }) }] })).toThrow(message);
     // 9 isn't an arrival runway in the west flow.
     expect(() => addAircraft(sim, { callsign: 'BAW175', type: 'A320', at: { kind: 'final', runwayEnd: '9', distanceM: 3000 } })).toThrow("BAW175: runway 9 doesn't take arrivals in this configuration");
   });
@@ -405,7 +422,8 @@ describe('a runway used for both arrivals and departures (Q, 2026-11-14)', () =>
       transmit(sim, `${callsign} taxi 27 via A, monitor tower`);
     }
     const sequence = ops(sim, 3, 60 * 60 * 10);
-    expect(sequence).toMatch(/^L?(TL)+T$/);
+    // A takeoff, or two (the second lines up and waits behind the first), between landings.
+    expect(sequence).toMatch(/^L?(TT?L)+TT?$/);
     expect(sequence.match(/T/g)).toHaveLength(3);
   });
 
@@ -422,7 +440,7 @@ describe('a runway used for both arrivals and departures (Q, 2026-11-14)', () =>
       transmit(sim, `${callsign} taxi 31L via Z, monitor tower`);
     }
     const sequence = ops(sim, 3, 60 * 60 * 10);
-    expect(sequence).toMatch(/^L?(TL)+T$/);
+    expect(sequence).toMatch(/^L?(TT?L)+TT?$/);
     expect(sequence.match(/T/g)).toHaveLength(3);
   });
 });
@@ -448,10 +466,12 @@ describe("the player's transmissions to tower's aircraft", () => {
     };
     const at = (callsign: string, status: string) => () => getAircraft(sim, callsign).status === status && getAircraft(sim, callsign).controller === 'tower';
     tryAll('BAW175'); // on final
-    stepUntil(sim, at('BAW175', 'landing'), 1000);
-    tryAll('BAW175'); // rolling out
+    // DAL4 reaches the hold before BAW175 touches down, and lines up and waits behind it once
+    // it has landed past the line-up spot.
     stepUntil(sim, at('DAL4', 'arrived'), 2000);
     tryAll('DAL4'); // waiting at the hold
+    stepUntil(sim, at('BAW175', 'landing'), 1000);
+    tryAll('BAW175'); // rolling out
     stepUntil(sim, at('DAL4', 'lining-up'), 2000);
     step(sim, 50);
     tryAll('DAL4'); // lining up
