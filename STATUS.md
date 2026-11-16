@@ -1,10 +1,10 @@
 # STATUS
 
-_Last updated: 2026-11-15 (cycle 8 started: 1.11 and the 1.10 follow-ups in parallel)_
+_Last updated: 2026-11-15 (cycle 8 done: 1.11 and the 1.10 follow-ups)_
 
 ## Snapshot
 
-16 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.10. **LGA imports as a format check** (1.6), **the map renders any airport** (1.7, Q checked it against the FAA diagram), and **the simulated tower runs** (1.10).
+17 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.11. **LGA imports as a format check** (1.6), and **the map renders any airport** (1.7, Q checked it against the FAA diagram). **The simulated tower** (1.10, now at about 37 takeoffs an hour on 31L alongside 15 landings) **and the simulated ramp** (1.11) run.
 
 **Phase 0's picks (Q signed off 2026-11-14):**
 - speech-to-text: Deepgram Nova-3
@@ -13,9 +13,52 @@ _Last updated: 2026-11-15 (cycle 8 started: 1.11 and the 1.10 follow-ups in para
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-In progress: 1.11, and the 1.10 follow-ups (throughput, a longer TEST 18/36). Next: 1.12.
+Next: 1.12, rule checks and score counters.
 
 ## Completed
+
+- [x] 1.11 — Simulated ramp — done 2026-11-15 (subagent, own worktree; merged by me). Verified by me:
+  - In the worktree: typecheck exit 0, 319 of 319. On `main` with the 1.10 follow-ups merged: typecheck exit 0, **322 of 322** across 22 files (26 s).
+  - **No existing test edited by 1.11.** Its diff touches only `world.ts`, `sim.ts`, `movement.ts` (one rule: ramp aircraft may taxi with no clearance) and `docs/terse-syntax.md`.
+  - **Acceptance, one test each** (`ramp.test.ts`, `ramp-safety.test.ts`), which I read:
+    - **Departure:** gate → pushback → ramp edge → check-in, then the player's taxi from there resolves. TEST T1-2 checks in on lane 7; KJFK T4 checks in on KF and taxis to 31L.
+    - **Arrival:** "monitor ramp" → the entrance → its gate → "arrived at gate", and the gate shows occupied. TEST T2 via TC; KJFK via KG to a T4 gate.
+    - **Opposing movements in one lane, 100 seeds, no deadlock:**
+      - Each seed has a time bound and is checked for footprint overlap every tick, and every check-in and arrival must happen.
+      - TEST lane TD: 2 out, 2 in. KJFK T4 alley: 3 out to KF, 3 in from KG, with 53 parked fillers.
+      - 0.9 s and 23.6 s (the agent's timings).
+  - **Also:**
+    - Pushback is the only backward motion (2 simulated hours, TEST, ramp and tower together).
+    - The same seed gives the same hash at every 10-minute mark.
+    - `not-on-frequency` covers ramp's aircraft.
+  - `ramp.ts` has no `Math.random`, timers or clock (grep: 0).
+- [x] 1.10 follow-ups — throughput, and a longer TEST 18/36 — done 2026-11-15 (subagent, own worktree; merged by me). Verified by me:
+  - In the worktree: typecheck exit 0, 300 of 300. `validate-airport -- TEST`: OK, 0 and 0. KJFK and KLGA unchanged.
+  - **My own probe** (KJFK 31L, departure queue kept full, 1 hour), unmodified, before → after. The numbers are the same on `main` after the ramp merge:
+
+    | Arrivals/hr | Takeoffs/hr | Landings/hr |
+    |---|---|---|
+    | 0 | 44 → 57 | 0 |
+    | 15 | 20 → **37** | 15 |
+    | 30 offered | 15 → 36 | 17 → 20 |
+
+    No go-arounds at any rate.
+  - **`tower-capacity.test.ts`** asserts Q's target (≥ 28 takeoffs and ≥ 14 landings an hour, 0 go-arounds):
+    - KJFK 31L: 35–38 takeoffs and 14–15 landings, seeds 1–3
+    - TEST 27: 35–36 takeoffs and 15 landings
+  - **The safety test's conflict check was redefined by the agent that loosened the rules, so I read the diff:**
+    - One new exemption: a departure lining up or waiting behind traffic from the same end that's ahead of it (a departure on its roll, or a landed arrival whose tail is past it), per 7110.65BB 3-9-4.
+    - A rolling departure with anything else on the runway is still flagged.
+    - Three new checks:
+      - at a takeoff roll, any departure ahead must be airborne 6,000 ft on (3-9-6a)
+      - no landing clearance while a departure is lining up or waiting (3-10-5e1)
+      - at a threshold crossing, nothing on the runway, and every departure past 6,000 ft or the runway end (3-10-3b)
+    - The agent's mutations M2b and M3 break those rules and are killed by these checks. 50 seeds: 0 conflicts.
+  - **Existing tests changed** (all in tower tests, as briefed):
+    - the conflict check above
+    - the interleave pattern, `L?(TL)+T` → `L?(TT?L)+TT?`, still exactly 3 takeoffs
+    - one test's step order
+    - the TEST 36 test, by Q's decision; fail-loudly is kept via an inline override
 
 - [x] 1.7 — Map renderer — done 2026-11-15 (subagent, own worktree; merged by me). **Q compared it with the FAA diagram: "map looks good on examination"** (2026-11-15). Verified by me:
   - 297 of 297 tests and typecheck exit 0 on `main`.
@@ -186,8 +229,6 @@ In progress: 1.11, and the 1.10 follow-ups (throughput, a longer TEST 18/36). Ne
 
 ## In Progress
 
-- [ ] 1.11 — Simulated ramp (subagent, own worktree), built on 1.10's sim-core parts.
-- [ ] 1.10 follow-ups (subagent, own worktree): mixed-runway throughput, and a longer TEST 18/36 so 36 takes arrivals.
 
 ## Blocked
 
@@ -736,8 +777,64 @@ In progress: 1.11, and the 1.10 follow-ups (throughput, a longer TEST 18/36). Ne
   - Why together: the follow-ups touch `tower.ts`, its tests and one TEST node (`r2S`, the 36 end, far from TEST's ramp). 1.11 adds `ramp.ts` beside the tower, where `world.ts` documents.
   - **One existing test changes, by Q's decision:** tower's "fails loudly for 36" becomes "36 lands and exits at F".
 
+- 2026-11-15 — **1.10 follow-up choices** (reference: `tower.ts`'s header):
+  - **Measured first.**
+    - With no arrivals: each departure took 78 s (34 s line-up, 5 s pause, 38.5 s roll), and the next could only line up at lift-off.
+    - With 15 arrivals an hour: 75 s of each 234 s cycle had the runway idle, because of the fixed margin before the next arrival's decision point.
+  - **New rules, from FAA JO 7110.65BB** (faa.gov HTML, fetched with curl after WebFetch got 403; subparagraph letters counted by the agent from the page's lists):
+    1. **Line up and wait behind a departure on its roll** (3-9-4). The follower rolls once the leader is airborne 6,000 ft ahead (3-9-6a).
+    2. **Landing rules replace the fixed margin.** No landing clearance while a departure is lining up or waiting (3-10-5e1). The arrival crosses the threshold only once the departure is airborne 6,000 ft past it, or past the runway end (3-10-3b, anticipated per 3-10-6). Intersecting runways keep the old rule.
+    3. **Line up behind a landed arrival once its tail is past the line-up spot** (3-9-4c2(b)). The roll still waits until the arrival is clear (3-9-6b). Tower predicts that clear time by running the arrival's rollout forward; without the prediction, lift-offs ran up to 41 s later than estimated.
+    4. **Interleave:** a takeoff counts toward letting the next arrival in only if no arrival on that end is still on final.
+  - **Kept:** 60 s and 120 s roll spacing (the heavy's 2 minutes), and one departure lining up or waiting per runway end.
+  - **TEST:** `r2S` moved from (900, −900) to (900, −1500). 18/36 is now 2,000 m, and F is 1,300 m past the 36 threshold (about 2.4 m/s² of braking).
+  - **TDD:** the capacity and 36 tests failed first. The safety test's new checks went in together with the rule changes, and step 3 began as an experiment that was kept. Two mutations survived as equivalent with today's values: the 6,000 ft roll check can't fire, since rolls are already at least 45 s and 2,075 m apart.
+  - **Open for Q:**
+    1. **Lining up behind a landing aircraft** (3-9-4c2(b)) is allowed only with safety-logic alerting in full core alert, and not below an 800 ft ceiling or 2 miles' visibility. The sim allows it everywhere (weather doesn't affect v1). Without it, about 25 takeoffs an hour. OK?
+    2. **Throughput is above target:** about 52 movements an hour on one runway, and 57 departures with no arrivals. Raise `DEPARTURE_SPACING_S` (60 s, the agent's value) if that's too busy.
+    3. **At 30 arrivals offered,** departures win: 36 takeoffs and 20 landings. Is that the balance Q wants?
+    4. **TEST 36 and 27 together aren't deconflicted:** 2–5 go-arounds an hour per runway. The intersecting-runway rules (3-10-4, 3-9-8) aren't modelled, and the safety test doesn't stream 36.
+    5. **TEST 18 (east flow) still can't take arrivals:** its exits are at the touchdown point, or 700 m in. Its error also says "needs Infinity m/s²" for exits at touchdown.
+    6. Not modelled: the 90 s limit on waiting in position, 3 minutes behind wake category A, and small-behind-heavy line-up.
+- 2026-11-15 — **1.11 choices** (reference: `ramp.ts`'s header):
+  - **State:** `world.ramp` holds streams and ramp aircraft records.
+    - Departure phases: `at-gate`, `ready`, `pushback`, `pushed`, `taxi-out`; the record is dropped at check-in.
+    - Arrival phases: `called`, `taxi-in`, `parked`.
+    - A gate is taken while a record names it. New statuses `parked` and `pushing-back`. Events: `pushback`, `check-in` (with the handoff, taxilane and ATIS), `ramp-accepted`, and `arrived-at-gate` (1.12's arrival point).
+  - **Ramp-lane taxi has no clearance**, unlike 1.10's suggestion. A clearance would need a gate destination kind that route.ts lacks, and would emit the player's `arrived`. So `movement.ts` lets ramp aircraft move without one.
+  - **No deadlock, by reservation:**
+    - Each movement (pushback with taxi-out, or a taxi-in) holds every edge its body will touch, plus their end nodes, from start to finish. It starts only when it can take them all.
+    - So two movements never wait on each other.
+    - An arrival waiting at its entrance stays ground's (PRD §4.3: "waits on the player's taxiway").
+  - **Pushback:** tail-first out of the stand, turns of 135° at most, ending nose-on-node facing a forward way to the nearest ramp edge for the terminal. A stand fits a type only if its parked tail is farther from the junction than its half-span.
+  - **Values (the agent's own reasoning):**
+    - boarding 30–90 s
+    - push at 1.5 m/s, accelerating and braking at 0.3 m/s², then 30 s to disconnect
+    - ramp taxi 10 kt
+    - the push search capped at 400 m; KJFK A320 pushes run 109 m median, 252 m at most
+  - **TDD:** one test at a time, red first. Tests that passed first time were mutation-checked; two surviving mutations led to new tests that kill them. The performance refactors added no tests.
+  - **Open for Q:**
+    1. **Many gates can't be used.** At KJFK an A320 can use 123 of 184 gates, and a B77W 58. Of the 61 an A320 can't use, 29 stands are too short, 7 gate nodes sit mid-lane, and 25 have no pushback, mostly the last gate of a dead-end alley. Options: fix the 1.5 data, allow swinging the tail into a free neighbouring stand, allow pushing onto the taxiway stub, or accept it.
+    2. **Ramp throughput is low:** whole-movement holds serialize conflicting movements at 2–4 minutes each, so the KJFK alley's 3 out and 3 in took 17–20 minutes. 1.14's peak may need movements to release what's behind their tail.
+    3. **"No gate free" at a two-way handoff:** the waiting arrival, still ground's, blocks the departures that would free a gate, and only the player can move it. Nothing is said until Phase 3's "no gate yet" call. OK?
+    4. A wide aircraft passing a short stand could overlap a parked aircraft's rigid footprint (for 1.12).
+    5. Node reservation is conservative; keep it?
+    6. An arrival handed off at an entrance that doesn't serve its terminal is silently not taken.
+    7. Arrivals park forever, so 1.14 needs a sink (`removeAircraft` frees the gate).
+    8. Fairness: a younger request can go ahead of a blocked older one.
+    9. For 1.14's profiling: the per-tick work over every aircraft, parked ones included, dominates at KJFK.
+  - **Merge:** the follow-ups first, then 1.11. Plain `git apply` was clean; the follow-ups changed only one doc comment in `world.ts`. 322 of 322 after both. Both worktrees and their branches are removed (0 unique commits), with `node_modules` intact.
+
+- 2026-11-15 — **Q's answers after cycle 8:**
+  - **1.11 Q1, unusable gates:** "probably need to let a pushback swing into neighboring stands and/or into taxiways."
+  - **1.11 Q2, ramp throughput: "way too low."** "We will probably need to spend time improving the routing algorithms to allow for smaller 'locks' taken on taxiways, making movement more granular."
+  - **Follow-up Q1:** lining up behind a landing aircraft everywhere is fine ("yes, good").
+  - **1.11 Q3:** an arrival with no free gate blocking a two-way handoff is "ok for now"; "'no gate yet' will be here soon."
+
 ## Next Up
 
-- 1.12 — Rule checks and score counters (needs 1.10 and 1.11). Bring 1.10's questions 3 and 7 (runway areas at intersections, airborne footprints) into its plan.
+- 1.12 — Rule checks and score counters (needs 1.10 and 1.11, both done). Bring into its plan:
+  - 1.10's questions 3 and 7 (runway areas at intersections, airborne footprints)
+  - 1.11's question 4 (a wide aircraft passing a short stand may overlap the rigid footprint)
 - Open for Q, none blocking 1.11: 1.6's questions 4–6 and 8; 1.10's 3–7 (3 and 7 matter for 1.12, 5 for 1.14); 1.7's 2–5; 1.9's three; 1.5's five.
 - 1.9's three open questions, and 1.5's five, are in their entries above.
