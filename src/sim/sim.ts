@@ -21,6 +21,12 @@
 //   createSim(index, { seed: 1, departures: [{ perHour: 12, flight: (n) => ({ callsign: `JBU${n + 1}`, type: 'A320', terminal: 'T1' }) }] });
 //   addAircraft(sim, { callsign: 'DAL4', type: 'A320', at: { kind: 'gate', gate: 'T1-1' } });
 //   getGate(sim, 'T1-1').occupant;         // 'DAL4'
+//
+// Rule checks and score (rules.ts, score.ts, PLAN 1.12) run every tick. A collision or a gridlock
+// ends the session; the counters are plain data for the live display and the end report:
+//   getSession(sim);                       // { state: 'running' }, or { state: 'ended', tick, cause }
+//   getScore(sim).combined.peakPerHour;    // the best 15 minutes, per hour
+//   getUnauthorizedCrossings(sim);         // [{ tick, callsign, holdShort, runways }]
 
 import { otherEnd, type AirportIndex } from '../airport/graph.ts';
 import type { EdgeId, GateId, NodeId, Point, RunwayEndDesignator, TerminalId } from '../airport/types.ts';
@@ -30,20 +36,24 @@ import { hashOf } from './hash.ts';
 import { KNOT_MPS, moveTaxiing, PILOT_SPEED_SPREAD, TAXI_SPEED_KT, updateRunways } from './movement.ts';
 import { APPROACH_SPEED_MPS, dropAircraft, FINAL_SPAWN_M, finalOfArrival, initialTowerState, placeOnFinal, towerDecide, towerMove, towerSetup, towerSpawns, type TowerOptions } from './tower.ts';
 import { adoptAtGate, gateOccupant, initialRampState, placeAtGate, rampDecide, rampDrop, rampMove, rampSetup, rampSpawns, type RampOptions } from './ramp.ts';
+import { checkRules, initialRulesState } from './rules.ts';
+import { initialScore, recordScore, scoreView, type ScoreView } from './score.ts';
 import { occupancyOf } from './traffic.ts';
 import { runwayAreas, runwaysOccupied } from './occupancy.ts';
 import { createRng, nextInRange } from './rng.ts';
 import type { RoutePath, RouteStart } from './route.ts';
 import { buildTrack, placeOf, pointOf, type Track } from './track.ts';
-import type { Advisories, Aircraft, AircraftStatus, Controller, CrossingClearance, Role, Sim, SimEvent } from './world.ts';
+import type { Advisories, Aircraft, AircraftStatus, Controller, CrossingClearance, Role, Session, Sim, SimEvent, UnauthorizedCrossing } from './world.ts';
 
 export { AIRCRAFT_TYPES, type AircraftTypeCode } from './aircraft-types.ts';
 export { applyCommand } from './apply.ts';
 export { footprintOf, footprintsOverlap, polygonsOverlap } from './footprint.ts';
+export { GRIDLOCK_S } from './rules.ts';
+export { PEAK_WINDOW_S, type Rates, type ScoreView } from './score.ts';
 export { TICK_HZ, TICK_S } from './movement.ts';
 export type { DepartureFlight, DepartureStream, RampOptions } from './ramp.ts';
 export type { ArrivalFlight, ArrivalStream, TowerOptions } from './tower.ts';
-export type { Advisories, AircraftStatus, Controller, CrossingClearance, Motion, Role, Sim, SimEvent } from './world.ts';
+export type { Advisories, AircraftStatus, Controller, CrossingClearance, Motion, Role, RuleOrigin, RuleParty, Session, SessionEndCause, Sim, SimEvent, UnauthorizedCrossing } from './world.ts';
 
 export interface SimOptions extends TowerOptions, RampOptions {
   /** Seeds the RNG. The same seed and the same commands give the same session. */
@@ -59,7 +69,16 @@ export function createSim(index: AirportIndex, options: SimOptions): Sim {
   const areas = runwayAreas(index);
   const tower = towerSetup(index, areas, options);
   const ramp = rampSetup(index, options);
-  const world = { tick: 0, rng: createRng(options.seed), aircraft: [], tower: initialTowerState(tower), ramp: initialRampState(ramp) };
+  const world = {
+    tick: 0,
+    rng: createRng(options.seed),
+    aircraft: [],
+    tower: initialTowerState(tower),
+    ramp: initialRampState(ramp),
+    session: { state: 'running' } as const,
+    rules: initialRulesState(),
+    score: initialScore(),
+  };
   return { index, world, events: [], runwayAreas: areas, tower, ramp };
 }
 
@@ -195,7 +214,12 @@ function spawnTrack(index: AirportIndex, spec: AircraftSpec): { track: Track; s:
   return { track, s: at.distanceM };
 }
 
-/** Advances `ticks` fixed ticks (default 1). */
+/**
+ * Advances `ticks` fixed ticks (default 1). After the session has ended (`getSession`), the sim
+ * still advances: aircraft keep moving and events keep coming, but the rules and the score no
+ * longer count anything, so what they hold is the session as it ended. A caller that wants the
+ * session over (the browser app) stops stepping.
+ */
 export function step(sim: Sim, ticks = 1): void {
   if (!Number.isInteger(ticks) || ticks < 0) throw new Error(`step: ticks must be a whole number ≥ 0, got ${ticks}`);
   for (let i = 0; i < ticks; i++) advance(sim);
@@ -224,8 +248,12 @@ export function removeAircraft(sim: Sim, callsign: string): void {
  *    which removes the departures that have left), then the ramp's pushbacks (rampMove, which also
  *    hands departures to ground at the ramp edge and parks arrivals at their gates).
  * 6. Each aircraft's runway areas are updated (crossed-runway events).
+ * 7. While the session is running: the tick's scoring points are counted (score.ts), then the
+ *    rules (rules.ts) check the state the tick left, with the events it emitted. A lift-off or
+ *    a gate arrival in the tick a collision ends the session still counts.
  */
 function advance(sim: Sim): void {
+  const firstEvent = sim.events.length;
   sim.world.tick += 1;
   for (const flight of towerSpawns(sim)) {
     const { runwayEnd, callsign, type, airline, terminal } = flight;
@@ -239,11 +267,15 @@ function advance(sim: Sim): void {
   towerMove(sim, occupancy);
   rampMove(sim);
   updateRunways(sim);
+  const events = sim.events.slice(firstEvent);
+  if (sim.world.session.state === 'running') recordScore(sim.world.score, events);
+  checkRules(sim, events);
 }
 
 /**
- * A fingerprint of the whole simulation state (the world: tick, RNG, every aircraft), for
- * determinism checks. Events and the airport aren't state, so they're not in it.
+ * A fingerprint of the whole simulation state (the world: tick, RNG, every aircraft, tower and
+ * ramp, the session, the rules' records and the score), for determinism checks. Events and the
+ * airport aren't state, so they're not in it.
  */
 export function stateHash(sim: Sim): string {
   return hashOf(sim.world);
@@ -261,6 +293,28 @@ export function getGate(sim: Sim, id: GateId): GateView {
   const gate = sim.index.airport.gates.find((g) => g.id === id);
   if (!gate) throw new Error(`no gate ${id}`);
   return { id, terminal: gate.terminal, occupant: gateOccupant(sim, id) };
+}
+
+/**
+ * Whether the session is running, or how and when it ended (rules.ts): plain data, the sim's own
+ * object, so don't change it.
+ */
+export function getSession(sim: Sim): Readonly<Session> {
+  return sim.world.session;
+}
+
+/**
+ * The counters (score.ts): totals, average and peak rates, for departures, arrivals and both. As
+ * of now while the session runs; once it has ended, as of the tick it ended.
+ */
+export function getScore(sim: Sim): ScoreView {
+  const session = sim.world.session;
+  return scoreView(sim.world.score, session.state === 'ended' ? session.tick : sim.world.tick);
+}
+
+/** Every unauthorized runway crossing so far, oldest first (rules.ts). The sim's own records: don't change them. */
+export function getUnauthorizedCrossings(sim: Sim): readonly Readonly<UnauthorizedCrossing>[] {
+  return sim.world.rules.unauthorizedCrossings;
 }
 
 /** Takes every event since the last drain, oldest first. */

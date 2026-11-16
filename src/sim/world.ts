@@ -3,7 +3,7 @@
 // and its command script (PRD §8.2, §9.3).
 
 import type { AirportIndex } from '../airport/graph.ts';
-import type { EdgeId, GateId, HoldShortId, NodeId, RampHandoffId, RunwayEndDesignator, RunwayExitId, RunwayId, TerminalId } from '../airport/types.ts';
+import type { EdgeId, GateId, HoldShortId, NodeId, Point, RampHandoffId, RunwayEndDesignator, RunwayExitId, RunwayId, TerminalId } from '../airport/types.ts';
 import type { AircraftTypeCode } from './aircraft-types.ts';
 import type { HoldShortTarget, Instruction, Taxi } from './commands.ts';
 import type { Rng } from './rng.ts';
@@ -51,6 +51,10 @@ export interface Sim {
  *   event, as the tower does with `clear-of-runway`. An arrival waiting at a ramp entrance is
  *   still ground's: ramp takes it only once it can move it.
  * - Transmissions to its aircraft get `not-on-frequency` (apply.ts), as the tower's do.
+ *
+ * Rules and score (rules.ts, score.ts, 1.12) run last in the tick, on the state and events the
+ * tick produced. They keep `session`, `rules` and `score` here. The sim keeps advancing after
+ * the session ends (sim.ts, `step`); only rules and score stop counting.
  */
 export interface World {
   /** Ticks completed since the start. */
@@ -60,6 +64,80 @@ export interface World {
   aircraft: Aircraft[];
   tower: TowerState;
   ramp: RampState;
+  session: Session;
+  rules: RulesState;
+  score: ScoreState;
+}
+
+/**
+ * Whether the session is still on (rules.ts). A collision or a gridlock ends it, in the tick it's
+ * found; it stays ended, with the first cause.
+ */
+export type Session = { state: 'running' } | { state: 'ended'; tick: number; cause: SessionEndCause };
+
+export type SessionEndCause =
+  /**
+   * Two footprints overlap (footprint.ts). `point`: midway between the two footprints' centres.
+   * `runways`: the runway areas either body was in, sorted; empty off the runways.
+   */
+  | { kind: 'collision'; aircraft: RuleParty[]; point: Point; runways: RunwayId[]; origin: RuleOrigin }
+  /**
+   * Aircraft each stopped up against the next one, in a cycle (rules.ts), since `sinceTick`.
+   * `aircraft` in the cycle's order: each one's `blockedBy` is the next, the last's the first.
+   */
+  | { kind: 'gridlock'; aircraft: RuleParty[]; sinceTick: number; origin: RuleOrigin };
+
+/**
+ * Who was moving the aircraft involved: `player` if every one was ground's (the player's
+ * clearances), `sim` if none was (tower's or ramp's own movements: a sim bug), `mixed` otherwise.
+ * It says who controlled them, not whose fault it was: ground's aircraft also stop and space
+ * themselves by the sim's see-and-avoid (traffic.ts).
+ */
+export type RuleOrigin = 'player' | 'sim' | 'mixed';
+
+/** An aircraft involved in a session-ending event, as it was at the end of that tick. */
+export interface RuleParty {
+  callsign: string;
+  type: AircraftTypeCode;
+  controller: Controller;
+  status: AircraftStatus;
+  speedMps: number;
+  /** Where the nose is: exactly on a node, or inside an edge. */
+  location: { kind: 'node'; node: NodeId } | { kind: 'edge'; edge: EdgeId };
+  nose: Point;
+  /** The runways whose area the body was in, sorted. */
+  runways: RunwayId[];
+  blockedBy: string | null;
+}
+
+/** What the rule checks have counted, and what they're watching (rules.ts). */
+export interface RulesState {
+  /** Every unauthorized runway crossing, in the order they happened. */
+  unauthorizedCrossings: UnauthorizedCrossing[];
+  /**
+   * Cycles of aircraft stopped up against each other, each with the tick it was first seen; a
+   * gridlock once one has lasted GRIDLOCK_S. `members` sorted. Gone once the cycle breaks.
+   */
+  jams: { members: string[]; since: number }[];
+}
+
+/** The player's crossing clearance took an aircraft past a runway hold line without tower's approval for it. */
+export interface UnauthorizedCrossing {
+  tick: number;
+  callsign: string;
+  holdShort: HoldShortId;
+  runways: RunwayId[];
+}
+
+/** The scoring points (score.ts, PRD §4.8): departures at lift-off, arrivals at the gate. In the order they happened. */
+export interface ScoreState {
+  departures: ScoredMovement[];
+  arrivals: ScoredMovement[];
+}
+
+export interface ScoredMovement {
+  tick: number;
+  callsign: string;
 }
 
 /**
@@ -430,6 +508,13 @@ export type SimEvent =
   | (AircraftEvent & { type: 'ramp-accepted'; rampHandoff: RampHandoffId; gate: GateId })
   /** Stopped at its gate, parked: an arrival's scoring point (PRD §4.3). */
   | (AircraftEvent & { type: 'arrived-at-gate'; gate: GateId })
+  /**
+   * The player's crossing clearance took it past a runway hold line without a current tower
+   * approval for that line (rules.ts, PRD §4.5). Counted in `world.rules`.
+   */
+  | (AircraftEvent & { type: 'unauthorized-crossing'; holdShort: HoldShortId; runways: RunwayId[] })
+  /** A collision or a gridlock ended the session (rules.ts). Emitted once. The aircraft are in `cause`. */
+  | { tick: number; type: 'session-ended'; callsign: null; cause: SessionEndCause }
   /** A transmission or request named a callsign that isn't in the sim. */
   | { tick: number; type: 'unknown-callsign'; callsign: string }
   /** "Aircraft calling Ground, say again your callsign" (an unknown-station transmission). */
