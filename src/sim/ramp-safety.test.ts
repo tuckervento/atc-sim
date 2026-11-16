@@ -10,7 +10,7 @@ import { loadAirport } from '../airport/load.ts';
 import { footprintOf, polygonsOverlap } from './footprint.ts';
 import { departurePlanFor } from './ramp.ts';
 import { createRng, nextFloat, type Rng } from './rng.ts';
-import { addAircraft, applyCommand, createSim, drainEvents, getAircraft, removeAircraft, stateHash, step, type Sim } from './sim.ts';
+import { addAircraft, applyCommand, createSim, drainEvents, getAircraft, removeAircraft, stateHash, step, type Session, type Sim } from './sim.ts';
 import { parseTerse } from './terse.ts';
 
 const TEST = indexAirport(loadAirport(testAirport));
@@ -86,7 +86,7 @@ interface Scenario {
   boundTicks: number;
 }
 
-function run(scenario: Scenario, seed: number): { ticks: number; checkIns: number; atGate: number } {
+function run(scenario: Scenario, seed: number): { ticks: number; checkIns: number; atGate: number; session: Session } {
   const sim = createSim(scenario.index, { seed });
   const rng = createRng(seed * 7919 + 1);
   for (const p of scenario.parked ?? []) addAircraft(sim, { ...p, role: 'arrival', at: { kind: 'gate', gate: p.gate } });
@@ -127,7 +127,7 @@ function run(scenario: Scenario, seed: number): { ticks: number; checkIns: numbe
     const hit = overlaps(sim, parkedShapes);
     if (hit.length > 0) throw new Error(`seed ${seed}, tick ${sim.world.tick}: footprints overlap: ${hit.join(', ')}`);
   }
-  return { ticks: sim.world.tick, checkIns, atGate };
+  return { ticks: sim.world.tick, checkIns, atGate, session: sim.world.session };
 }
 
 /**
@@ -137,7 +137,7 @@ function run(scenario: Scenario, seed: number): { ticks: number; checkIns: numbe
  * ramp), and removes parked arrivals after a 1-minute turnaround. Checks every tick that on the
  * ground, motion is backward only in a pushback. Returns the state hash every 10 minutes.
  */
-function longRun(seed: number): { hashes: string[]; counts: Record<string, number>; leaving: number } {
+function longRun(seed: number): { hashes: string[]; counts: Record<string, number>; leaving: number; session: Session } {
   const sim = createSim(TEST, {
     seed,
     arrivals: [{ runwayEnd: '27', perHour: 8, flight: (n) => ({ callsign: `BAW${n + 1}`, type: n % 3 ? 'A320' : 'B738', airline: 'BAW', terminal: 'T2' }) }],
@@ -196,12 +196,15 @@ function longRun(seed: number): { hashes: string[]; counts: Record<string, numbe
     if (t % (10 * 60 * 10) === 0) hashes.push(stateHash(sim));
   }
   const leaving = sim.world.ramp.aircraft.filter((r) => ['pushback', 'pushed', 'taxi-out'].includes(r.phase)).length;
-  return { hashes, counts, leaving };
+  return { hashes, counts, leaving, session: sim.world.session };
 }
 
 describe('ramp and tower together', () => {
   it('over two simulated hours: backward motion only in pushbacks; the same seed gives the same state hash all the way (TEST)', () => {
     const first = longRun(1);
+    // No collision or gridlock ended it (rules.ts): the sim keeps running after one, so the
+    // counts alone don't show it (investigations/merge-throughput-17-takeoffs.md).
+    expect(first.session).toEqual({ state: 'running' });
     // It flowed: departures pushed, checked in and took off; arrivals reached their gates.
     expect(first.counts['pushback']).toBeGreaterThanOrEqual(20);
     // Every pushback has checked in, or is still on its way out at the end.
@@ -210,8 +213,9 @@ describe('ramp and tower together', () => {
     expect(first.counts['arrived-at-gate']).toBeGreaterThanOrEqual(8);
     expect(first.hashes).toHaveLength(12);
     expect(longRun(1).hashes).toEqual(first.hashes);
-    const other = longRun(2).hashes;
-    expect(other.at(-1)).not.toBe(first.hashes.at(-1));
+    const other = longRun(2);
+    expect(other.session).toEqual({ state: 'running' });
+    expect(other.hashes.at(-1)).not.toBe(first.hashes.at(-1));
   }, 60_000);
 });
 
@@ -233,7 +237,7 @@ describe('opposing ramp movements in one lane', () => {
       boundTicks: 9 * 60 * 10,
     };
     for (let seed = 1; seed <= 100; seed++) {
-      expect(run(scenario, seed)).toMatchObject({ checkIns: 2, atGate: 2 });
+      expect(run(scenario, seed)).toMatchObject({ checkIns: 2, atGate: 2, session: { state: 'running' } });
     }
   }, 60_000);
 
@@ -274,7 +278,7 @@ describe('opposing ramp movements in one lane', () => {
     };
     expect(fillers.length).toBeGreaterThan(0);
     for (let seed = 1; seed <= 100; seed++) {
-      expect(run(scenario, seed)).toMatchObject({ checkIns: 3, atGate: 3 });
+      expect(run(scenario, seed)).toMatchObject({ checkIns: 3, atGate: 3, session: { state: 'running' } });
     }
   }, 120_000);
 });

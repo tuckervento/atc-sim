@@ -296,8 +296,10 @@ describe('runway safety', () => {
       const started = Date.now();
       const totals = { landed: 0, tookOff: 0, approved: 0, goArounds: 0 };
       for (let seed = 1; seed <= 50; seed++) {
-        const { stats } = run(scenario, seed, SESSION_TICKS, true);
+        const { sim, stats } = run(scenario, seed, SESSION_TICKS, true);
         expect(stats.conflicts, `seed ${seed}`).toEqual([]);
+        // Nor a gridlock (rules.ts), which the per-tick checks don't see.
+        expect(sim.world.session, `seed ${seed}`).toEqual({ state: 'running' });
         // Not vacuous: every session lands, launches and crosses.
         expect(stats.landed, `seed ${seed} landings`).toBeGreaterThan(0);
         expect(stats.tookOff, `seed ${seed} takeoffs`).toBeGreaterThan(0);

@@ -28,19 +28,34 @@
 //     promises see-and-avoid never stops one short of what it holds for another.
 //   - Already overlapping a body: not this rule's business (it's a collision); it doesn't stop.
 //   - Airborne, it has no footprint on the ground (rules.ts), so it doesn't sweep one.
+// - Converging (investigations/merge-throughput-17-takeoffs.md): at a junction ahead (a node of 3
+//   or more edges), another mover coming in on a different edge, neither following it nor
+//   head-on along its own route (in-line covers both), that will go through first. It must keep
+//   its nose the mover's half-span plus SPACING_M short of the junction, as for an occupied node.
+//   The rules above see only where bodies are now, so two movers converging on a free junction
+//   saw each other too late to stop. Pilots don't pull out in front of moving traffic, or drive
+//   into one that's pulling out: this is that, not the player's give-way (PRD C11).
+//   - A mover taxis (motion 'taxi'), isn't held (no hold position, a clearance or the ramp's
+//     track, and its mandatory stop beyond the junction), and isn't waiting (stopped, blocked).
+//     One that's waiting yields to every mover; movers don't yield to it.
+//   - Who goes first, decided the same way from both sides: one that can no longer stop short of
+//     its yield point at MAX_DECEL_MPS2; then the earlier arrival at the junction, at its present
+//     speed (at least ETA_FLOOR_MPS); then callsign order, so a tie never leaves both waiting.
+//   - Once the first one's nose is past the junction, the rules above take over: an occupied
+//     node while its wings are over it, then in line if it leaves on the yielder's next edge.
+//   - Two movements the reservations hold aren't stopped this way for each other, as above.
 // It plans to stop there at the planned braking rate. A body ahead never moves back (no
 // reversing), so planning against where it is now is safe.
 //
 // Not handled:
-// - Two aircraft converging on a free junction at once: neither occupies it yet, so neither
-//   waits. The first to reach it occupies it; the other stops only if it still can, braking at
-//   the hard limit, and may overlap otherwise. That's 1.12's collision check to catch.
 // - Right of way, give-way, and gridlock resolution (two aircraft each waiting for the other).
 
 import { edgesAt, type AirportIndex } from '../airport/graph.ts';
 import type { EdgeId, NodeId, Point } from '../airport/types.ts';
+import { MAX_DECEL_MPS2 } from './braking.ts';
 import { footprintOf, polygonsOverlap, type FootprintShape } from './footprint.ts';
 import { bodySpans } from './occupancy.ts';
+import { nextStop } from './stops.ts';
 import { placeOf, pointOf, type Track } from './track.ts';
 import type { Aircraft, Sim } from './world.ts';
 
@@ -58,6 +73,11 @@ export const RESTART_M = 2;
  */
 export const SWEEP_STEP_M = 1;
 const CONTACT_TOLERANCE_M = 1e-3;
+/**
+ * The converging rule's slowest speed for an arrival time: a stopped or crawling mover still gets
+ * a finite one, so the nearer of two goes first. [Builder], mine: about 4 kt.
+ */
+export const ETA_FLOOR_MPS = 2;
 
 /** Part of a body on one edge, in the edge's own frame: meters from `edge.from`, u0 < u1. */
 interface Occupant {
@@ -78,6 +98,19 @@ interface Body {
 
 type Box = [number, number, number, number];
 
+/** An aircraft that taxis, coming up to a junction ahead of its nose (the header's "Converging"). */
+interface Approach {
+  callsign: string;
+  wingspanM: number;
+  v: number;
+  /** Meters along its track from the nose to the junction. */
+  distanceM: number;
+  /** The edge it comes in on. */
+  via: EdgeId;
+  /** Stopped, blocked by traffic: it yields to every mover, and no one yields to it. */
+  waiting: boolean;
+}
+
 /** Where every body is, at the start of a tick. */
 export interface Occupancy {
   byEdge: Map<EdgeId, Occupant[]>;
@@ -89,12 +122,15 @@ export interface Occupancy {
   reserved: ReadonlySet<string>;
   /** Of those, the ones with a movement under way (not done). */
   reservedMoving: ReadonlySet<string>;
+  /** For each junction, the aircraft coming up to it that will go through it, nearest first. */
+  approaches: Map<NodeId, Approach[]>;
 }
 
 export function occupancyOf(sim: Sim): Occupancy {
   const byEdge = new Map<EdgeId, Occupant[]>();
   const byNode = new Map<NodeId, Occupant[]>();
   const bodies: Body[] = [];
+  const approaches = new Map<NodeId, Approach[]>();
   const add = <K>(map: Map<K, Occupant[]>, key: K, o: Occupant) => {
     const list = map.get(key);
     if (list) list.push(o);
@@ -121,11 +157,34 @@ export function occupancyOf(sim: Sim): Occupancy {
       const [u0, u1] = forward ? [a - start, b - start] : [len - (b - start), len - (a - start)];
       add(byEdge, edge.id, { callsign: ac.callsign, wingspanM: ac.wingspanM, u0, u1, edgeLengthM: len });
     }
+    for (const [node, approach] of approachesOf(sim, ac)) {
+      const list = approaches.get(node);
+      if (list) list.push(approach);
+      else approaches.set(node, [approach]);
+    }
   }
   const movements = sim.world.reservations.movements;
   const reserved = new Set(movements.map((m) => m.id));
   const reservedMoving = new Set(movements.filter((m) => !m.done).map((m) => m.id));
-  return { byEdge, byNode, bodies, reserved, reservedMoving };
+  return { byEdge, byNode, bodies, reserved, reservedMoving, approaches };
+}
+
+/** The junctions `ac` will go through before its mandatory stop, if it taxis and isn't held. */
+function approachesOf(sim: Sim, ac: Aircraft): [NodeId, Approach][] {
+  if (ac.motion !== 'taxi' || ac.holdPosition || (ac.clearance === null && ac.controller !== 'ramp')) return [];
+  const { nodes, edges, nodeAt } = ac.track;
+  const stopAt = nextStop(sim.index, ac).at;
+  const waiting = ac.v === 0 && ac.blockedBy !== null;
+  const found: [NodeId, Approach][] = [];
+  for (let j = 1; j < nodes.length; j++) {
+    const [node, at, via] = [nodes[j], nodeAt[j], edges[j - 1]];
+    if (node === undefined || at === undefined || via === undefined) throw new Error(`${ac.callsign}: track node ${j} is missing`);
+    if (at <= ac.s) continue;
+    if (at >= stopAt) break;
+    if (edgesAt(sim.index, node).length < 3) continue;
+    found.push([node, { callsign: ac.callsign, wingspanM: ac.wingspanM, v: ac.v, distanceM: at - ac.s, via, waiting }]);
+  }
+  return found;
 }
 
 /**
@@ -202,6 +261,26 @@ export function trafficStop(index: AirportIndex, occupancy: Occupancy, ac: Aircr
     }
   }
 
+  // Converging movers, at junctions ahead.
+  if (ac.motion === 'taxi') {
+    for (let j = 1; j < nodes.length; j++) {
+      const [node, at] = [nodes[j], nodeAt[j]];
+      if (node === undefined || at === undefined) throw new Error(`${ac.callsign}: track node ${j} is missing`);
+      if (at <= ac.s) continue;
+      if (at > horizon) break;
+      const approaches = occupancy.approaches.get(node) ?? [];
+      const own = approaches.find((x) => x.callsign === ac.callsign);
+      // Not going through it (held short of it, or its stop is there): nothing to yield for.
+      if (own === undefined) continue;
+      for (const other of approaches) {
+        if (other.callsign === ac.callsign || other.waiting) continue;
+        if (other.distanceM > lookaheadM || other.via === edges[j - 1] || other.via === edges[j]) continue;
+        if (occupancy.reservedMoving.has(ac.callsign) && occupancy.reservedMoving.has(other.callsign)) continue;
+        if (goesFirst(other, own)) considerGraph(at - (other.wingspanM / 2 + SPACING_M), other.callsign);
+      }
+    }
+  }
+
   // Footprints ahead. A contact past the nearest stop so far (plus the spacing) can't come nearer.
   // (`consider` sets `best` in a closure, which TypeScript's narrowing doesn't see.)
   const nearest = best as TrafficStop | null;
@@ -267,6 +346,20 @@ function footprintStops(occupancy: Occupancy, ac: Aircraft, horizon: number, gra
     }
   }
   return stops;
+}
+
+/**
+ * Of two aircraft coming up to the same junction, whether `a` goes through before `b` (the
+ * header's "Converging"): the same answer whichever of them asks.
+ */
+function goesFirst(a: Approach, b: Approach): boolean {
+  if (a.waiting !== b.waiting) return b.waiting;
+  const committed = (x: Approach, other: Approach) => (x.v * x.v) / (2 * MAX_DECEL_MPS2) > x.distanceM - (other.wingspanM / 2 + SPACING_M);
+  const [ca, cb] = [committed(a, b), committed(b, a)];
+  if (ca !== cb) return ca;
+  const [ta, tb] = [a.distanceM / Math.max(a.v, ETA_FLOOR_MPS), b.distanceM / Math.max(b.v, ETA_FLOOR_MPS)];
+  if (ta !== tb) return ta < tb;
+  return a.callsign < b.callsign;
 }
 
 function boxOf(points: readonly Point[]): Box {

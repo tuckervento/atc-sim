@@ -101,7 +101,8 @@
 
 import { edgeLength, edgePolyline, edgesAt, otherEnd, type AirportIndex } from '../airport/graph.ts';
 import type { ConfigurationId, Edge, EdgeId, HoldShort, NodeId, Point, RunwayConfiguration, RunwayEndDesignator, RunwayExit, RunwayId } from '../airport/types.ts';
-import { ACCEL_MPS2, DECEL_MPS2, KNOT_MPS, LOOKAHEAD_M, MAX_DECEL_MPS2, safeSpeed, STOP_SNAP_M, TICK_HZ, TICK_S, turnSpeedMps } from './movement.ts';
+import { MAX_DECEL_MPS2 } from './braking.ts';
+import { ACCEL_MPS2, DECEL_MPS2, KNOT_MPS, LOOKAHEAD_M, safeSpeed, STOP_SNAP_M, TICK_HZ, TICK_S, turnSpeedMps } from './movement.ts';
 import { bodySpans } from './occupancy.ts';
 import { nextFloat, nextInRange } from './rng.ts';
 import { nodeAt } from './stops.ts';

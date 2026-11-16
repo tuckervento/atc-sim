@@ -12,7 +12,7 @@ import kjfkOverrides from '../../data/airports/KJFK.overrides.json' with { type:
 import testAirport from '../../data/airports/TEST.json' with { type: 'json' };
 import { indexAirport, type AirportIndex } from '../airport/graph.ts';
 import { loadAirport } from '../airport/load.ts';
-import { addAircraft, applyCommand, createSim, drainEvents, listAircraft, removeAircraft, step } from './sim.ts';
+import { addAircraft, applyCommand, createSim, drainEvents, listAircraft, removeAircraft, step, type Session } from './sim.ts';
 import { parseTerse } from './terse.ts';
 
 const TEST = indexAirport(loadAirport(testAirport));
@@ -35,7 +35,7 @@ const QUEUES: Record<string, Queue> = {
 };
 
 /** One simulated hour with the queue kept full and `perHour` arrivals: the runway's ops. */
-function capacity(q: Queue, perHour: number, seed: number): { takeoffs: number; landings: number; goArounds: number } {
+function capacity(q: Queue, perHour: number, seed: number): { takeoffs: number; landings: number; goArounds: number; session: Session } {
   const sim = createSim(q.airport, { seed, arrivals: [{ runwayEnd: q.runwayEnd, perHour, flight: (n) => ({ callsign: `AAL${n + 1}`, type: 'A321' }) }] });
   const back = q.airport.nodes.get(q.node);
   if (!back) throw new Error(`no node ${q.node}`);
@@ -57,7 +57,7 @@ function capacity(q: Queue, perHour: number, seed: number): { takeoffs: number; 
       if (e.type === 'go-around') counts.goArounds++;
     }
   }
-  return counts;
+  return { ...counts, session: sim.world.session };
 }
 
 describe('a mixed runway’s capacity (Q, 2026-11-15)', () => {
@@ -68,6 +68,8 @@ describe('a mixed runway’s capacity (Q, 2026-11-15)', () => {
       for (const seed of [1, 2, 3]) {
         const got = capacity(q, 15, seed);
         console.info(`${name}, seed ${seed}, 15 arrivals an hour:`, JSON.stringify(got));
+        // No collision or gridlock ended it (rules.ts): the counts alone wouldn't show one.
+        expect(got.session, `${name} seed ${seed}`).toEqual({ state: 'running' });
         expect(got.goArounds, `${name} seed ${seed}`).toBe(0);
         expect(got.landings, `${name} seed ${seed}`).toBeGreaterThanOrEqual(14);
         expect(got.takeoffs, `${name} seed ${seed}`).toBeGreaterThanOrEqual(28);

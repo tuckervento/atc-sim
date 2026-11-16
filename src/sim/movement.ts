@@ -5,7 +5,8 @@
 // the fastest speed from which it could still stop (or slow) in time, braking at the planned
 // rate, within its acceleration and braking limits:
 // - The planned rate is DECEL_MPS2 (stops, turns, traffic).
-// - MAX_DECEL_MPS2 is the hard limit (hold position, or traffic that appears suddenly).
+// - MAX_DECEL_MPS2 (braking.ts) is the hard limit (hold position, or traffic that appears
+//   suddenly).
 // Every aircraft plans from the state at the start of the tick, so the order they're
 // processed in doesn't matter.
 //
@@ -19,9 +20,8 @@
 // - ACCEL_MPS2 0.5: 0 to 20 kt in about 20 s over about 100 m, a gentle breakaway.
 // - DECEL_MPS2 0.6: 20 kt to a stop in about 90 m, so braking for a hold line starts about
 //   one long taxiway segment out.
-// - MAX_DECEL_MPS2 1.5, about 0.15 g: firm, but not an emergency stop. 20 kt to a stop in
-//   about 35 m.
 
+import { MAX_DECEL_MPS2 } from './braking.ts';
 import { runwaysOccupied } from './occupancy.ts';
 import { reservedStop } from './reservations.ts';
 import { crossingTaxiway, nextStop, nodeAt, useCrossing, type Stop } from './stops.ts';
@@ -39,7 +39,6 @@ export const TAXI_SPEED_KT = 20;
 export const PILOT_SPEED_SPREAD = 0.1;
 export const ACCEL_MPS2 = 0.5;
 export const DECEL_MPS2 = 0.6;
-export const MAX_DECEL_MPS2 = 1.5;
 /**
  * The speed limit through a bend, by how far it turns: [deflection°, knots], linear between
  * points. Under the first point there's no limit. 10 kt at 45° is the guidance above; easing

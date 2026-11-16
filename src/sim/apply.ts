@@ -11,8 +11,8 @@
 //   list) withdraws earlier clearances to cross that runway: the later instruction wins.
 
 import type { EdgeId, NodeId, RunwayId } from '../airport/types.ts';
+import { MAX_DECEL_MPS2 } from './braking.ts';
 import type { Command, Continue, Correction, Cross, HoldShort, HoldShortTarget, Instruction, Taxi } from './commands.ts';
-import { MAX_DECEL_MPS2 } from './movement.ts';
 import { resolveRoute, type RouteAmbiguous, type RoutePath, type RouteStart, type RouteUnable } from './route.ts';
 import { copyCrossings, nextStop, nodeAt, stopsAhead } from './stops.ts';
 import { requestCrossing } from './tower.ts';

@@ -3,7 +3,7 @@ import testAirport from '../../data/airports/TEST.json' with { type: 'json' };
 import { indexAirport } from '../airport/graph.ts';
 import { loadAirport } from '../airport/load.ts';
 import { footprintsOverlap } from './footprint.ts';
-import { MAX_DECEL_MPS2 } from './movement.ts';
+import { MAX_DECEL_MPS2 } from './braking.ts';
 import { SPACING_M } from './traffic.ts';
 import { addAircraft, applyCommand, createSim, drainEvents, getAircraft, stateHash, step, TICK_S, type Sim } from './sim.ts';
 import { parseTerse } from './terse.ts';
