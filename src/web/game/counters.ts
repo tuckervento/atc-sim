@@ -1,12 +1,11 @@
-// The live counters panel's slot (PLAN 1.13). The counts come from 1.12's src/sim/score.ts,
-// which isn't merged yet: until it's wired, the session uses NO_COUNTERS and the panel shows a
-// placeholder in every row.
-//
-// To wire score.ts, implement `Counters` over it and pass it to createSession (session.ts):
-// the session hands it every sim event as it's drained, oldest first, with the sim, then reads it
-// once a frame. Pure here: the panel's rows from the values.
+// The live counters panel (PLAN 1.13), over 1.12's score (src/sim/score.ts, the sim's getScore):
+// `scoreCounters` is what the app passes to createSession (main.ts). The session hands it every
+// sim event as it's drained, oldest first, with the sim, then the page reads it once a frame.
+// The score stops counting when the session ends, so the counters freeze with it. NO_COUNTERS
+// shows placeholders: the session's default, for tests that don't look at the panel. Pure here:
+// the panel's rows from the values.
 
-import type { Sim, SimEvent } from '../../sim/sim.ts';
+import { getScore, type Sim, type SimEvent } from '../../sim/sim.ts';
 
 /** PRD §4.2–4.3 scoring points: a departure counts at takeoff, an arrival at its gate. */
 export interface CounterValues {
@@ -25,11 +24,30 @@ export interface Counters {
   read(): CounterValues | null;
 }
 
-/** Until score.ts is wired. */
+/** No counters: placeholders in every row. */
 export const NO_COUNTERS: Counters = {
   observe() {},
   read: () => null,
 };
+
+/**
+ * The counters from the sim's score (getScore), combined for the rates: departures at takeoff,
+ * arrivals at the gate (PRD §4.2–4.3). They read the sim they last observed, so they show
+ * placeholders until the first observe (the session observes once at its start).
+ */
+export function scoreCounters(): Counters {
+  let sim: Sim | null = null;
+  return {
+    observe(_events, observed) {
+      sim = observed;
+    },
+    read() {
+      if (sim === null) return null;
+      const score = getScore(sim);
+      return { departures: score.departures.total, arrivals: score.arrivals.total, ratePerHour: score.combined.perHour, peak15PerHour: score.combined.peakPerHour };
+    },
+  };
+}
 
 export interface CounterRow {
   label: string;

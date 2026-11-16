@@ -6,11 +6,11 @@
 import { AirportLoadError } from '../airport/load.ts';
 import type { Airport } from '../airport/types.ts';
 import { withCallsign } from './game/console.ts';
-import { counterRows } from './game/counters.ts';
+import { counterRows, scoreCounters } from './game/counters.ts';
 import { formatSimTime } from './game/event-log.ts';
 import { hotkeyFor } from './game/hotkeys.ts';
 import { parseSeedParam } from './game/params.ts';
-import { advance, createSession, drawnAircraft, requestCrossing, startupLines, submit, type Session } from './game/session.ts';
+import { advance, createSession, drawnAircraft, endedText, requestCrossing, startupLines, submit, type Session } from './game/session.ts';
 import { buildSidePanel, type SidePanel } from './game/ui.ts';
 import { AIRPORT_IDS, loadMapAirport, parseAirportParam } from './map/airports.ts';
 import { mountMap, type MapHandle } from './map/map-view.ts';
@@ -46,7 +46,7 @@ async function start(): Promise<void> {
 }
 
 function play(airport: Airport, seed: number): void {
-  const session = createSession(airport, { seed });
+  const session = createSession(airport, { seed, counters: scoreCounters() });
   let selected: string | null = null;
 
   const mapBox = document.createElement('div');
@@ -93,6 +93,7 @@ function play(airport: Airport, seed: number): void {
   });
 
   let last: number | null = null;
+  let banner: HTMLElement | null = null;
   const frame = (now: number) => {
     // The first frame has no previous one; rAF timestamps can also sit a hair before the last.
     const dtS = last === null ? 0 : Math.max(0, (now - last) / 1000);
@@ -110,6 +111,16 @@ function play(airport: Airport, seed: number): void {
     map.setAircraft(aircraft);
     refreshClock(session, panel);
     panel.setCounters(counterRows(session.counters.read()));
+    if (!banner) {
+      // The session's end (a collision or a gridlock): a banner over the map, once. The sim keeps drawing; the counters have frozen with the score.
+      const ended = endedText(session);
+      if (ended) {
+        banner = el('section', 'ended');
+        banner.setAttribute('role', 'alert');
+        banner.append(el('h2', '', ended.title), ...ended.details.map((d) => el('p', '', d)));
+        mapBox.append(banner);
+      }
+    }
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);

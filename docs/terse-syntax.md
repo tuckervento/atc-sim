@@ -443,7 +443,10 @@ one needs to change it, update this section and note it in STATUS.
     it a free gate at that terminal, preferring one its airline uses. It's still ground's while
     it waits for its way in to clear (traffic in the lane). Ramp then takes it (`ramp-accepted`,
     with the gate), taxis it in over ramp lanes, and parks it: `arrived-at-gate`, the arrival's
-    scoring point. It stays parked, holding the gate.
+    scoring point. It stays parked, holding the gate, for a turnaround (35–60 min for a
+    narrowbody, 75–120 for a widebody, from the seed), then either leaves as a new departure
+    from that gate (`turnaround`, with its new callsign; 80%) or is towed to a hangar and
+    removed (`towed-to-hangar`; 20%). Both are ramp's: no instruction from the player.
   - With **no gate free**, ramp doesn't take it: it waits at the entrance, still ground's, and
     nothing is said (the pilot's "no gate yet" call is Phase 3).
   - A handoff to ramp anywhere else is recorded and nothing more happens, as with tower; it

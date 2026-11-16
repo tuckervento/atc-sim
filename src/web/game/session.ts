@@ -2,9 +2,9 @@
 // in real time by the fixed-step clock, drawn between ticks, its events turned into log lines.
 // The page (ui.ts, main.ts) calls `advance` once per animation frame and draws `drawnAircraft`.
 
-import { indexAirport } from '../../airport/graph.ts';
-import type { Airport } from '../../airport/types.ts';
-import { applyCommand, createSim, drainEvents, listAircraft, step, TICK_HZ, TICK_S, type AircraftTypeCode, type Sim } from '../../sim/sim.ts';
+import { edgePolyline, indexAirport, type AirportIndex } from '../../airport/graph.ts';
+import type { Airport, Point } from '../../airport/types.ts';
+import { applyCommand, canDepartFrom, createSim, drainEvents, getSession, listAircraft, step, TICK_HZ, TICK_S, type Sim } from '../../sim/sim.ts';
 import { parseTerse, type ParseError } from '../../sim/terse.ts';
 import { fromAircraftView, type MapAircraft } from '../map/aircraft.ts';
 import { advanceClock, initialClock, type ClockControls, type ClockState } from './clock.ts';
@@ -12,14 +12,15 @@ import { NO_COUNTERS, type Counters } from './counters.ts';
 import { destinationOf } from './destination.ts';
 import { formatSimTime, initialLog, logEvents, type LogContext, type LogLine, type LogState } from './event-log.ts';
 import { interpolateAircraft } from './interpolate.ts';
-import { TRAFFIC_RATES, trafficFor, type CanDepart, type SkippedTerminal } from './traffic.ts';
+import { sessionEnd, type EndContext, type SessionEndText } from './session-end.ts';
+import { TRAFFIC_RATES, trafficFor, type SkippedTerminal, type Traffic } from './traffic.ts';
 
 /** Catch-up limit: at 4× and 60 frames a second, a frame needs under one tick. */
 export const MAX_TICKS_PER_FRAME = 8;
 
 export interface SessionOptions {
   seed: number;
-  /** The live counters' source (counters.ts). Default NO_COUNTERS, until score.ts is wired. */
+  /** The live counters' source (counters.ts): the app passes scoreCounters(). Default NO_COUNTERS (placeholders). */
   counters?: Counters;
 }
 
@@ -35,6 +36,8 @@ export interface Session {
   clock: ClockState;
   log: LogState;
   readonly logContext: LogContext;
+  /** How the session's end is said (session-end.ts): the banner's and the log's. */
+  readonly endContext: EndContext;
   /** The aircraft before and after the last tick, and how far the frame is between them. */
   previous: MapAircraft[];
   current: MapAircraft[];
@@ -48,7 +51,20 @@ export function createSession(airport: Airport, options: SessionOptions): Sessio
   const index = indexAirport(airport);
   const rates = TRAFFIC_RATES[airport.id];
   const terminals = new Map<string, string | null>();
-  const traffic = rates ? trafficFor(airport, options.seed, rates, canDepartProbe(airport)) : { arrivals: [], departures: [], skipped: [] };
+  // The traffic flies only what can leave its terminal (the sim's canDepartFrom). The answer is about
+  // the airport, so a sim with no traffic answers it, before the session's own sim exists.
+  const empty = createSim(index, { seed: options.seed });
+  const traffic: Traffic = rates
+    ? trafficFor(airport, options.seed, rates, (terminal, type) => canDepartFrom(empty, terminal, type))
+    : {
+        arrivals: [],
+        departures: [],
+        skipped: [],
+        // No traffic, so no arrival to turn around.
+        turnaroundCallsign: (_, inbound) => {
+          throw new Error(`${inbound.callsign}: a turnaround at ${airport.id}, which has no traffic`);
+        },
+      };
   // Remember each flight's terminal as the sim asks for it.
   const remembered = <F extends { callsign: string; terminal?: string | null }>(flight: (n: number) => F) => (n: number) => {
     const f = flight(n);
@@ -59,9 +75,20 @@ export function createSession(airport: Airport, options: SessionOptions): Sessio
     seed: options.seed,
     arrivals: traffic.arrivals.map((s) => ({ ...s, flight: remembered(s.flight) })),
     departures: traffic.departures.map((s) => ({ ...s, flight: remembered(s.flight) })),
+    // A parked arrival that departs again (ramp.ts, "Turnarounds") gets its new flight number
+    // from the traffic, and keeps its terminal.
+    turnaround: {
+      callsign: (n, inbound) => {
+        const callsign = traffic.turnaroundCallsign(n, inbound);
+        terminals.set(callsign, terminals.get(inbound.callsign) ?? null);
+        return callsign;
+      },
+    },
   });
   const configId = airport.defaultConfiguration ?? airport.configurations[0]?.id;
   const config = airport.configurations.find((c) => c.id === configId);
+  const runwayName = runwayNamer(airport, config?.runways.map((r) => r.end) ?? []);
+  const endContext: EndContext = { tickHz: TICK_HZ, runwayName, nearestTaxiway: nearestTaxiwayFinder(index) };
   const session: Session = {
     airport,
     sim,
@@ -71,7 +98,8 @@ export function createSession(airport: Airport, options: SessionOptions): Sessio
     controls: { speed: 1, paused: false },
     clock: initialClock(),
     log: initialLog(),
-    logContext: { tickHz: TICK_HZ, gateLabel: gateLabeler(airport) },
+    logContext: { tickHz: TICK_HZ, gateLabel: gateLabeler(airport), holdLine: holdLineLabeler(airport, runwayName), entranceName: entranceNamer(airport), endLine: (ended) => sessionEnd(ended, endContext).log },
+    endContext,
     previous: [],
     current: [],
     alpha: 0,
@@ -80,6 +108,8 @@ export function createSession(airport: Airport, options: SessionOptions): Sessio
   };
   session.current = snapshot(session);
   session.previous = session.current;
+  // The counters see the sim from the start, before its first events.
+  session.counters.observe([], sim);
   return session;
 }
 
@@ -138,6 +168,12 @@ export function requestCrossing(session: Session, callsign: string): LogLine[] {
   return result.lines;
 }
 
+/** The banner's text once the session has ended (a collision or a gridlock, rules.ts); null while it runs. */
+export function endedText(session: Session): SessionEndText | null {
+  const state = getSession(session.sim);
+  return state.state === 'ended' ? sessionEnd(state, session.endContext) : null;
+}
+
 /** The aircraft as this frame draws them, between the last two ticks. */
 export function drawnAircraft(session: Session): MapAircraft[] {
   return interpolateAircraft(session.previous, session.current, session.alpha);
@@ -162,6 +198,69 @@ function snapshot(session: Session): MapAircraft[] {
   );
 }
 
+/**
+ * A hold line as the pilot says it: its runways the way tower says them (tower.ts: the end in use
+ * in the configuration, else the first end), and the name of its edge toward the runway, the
+ * taxiway it's on. Throws for an unknown id: the sim named a hold line the airport doesn't have.
+ */
+function holdLineLabeler(airport: Airport, runwayName: (id: string) => string): NonNullable<LogContext['holdLine']> {
+  const edges = new Map(airport.edges.map((e) => [e.id, e]));
+  return (id) => {
+    const hold = airport.holdShorts.find((h) => h.id === id);
+    if (!hold) throw new Error(`no hold line ${id} at ${airport.id}`);
+    return { runways: hold.runways.map(runwayName), taxiway: edges.get(hold.towardEdge)?.name ?? null };
+  };
+}
+
+/** A ramp entrance's name ("KG"). Throws for an unknown id. */
+function entranceNamer(airport: Airport): (id: string) => string {
+  const names = new Map(airport.rampHandoffs.map((h) => [h.id, h.name]));
+  return (id) => {
+    const name = names.get(id);
+    if (name === undefined) throw new Error(`no ramp entrance ${id} at ${airport.id}`);
+    return name;
+  };
+}
+
+/** A runway id as tower says it (tower.ts): its end in use in the configuration, else its first end. Throws for an unknown id. */
+function runwayNamer(airport: Airport, endsInUse: readonly string[]): (id: string) => string {
+  const said = new Map(airport.runways.map((r) => [r.id, r.ends.find((e) => endsInUse.includes(e.designator))?.designator ?? r.ends[0].designator]));
+  return (id) => {
+    const name = said.get(id);
+    if (name === undefined) throw new Error(`no runway ${id} at ${airport.id}`);
+    return name;
+  };
+}
+
+/** How far a named taxiway or lane may be from a place to name it, meters. Mine: about two aircraft lengths. */
+const NEAR_M = 150;
+
+/** The nearest named taxiway or ramp lane to a point, within NEAR_M; null if none. Runways name themselves (a cause's `runways`). */
+function nearestTaxiwayFinder(index: AirportIndex): (p: Point) => string | null {
+  const named = index.airport.edges
+    .filter((e) => (e.kind === 'taxiway' || e.kind === 'rampLane') && e.name !== undefined)
+    .map((e) => ({ name: e.name ?? '', line: edgePolyline(index, e) }));
+  return (p) => {
+    let best: { name: string; d: number } | null = null;
+    for (const { name, line } of named) {
+      for (let i = 1; i < line.length; i++) {
+        const [a, b] = [line[i - 1], line[i]];
+        if (!a || !b) continue;
+        const d = distanceToSegment(p, a, b);
+        if (d <= NEAR_M && (best === null || d < best.d)) best = { name, d };
+      }
+    }
+    return best?.name ?? null;
+  };
+}
+
+function distanceToSegment(p: Point, a: Point, b: Point): number {
+  const [dx, dy] = [b[0] - a[0], b[1] - a[1]];
+  const len2 = dx * dx + dy * dy;
+  const t = len2 === 0 ? 0 : Math.min(1, Math.max(0, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2));
+  return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
+}
+
 /** "T4 gate B25" for a gate id. Throws for an unknown id: the sim named a gate the airport doesn't have. */
 function gateLabeler(airport: Airport): (gateId: string) => string {
   const gates = new Map(airport.gates.map((g) => [g.id, `${g.terminal} gate ${g.name}`]));
@@ -171,25 +270,3 @@ function gateLabeler(airport: Airport): (gateId: string) => string {
     return label;
   };
 }
-
-/**
- * Asks the sim whether a type can depart from a terminal: a throwaway sim on the empty airport
- * with one departure stream, one tick. The ramp spawns a departure only at a gate it fits and can
- * push back from (ramp.ts), so a spawn means yes. About 80 ms for all of KJFK's.
- */
-function canDepartProbe(airport: Airport): CanDepart {
-  const index = indexAirport(airport);
-  const known = new Map<string, boolean>();
-  return (terminal, type: AircraftTypeCode) => {
-    const key = `${terminal}|${type}`;
-    let can = known.get(key);
-    if (can === undefined) {
-      const probe = createSim(index, { seed: 1, departures: [{ perHour: 1, flight: () => ({ callsign: 'PROBE1', type, terminal }) }] });
-      step(probe, 1);
-      can = listAircraft(probe).length > 0;
-      known.set(key, can);
-    }
-    return can;
-  };
-}
-

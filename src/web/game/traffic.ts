@@ -12,6 +12,12 @@
 // - Callsign: the airline's ICAO code and a flight number 100–9999. Numbers are a seeded
 //   permutation of the flights of all streams together, so no two flights share one (for the
 //   first 9,900 flights of a session: about 280 hours at today's rates).
+// - A turned-around flight (an arrival the ramp parked, departing again; ramp.ts,
+//   "Turnarounds"): its inbound's airline and a number from the other end of the same
+//   permutation, counting down. So it shares a number with no stream's flight and no other
+//   turnaround until the two counts meet. A stream's flight n takes index n × streams + stream,
+//   so at KJFK (7 streams, the busiest at 6 an hour) the streams use up about 42 indices an hour
+//   and turnarounds about 10: they meet after about 190 hours.
 
 import type { Airport, Terminal } from '../../airport/types.ts';
 import type { AircraftTypeCode, ArrivalStream, DepartureStream } from '../../sim/sim.ts';
@@ -28,6 +34,8 @@ export interface Traffic {
   departures: DepartureStream[];
   /** Terminals with no traffic, and why: shown to the player, so a quiet terminal isn't a mystery. */
   skipped: SkippedTerminal[];
+  /** The callsign of the `n`th arrival to turn around into a departure (0, 1, …): for the sim's TurnaroundOptions.callsign. */
+  turnaroundCallsign: (n: number, inbound: { callsign: string; airline: string | null }) => string;
 }
 
 export interface SkippedTerminal {
@@ -119,9 +127,12 @@ export function trafficFor(airport: Airport, seed: number, rates: TrafficRates, 
   const config = airport.configurations.find((c) => c.id === configId);
   const landing = (config?.runways ?? []).filter((r) => r.roles.includes('arrivals')).map((r) => r.end);
   const streamCount = landing.length + airport.terminals.length;
-  const callsign = (stream: number, n: number, airline: string) => {
-    const m = n * streamCount + stream;
-    return `${airline}${FIRST_FLIGHT_NUMBER + ((m * NUMBER_STEP + (hash(seed, 0, 0, 0) % NUMBERS)) % NUMBERS)}`;
+  const numberAt = (m: number) => FIRST_FLIGHT_NUMBER + ((m * NUMBER_STEP + (hash(seed, 0, 0, 0) % NUMBERS)) % NUMBERS);
+  const callsign = (stream: number, n: number, airline: string) => `${airline}${numberAt(n * streamCount + stream)}`;
+  const turnaroundCallsign = (n: number, inbound: { callsign: string; airline: string | null }) => {
+    // Every flight of this traffic has an airline; one without isn't ours.
+    if (inbound.airline === null) throw new Error(`${inbound.callsign}: a turnaround with no airline`);
+    return `${inbound.airline}${numberAt(NUMBERS - 1 - n)}`;
   };
 
   const served: Served[] = [];
@@ -157,7 +168,7 @@ export function trafficFor(airport: Airport, seed: number, rates: TrafficRates, 
       firstAtS: start(served.length + stream),
     }),
   );
-  return { arrivals, departures, skipped };
+  return { arrivals, departures, skipped, turnaroundCallsign };
 }
 
 /** The first FIRST_SPREAD_S of a session, after FIRST_AT_S: when stream k of `count` starts. */

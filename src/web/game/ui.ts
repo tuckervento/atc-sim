@@ -48,7 +48,7 @@ export function buildSidePanel(title: string, handlers: SidePanelHandlers): Side
   });
   bar.append(el('h1', '', title), clock, pause, speeds);
 
-  // Counters (PLAN 1.12's slot: placeholders until score.ts is wired).
+  // Counters (counters.ts, over the sim's score).
   const counters = el('dl', 'counters');
 
   // Log.

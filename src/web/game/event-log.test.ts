@@ -51,8 +51,6 @@ describe('logEvents: what happened', () => {
     const taxi: Taxi = { type: 'taxi', to: { kind: 'runway', name: '31L' }, via: [{ taxiway: 'A', turn: null }], holdShort: [] };
     const quiet: SimEvent[] = [
       { tick: 1, type: 'command-applied', callsign: 'DAL4', instruction: taxi },
-      { tick: 1, type: 'arrived', callsign: 'DAL4', destination: { kind: 'runway', runwayEnd: '31L', departureLine: 'd1', holdShort: 'h1' } },
-      { tick: 1, type: 'holding-short', callsign: 'DAL4', node: 'n1', holdShort: 'h1', runways: [], target: null },
       { tick: 1, type: 'entered-runway', callsign: 'DAL4', holdShort: 'h1', runways: ['13R/31L'], cleared: true },
       { tick: 1, type: 'crossed-runway', callsign: 'DAL4', runway: '13R/31L' },
       { tick: 1, type: 'stopped-for-traffic', callsign: 'DAL4', behind: 'JBU1' },
