@@ -1,6 +1,6 @@
 # STATUS
 
-_Last updated: 2026-11-15 (cycle 8 done: 1.11 and the 1.10 follow-ups)_
+_Last updated: 2026-11-15 (cycle 9 started: 1.12, the ramp rework and 1.13 in parallel)_
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ _Last updated: 2026-11-15 (cycle 8 done: 1.11 and the 1.10 follow-ups)_
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-Next: 1.12, rule checks and score counters.
+In progress: 1.12, the ramp rework, and 1.13 (partly). Next: the rest of 1.13, then 1.14.
 
 ## Completed
 
@@ -229,6 +229,9 @@ Next: 1.12, rule checks and score counters.
 
 ## In Progress
 
+- [ ] 1.12 — Rule checks and score counters (subagent, own worktree).
+- [ ] Ramp rework (subagent, own worktree): pushback may swing into neighbouring stands or onto taxiways, and granular locks in a controller-agnostic reservation module.
+- [ ] 1.13 — Playable in the browser (subagent, own worktree), all but the counters. The counters, the manual-test doc and Q's run follow 1.12.
 
 ## Blocked
 
@@ -831,10 +834,15 @@ Next: 1.12, rule checks and score counters.
   - **Follow-up Q1:** lining up behind a landing aircraft everywhere is fine ("yes, good").
   - **1.11 Q3:** an arrival with no free gate blocking a two-way handoff is "ok for now"; "'no gate yet' will be here soon."
 
+- 2026-11-15 — **Parallel cycle 9: 1.12, the ramp rework and 1.13 (partly),** each in its own worktree. Q asked for 1.12 plus up to three tasks worth starting now. By PLAN's dependencies only 1.12 is eligible. Q picked:
+  - **The ramp rework.** Pushback may swing into neighbouring stands or onto taxiways. Granular locks replace whole-path holds; the target is the KJFK T4 alley's 3 out and 3 in in ≤ 8 minutes (17–20 today). It also covers 1.11 Q4 (short stands).
+    - **Lock scope (Q):** ramp movements now. But "I can see a future where the player takes over as tower and auto-routing expands to cover all ground taxiing", so the reservation module is controller-agnostic and documents how ground would plug in.
+  - **1.13, partly:** the browser app on 1.7's map, all but the counters.
+  - **1.12's plan carries** 1.10's questions 3 and 7 (runway areas at intersections, airborne footprints).
+  - **1.14 waits** for 1.12's checks and the reworked ramp. Tower's crossing-runway rules (TEST 36/27) were not picked.
+
 ## Next Up
 
-- 1.12 — Rule checks and score counters (needs 1.10 and 1.11, both done). Bring into its plan:
-  - 1.10's questions 3 and 7 (runway areas at intersections, airborne footprints)
-  - 1.11's question 4 (a wide aircraft passing a short stand may overlap the rigid footprint)
-- Open for Q, none blocking 1.11: 1.6's questions 4–6 and 8; 1.10's 3–7 (3 and 7 matter for 1.12, 5 for 1.14); 1.7's 2–5; 1.9's three; 1.5's five.
-- 1.9's three open questions, and 1.5's five, are in their entries above.
+- 1.13, the rest: wire the counters to `score.ts`, write `docs/phase1-manual-test.md`, then Q's run.
+- 1.14 — Scoring-path and soak tests (needs 1.12 and the reworked ramp).
+- Open for Q, none blocking: 1.6's questions 4–6 and 8; 1.10's 3–7 (5 matters for 1.14); the follow-ups' 2–6; 1.11's 5–9; 1.7's 2–5; 1.9's three; 1.5's five. All are in their Deviations entries.
