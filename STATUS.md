@@ -1,6 +1,6 @@
 # STATUS
 
-_Last updated: 2026-11-16 (cycle 10 started: finishing 1.13)_
+_Last updated: 2026-11-16 (cycle 10 merged: 1.13 ready for Q's run after two fixes)_
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ _Last updated: 2026-11-16 (cycle 10 started: finishing 1.13)_
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-In progress: finishing 1.13 for Q's manual test (cycle 10). Next: 1.14.
+In progress: 1.13. Its manual test (`docs/phase1-manual-test.md`) is written; two fixes come before Q's run: turning about the main gear plus stable labels, and the seed-6 head-on collision. Next: 1.14.
 
 ## Completed
 
@@ -261,13 +261,24 @@ In progress: finishing 1.13 for Q's manual test (cycle 10). Next: 1.14.
     - a malformed command shows its error and keeps the text; a valid one is echoed and answered
     - no console messages
   - **Not verified by me:** T after a canvas click, since the DevTools tools can't click a canvas by position. The agent verified it with synthetic pointer events, and a real click on the agent's tab, which it took to be Q's, selected an aircraft.
-  - **Left, cycle 10** (one subagent, own worktree, in this order):
+  - **Done in cycle 10** (one subagent, own worktree; merged and verified by me):
+    - Typecheck exit 0, **439 of 439** (47 files).
+    - **The one existing test edited:** `event-log.test.ts` drops `holding-short` and runway `arrived` from its silent list. Both are logged now, by Q's request.
+    - No `Math.random` in `ramp.ts`.
+    - **The manual test:** `docs/phase1-manual-test.md` (seed 5). WJA3571 departs: G, crossing 4L at G with T, the 31L hold at Z, monitor tower. ANA7953 arrives on 31R, exits at D, `taxi ramp T7 via W`, crosses 31R at W with T, then monitor ramp.
+      - Its scripted twin `src/web/game/manual-test.test.ts` passes.
+      - The agent's Chrome run ended at Departures 1, Arrivals 1.
+  - **Done in this cycle's list** (the items below):
     - wire the counters to `score.ts` (the interface is in `src/web/game/counters.ts`)
     - a session-ended banner with the cause (my call: 1.12 ends sessions, and the app doesn't show it yet)
     - a sim export for which types can depart from a terminal, replacing the app's startup probe (Q)
     - log holding short (Q)
     - parked arrivals turn around or tow to a hangar and despawn (Q; needed for 1.14)
-    - `docs/phase1-manual-test.md`, then Q's run
+    - `docs/phase1-manual-test.md`
+  - **Left before Q's run** (approved by Q, two subagents in parallel):
+    - turning about the main gear, and stable map labels (Q's feedback, below)
+    - the seed-6 head-on collision. An arrival taxiing in on W hit a departure idle at the W ramp edge, both ground's, and see-and-avoid didn't stop it. Found by the cycle-10 agent; I haven't reproduced it yet.
+  - Then Q's run.
 
 ## Blocked
 
@@ -939,6 +950,41 @@ In progress: finishing 1.13 for Q's manual test (cycle 10). Next: 1.14.
   - **Turnaround defaults (my proposal, options):**
     - 35–60 min for narrowbodies, 75–120 min for widebodies
     - 80% depart again (same aircraft, new flight number), 20% towed to a hangar (removed, gate freed)
+
+- 2026-11-16 — **Q's feedback: aircraft turn about the nose.** "When aircraft turn (on the taxiway, or ramps) they seem to turn at the nose and the tail swings out widely. Shouldn't they turn more-or-less on their center?"
+  - **Cause:**
+    - The map (`src/web/map/draw.ts:308`) rotates the whole drawn body about the nose, using the track's direction at the nose, so the tail sweeps wide in a bend.
+    - The collision footprint (`src/sim/footprint.ts:59`) uses a different axis: nose to tail, both on the track, which cuts inside the bend. So in turns, what's drawn and what's checked differ.
+  - **Fix (Q approved, queued after the cycle-10 merge, before Q's run):**
+    - The body's axis runs from the main gear to the nose. The main gear is a point on the track about half a length behind the nose, from published gear positions where found.
+    - The sim's aircraft view exposes it. The map draws from it, and `footprint.ts` builds its parts along it.
+    - Tests: in a 90° turn, the drawing and the footprint agree, and the tail stays near the outside of the curve; straights are unchanged.
+    - Then re-run the collision sweeps and the ramp gate counts.
+
+- 2026-11-16 — **Q's feedback: map labels bounce as aircraft move.** "It should just toggle visibility of the occluded icons, but they should still be treated as if they are there for the overall map positioning."
+  - **Cause:** `src/web/map/draw.ts:95` re-runs `chooseLabels` every frame with the aircraft data blocks as obstacles. The greedy layout then moves or drops labels as aircraft pass, and the labels after them shift.
+  - **Fix (Q, queued with the turning fix):**
+    - The map labels are laid out against the map only, and redone only when the view changes (pan or zoom).
+    - Each frame, a label covered by an aircraft or its data block is hidden, with no re-layout.
+    - Tests: the layout doesn't change as an aircraft moves; a covered label hides and comes back in the same place.
+
+- 2026-11-16 — **Cycle 10 choices** (reference: `ramp.ts`'s header, `src/web/game/`):
+  - **`canDepartFrom(sim, terminal, type)`** replaces the app's startup probe. The answers are the same: it matched the probe on every terminal and type at TEST and KJFK, and 10 minutes of session log came out byte-identical.
+  - **Turnaround or tow:**
+    - The arrival is removed and a new departure is added at the same gate, so two flights are scored separately, with no rename.
+    - A separate seeded generator is used, so the main RNG sequence doesn't shift.
+    - **Defaults accepted by Q (2026-11-16):** narrowbody 35–60 min, widebody (span ≥ 36 m, ICAO code D) 75–120 min; 80% depart again, 20% towed. `turnaround: false` turns it off.
+  - **Web:**
+    - counters over `getScore`
+    - log lines for holding short, at a ramp entrance, turnaround and tow
+    - a session-ended banner (`session-end.ts`)
+  - **`docs/terse-syntax.md`** now describes the turnaround (my edit).
+  - **TDD:** several tests were written in groups. The banner's DOM has no test. 19 mutation checks were each killed.
+  - **Open for Q:**
+    1. The test's arrival crosses 31R, the runway it landed on. In 12 seeds, no arrival's route crossed 31L or 4L/22R.
+    2. Every departure route to 31L crosses 4L/22R.
+    3. Aircraft added already parked never turn around (test fixtures).
+    4. The synthetic canvas clicks gave 3 `setPointerCapture` console errors; a real mouse click shouldn't.
 
 ## Next Up
 
