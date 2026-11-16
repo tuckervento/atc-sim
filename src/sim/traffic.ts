@@ -8,6 +8,26 @@
 //   track's own), or parked on the node itself, that comes within its own half-span of the
 //   node, so its wings may be over the junction. It must keep its nose that half-span plus
 //   SPACING_M short of the node.
+// - Footprints (the seed-6 fix, investigations/seed6-head-on.md): its own footprint (footprint.ts,
+//   the shape 1.12's collision rule uses), swept along its track ahead, first overlapping another
+//   body's footprint. It must keep its nose SPACING_M short of that point. The two rules above go
+//   by the graph: a body on an edge it will use, or at a node it will pass, measured along the
+//   track. The plane can disagree:
+//   - Two nodes close in the plane with no edge between them (KJFK's twin ramp edges, e.g. T7's
+//     rhW and rhW2, 2.4 m apart): a body at one is on neither, so only this rule sees it.
+//   - A body past a sharp bend (KJFK's NA stub, doubling back off A): along the track it's far
+//     ahead, but its wing is beside the track before the bend.
+//   For a body the graph's rules found, it counts only if the contact comes at or before their
+//   stop for it, where their stop wouldn't keep them apart. Otherwise theirs stands, so nothing
+//   changes where they work: applied to every body, it holds a queue looser through bends (a
+//   follower's wing reaches the leader's footprint before its nose reaches the tail, though not
+//   before the in-line stop), and that cost a mixed runway takeoffs (tower-capacity.test.ts) with
+//   nothing there overlapping. It stops only for an overlap, never for a near miss.
+//   - A movement the reservations hold (reservations.ts) isn't stopped this way for a body they
+//     hold too: they keep those footprints apart already, with a margin, and their header
+//     promises see-and-avoid never stops one short of what it holds for another.
+//   - Already overlapping a body: not this rule's business (it's a collision); it doesn't stop.
+//   - Airborne, it has no footprint on the ground (rules.ts), so it doesn't sweep one.
 // It plans to stop there at the planned braking rate. A body ahead never moves back (no
 // reversing), so planning against where it is now is safe.
 //
@@ -18,9 +38,10 @@
 // - Right of way, give-way, and gridlock resolution (two aircraft each waiting for the other).
 
 import { edgesAt, type AirportIndex } from '../airport/graph.ts';
-import type { EdgeId, NodeId } from '../airport/types.ts';
+import type { EdgeId, NodeId, Point } from '../airport/types.ts';
+import { footprintOf, polygonsOverlap, type FootprintShape } from './footprint.ts';
 import { bodySpans } from './occupancy.ts';
-import { placeOf } from './track.ts';
+import { placeOf, pointOf, type Track } from './track.ts';
 import type { Aircraft, Sim } from './world.ts';
 
 /** Nose-to-tail spacing behind traffic, when stopped: about a quarter of a widebody's length. */
@@ -30,6 +51,13 @@ export const SPACING_M = 20;
  * it, a follower would stop and start behind a leader creeping onto its own stop point.
  */
 export const RESTART_M = 2;
+/**
+ * The footprint sweep's sample spacing, meters of nose travel. [Builder], mine: about one tick's
+ * travel at 20 kt, the spacing the collision rule itself samples at. The first overlap found is
+ * then pinned down to CONTACT_TOLERANCE_M.
+ */
+export const SWEEP_STEP_M = 1;
+const CONTACT_TOLERANCE_M = 1e-3;
 
 /** Part of a body on one edge, in the edge's own frame: meters from `edge.from`, u0 < u1. */
 interface Occupant {
@@ -41,16 +69,32 @@ interface Occupant {
   edgeLengthM: number;
 }
 
+/** A body's footprint (footprint.ts) and its bounding box: min x, min y, max x, max y. */
+interface Body {
+  callsign: string;
+  shape: FootprintShape;
+  box: Box;
+}
+
+type Box = [number, number, number, number];
+
 /** Where every body is, at the start of a tick. */
 export interface Occupancy {
   byEdge: Map<EdgeId, Occupant[]>;
   /** Bodies that are just a node: parked with no trail. */
   byNode: Map<NodeId, Occupant[]>;
+  /** Every body on the ground, as its footprint. */
+  bodies: Body[];
+  /** The aircraft the reservations hold ground for (reservations.ts): moving, finished or parked. */
+  reserved: ReadonlySet<string>;
+  /** Of those, the ones with a movement under way (not done). */
+  reservedMoving: ReadonlySet<string>;
 }
 
 export function occupancyOf(sim: Sim): Occupancy {
   const byEdge = new Map<EdgeId, Occupant[]>();
   const byNode = new Map<NodeId, Occupant[]>();
+  const bodies: Body[] = [];
   const add = <K>(map: Map<K, Occupant[]>, key: K, o: Occupant) => {
     const list = map.get(key);
     if (list) list.push(o);
@@ -59,6 +103,7 @@ export function occupancyOf(sim: Sim): Occupancy {
   for (const ac of sim.world.aircraft) {
     // On final or after takeoff: no one's traffic (world.ts).
     if (ac.airborne) continue;
+    bodies.push(bodyOf(ac));
     const { nodes, edges, nodeAt } = ac.track;
     const spans = bodySpans(ac);
     if (spans.length === 0) {
@@ -77,7 +122,27 @@ export function occupancyOf(sim: Sim): Occupancy {
       add(byEdge, edge.id, { callsign: ac.callsign, wingspanM: ac.wingspanM, u0, u1, edgeLengthM: len });
     }
   }
-  return { byEdge, byNode };
+  const movements = sim.world.reservations.movements;
+  const reserved = new Set(movements.map((m) => m.id));
+  const reservedMoving = new Set(movements.filter((m) => !m.done).map((m) => m.id));
+  return { byEdge, byNode, bodies, reserved, reservedMoving };
+}
+
+/**
+ * Bodies' footprints, reused while an aircraft stays at the same place on the same track: most
+ * aircraft on the ground are standing (parked, idle, holding), and a footprint is most of the
+ * cost. As rules.ts's parked shapes: derived from the world, not state. A track is replaced,
+ * never changed in place, so the track object and `s` identify the place.
+ */
+const bodyCache = new WeakMap<Aircraft, { track: Track; s: number; body: Body }>();
+
+function bodyOf(ac: Aircraft): Body {
+  const cached = bodyCache.get(ac);
+  if (cached && cached.track === ac.track && cached.s === ac.s) return cached.body;
+  const shape = footprintOf(ac);
+  const body = { callsign: ac.callsign, shape, box: boxOf(shape) };
+  bodyCache.set(ac, { track: ac.track, s: ac.s, body });
+  return body;
 }
 
 /** Where an aircraft must stop for traffic: distance along its track, and who's in the way. */
@@ -91,8 +156,14 @@ export function trafficStop(index: AirportIndex, occupancy: Occupancy, ac: Aircr
   const { nodes, edges, nodeAt } = ac.track;
   const horizon = ac.s + lookaheadM;
   let best: TrafficStop | null = null;
+  /** For each body the graph's rules (in-line, occupied nodes) found ahead, their nearest stop for it. */
+  const graphStops = new Map<string, number>();
   const consider = (at: number, behind: string) => {
     if (best === null || at < best.at) best = { at, behind };
+  };
+  const considerGraph = (at: number, behind: string) => {
+    graphStops.set(behind, Math.min(at, graphStops.get(behind) ?? Infinity));
+    consider(at, behind);
   };
 
   // In line, from the edge the nose is on (or about to enter).
@@ -107,7 +178,7 @@ export function trafficStop(index: AirportIndex, occupancy: Occupancy, ac: Aircr
       if (o.callsign === ac.callsign) continue;
       const [t0, t1] = edge.from === from ? [start + o.u0, start + o.u1] : [start + len - o.u1, start + len - o.u0];
       if (t1 <= ac.s) continue; // behind the nose
-      consider(Math.max(t0, ac.s) - SPACING_M, o.callsign);
+      considerGraph(Math.max(t0, ac.s) - SPACING_M, o.callsign);
     }
   }
 
@@ -127,8 +198,100 @@ export function trafficStop(index: AirportIndex, occupancy: Occupancy, ac: Aircr
       }
     }
     for (const o of near) {
-      if (o.callsign !== ac.callsign) consider(at - (o.wingspanM / 2 + SPACING_M), o.callsign);
+      if (o.callsign !== ac.callsign) considerGraph(at - (o.wingspanM / 2 + SPACING_M), o.callsign);
     }
   }
+
+  // Footprints ahead. A contact past the nearest stop so far (plus the spacing) can't come nearer.
+  // (`consider` sets `best` in a closure, which TypeScript's narrowing doesn't see.)
+  const nearest = best as TrafficStop | null;
+  const limit = nearest === null ? horizon : Math.min(horizon, nearest.at + SPACING_M);
+  for (const { at, behind } of footprintStops(occupancy, ac, limit, graphStops)) consider(at, behind);
   return best;
+}
+
+/**
+ * For each body its own footprint would first overlap, swept along its track up to `horizon`:
+ * SPACING_M short of that point (the header's "Footprints"). For a body in `graphStops` (the
+ * graph's rules found it), only a contact at or before their stop for it counts: one after it,
+ * their stop already keeps them apart. The point is pinned down to within CONTACT_TOLERANCE_M on
+ * its overlapping side. Each body's sweep also ends at the nearest contact found so far: a later
+ * one can't give a nearer stop.
+ */
+function footprintStops(occupancy: Occupancy, ac: Aircraft, horizon: number, graphStops: ReadonlyMap<string, number>): TrafficStop[] {
+  const track = ac.track;
+  let end = Math.min(horizon, track.lengthM);
+  if (ac.airborne || end <= ac.s) return [];
+  const own = bodyOf(ac);
+  const nose = pointOf(track, ac.s).point;
+  // The footprint is rigid about the nose, so every part of it is always within this of the nose.
+  const reach = Math.max(...own.shape.map(([x, y]) => Math.hypot(x - nose[0], y - nose[1])));
+  const corridor = corridorBox(track, ac.s, end, reach);
+  const reservedMover = occupancy.reservedMoving.has(ac.callsign);
+  const overlapsAt = (s: number, body: Body) => {
+    const shape = footprintOf({ ...ac, s });
+    return boxesOverlap(boxOf(shape), body.box) && polygonsOverlap(shape, body.shape);
+  };
+  const stops: TrafficStop[] = [];
+  for (const body of occupancy.bodies) {
+    if (body.callsign === ac.callsign) continue;
+    if (reservedMover && occupancy.reserved.has(body.callsign)) continue;
+    const bodyEnd = Math.min(end, graphStops.get(body.callsign) ?? Infinity);
+    if (bodyEnd <= ac.s || !boxesOverlap(corridor, body.box)) continue;
+    if (boxesOverlap(own.box, body.box) && polygonsOverlap(own.shape, body.shape)) continue;
+    // Samples SWEEP_STEP_M apart, up to `bodyEnd`. `clear`: the farthest point known not to overlap.
+    let clear = ac.s;
+    let s = ac.s;
+    while (s < bodyEnd) {
+      s = Math.min(s + SWEEP_STEP_M, bodyEnd);
+      const gap = distanceToBox(pointOf(track, s).point, body.box) - reach;
+      if (gap > 0) {
+        // Out of reach here, and the nose moves no farther than its travel along the track: so
+        // out of reach for `gap` more.
+        s = clear = Math.min(s + gap, bodyEnd);
+        continue;
+      }
+      if (!overlapsAt(s, body)) {
+        clear = s;
+        continue;
+      }
+      let hit = s;
+      while (hit - clear > CONTACT_TOLERANCE_M) {
+        const mid = (clear + hit) / 2;
+        if (overlapsAt(mid, body)) hit = mid;
+        else clear = mid;
+      }
+      stops.push({ at: hit - SPACING_M, behind: body.callsign });
+      end = Math.min(end, hit);
+      break;
+    }
+  }
+  return stops;
+}
+
+function boxOf(points: readonly Point[]): Box {
+  const xs = points.map((p) => p[0]);
+  const ys = points.map((p) => p[1]);
+  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+}
+
+/** The box around the track from `s0` to `s1`, grown by `pad` each way. */
+function corridorBox(track: Track, s0: number, s1: number, pad: number): Box {
+  const points: Point[] = [pointOf(track, s0).point, pointOf(track, s1).point];
+  track.points.forEach((p, i) => {
+    const at = track.pointAt[i];
+    if (at !== undefined && at > s0 && at < s1) points.push(p);
+  });
+  const [x0, y0, x1, y1] = boxOf(points);
+  return [x0 - pad, y0 - pad, x1 + pad, y1 + pad];
+}
+
+function boxesOverlap(a: Box, b: Box): boolean {
+  return a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+}
+
+function distanceToBox(p: Point, box: Box): number {
+  const dx = Math.max(box[0] - p[0], 0, p[0] - box[2]);
+  const dy = Math.max(box[1] - p[1], 0, p[1] - box[3]);
+  return Math.hypot(dx, dy);
 }
