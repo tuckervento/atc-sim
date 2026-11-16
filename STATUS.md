@@ -13,7 +13,7 @@ _Last updated: 2026-11-16 (cycle 10 merged: 1.13 ready for Q's run after two fix
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-In progress: 1.13. Its manual test (`docs/phase1-manual-test.md`) is written; two fixes come before Q's run: turning about the main gear plus stable labels, and the seed-6 head-on collision. Next: 1.14.
+In progress: 1.13. Its manual test (`docs/phase1-manual-test.md`) is written, and the fixes before Q's run are committed: the seed-6 head-on collision (0a5808b), pilots yielding at junctions (abe250f), and turning about the main gear plus stable labels (a3317d9). Next: Q's run, then 1.14.
 
 ## Completed
 
@@ -275,9 +275,11 @@ In progress: 1.13. Its manual test (`docs/phase1-manual-test.md`) is written; tw
     - log holding short (Q)
     - parked arrivals turn around or tow to a hangar and despawn (Q; needed for 1.14)
     - `docs/phase1-manual-test.md`
-  - **Left before Q's run** (approved by Q, two subagents in parallel):
-    - turning about the main gear, and stable map labels (Q's feedback, below)
-    - the seed-6 head-on collision. An arrival taxiing in on W hit a departure idle at the W ramp edge, both ground's, and see-and-avoid didn't stop it. Found by the cycle-10 agent; I haven't reproduced it yet.
+  - **Fixed before Q's run** (committed on `main`; Deviations, 2026-11-16):
+    - the seed-6 head-on collision (a footprint see-and-avoid rule): 0a5808b
+    - pilots yielding at junctions (Q's decision), found when the two merges met: abe250f
+    - turning about the main gear, and stable map labels (Q's feedback): a3317d9
+    - In that order so each commit passes on its own, each tested in a scratch worktree: 444, 449, then 460 of 460, typecheck clean. Turning before the yield would have left a commit failing `ramp-safety` (the 17-takeoff state).
   - Then Q's run.
 
 ## Blocked
@@ -986,8 +988,48 @@ In progress: 1.13. Its manual test (`docs/phase1-manual-test.md`) is written; tw
     3. Aircraft added already parked never turn around (test fixtures).
     4. The synthetic canvas clicks gave 3 `setPointerCapture` console errors; a real mouse click shouldn't.
 
+- 2026-11-16 — **Turning about the main gear, merged** (subagent, own worktree; merged by me). `main` has typecheck exit 0, 450 of 450.
+  - **The change:**
+    - One body axis, from the main gear (0.48 × length behind the nose, on the track) to the nose. The map's drawing and the collision footprint both use it.
+    - On KJFK, seed 5, 30 minutes: tail swing median 0.27 → 0.14 of length, worst 1.0 → 0.67.
+    - Map labels are laid out per view, and covered ones are hidden without re-layout.
+  - **Unchanged:** KJFK gate counts (±3 per type), the tower totals, and the manual-test twin.
+  - **Changed test:** `labels.test.ts`'s obstacle test is deleted; the per-frame layout it encoded is gone.
+  - **Q (2026-11-16): accept for now. Follow-up, not scheduled: the trailer model.** The main gear would trail the nose and cut inside the turn instead of riding the centerline. That would make the swing small on sharp corners, but it touches footprints, the ramp's reservations and see-and-avoid. Q asked whether the realism is worth it; revisit only if it bothers Q in play.
+
+- 2026-11-16 — **The seed-6 head-on collision, fixed and merged** (subagent, own worktree; merged by me). Details: `investigations/seed6-head-on.md`.
+  - **Cause:** see-and-avoid went by the airport graph and 1.12's collision rule by the plane. KJFK has nodes close in the plane with no edge between them: T7's twin W ramp edges are 2.4 m apart, and 35 node pairs are under 10 m apart unjoined. A departure idle at one was on no edge of an arrival's track to the other.
+  - **Fix:** a third see-and-avoid rule (`traffic.ts`): its own footprint swept ahead along its track, stopping SPACING_M short of the first overlap. Narrowed so it changes nothing where the graph's rules work: applied to every body, it loosened queues through bends and cost a mixed runway takeoffs. Tests: `src/sim/traffic.test.ts` (5).
+  - **Evidence:** the agent's wide KJFK sweep (20 seeds × 60 min, arrivals routed to their ramp entrances): collisions 11 → 0.
+  - **Open for Q, none blocking:**
+    1. Near-simultaneous head-on arrivals at the twin edges stop 1.5–4.5 m short of each other.
+    2. Merge the twin handoffs (W/W2, VA/VA2, S/SA)? And should airport validation warn about unjoined nodes this close?
+    3. A ramp departure's reservation doesn't stop it for a ground aircraft that arrives after the reservation was granted. The new rule now catches it.
+    4. The route resolver accepts a near-reversal through the 2.4 m pair onto rhW.
+- 2026-11-16 — **Pilots yield at junctions** (by me; Q: "option 1, pilots yield, and add the session check"). Details: `investigations/merge-throughput-17-takeoffs.md`.
+  - **Found by:** merging the two fixes above. `ramp-safety.test.ts`'s 2 h TEST run fell from 23 takeoffs to 17 against its floor of 18.
+  - **Cause:** two movers converging on a junction saw each other too late to stop: see-and-avoid planned only against where bodies are now. `traffic.ts` had listed it as not handled since 1.4.
+    - On seed 1 it was a real collision on every version, HEAD included. The test never checked the session, so it went unseen.
+    - The turning change added one on seed 3: a merging aircraft's tail now lies back over the through taxiway. The footprint rule then turned overlaps into standoffs.
+  - **Q's options:** pilots yield, or leave it to the player to sequence. Q chose pilots.
+  - **The rule** (`traffic.ts`, "Converging"): at a junction ahead, a mover coming in on another edge, neither following nor head-on, that goes first makes this one stop its half-span plus SPACING_M short. Who goes first, decided the same way from both sides:
+    1. one that can no longer stop short
+    2. then the earlier arrival at the junction (at least `ETA_FLOOR_MPS`, 2 m/s, my call)
+    3. then callsign order
+  - **Deviation:** this is pilot behaviour, not the player's give-way (PRD C11, still a stretch goal). Collisions at junctions now need the player to clear aircraft into conflict, not just to miss a merge.
+  - **Tests:** `src/sim/traffic-converging.test.ts`, 5 tests. Each mutation was killed: no yield, no committed priority, a reversed tie-break, ignoring a hold-short, no same-edge exclusion, and yielding after the other has passed.
+  - **Session checks added:** ramp-safety (the 2 h run on seeds 1 and 2, and every `run()` seed), tower-safety and tower-capacity.
+    - A temporary trace on `rules.ts` showed no other test's sim ends a session, except the deliberate ones in `rules.test.ts` and `session-log.test.ts`.
+    - With the yield rule disabled, the new ramp-safety check fails on the seed-1 collision.
+  - **Evidence:**
+    - Typecheck exit 0, **460 of 460** (51 files), including the manual-test twin.
+    - 2 h TEST run, seeds 1–5: session running on all. Takeoffs and gate arrivals are identical to HEAD (23/12, 23/12, 22/8, 22/9, 22/8).
+    - tower-capacity: identical counts on all six runs; 16.0 s against 15.2 s.
+    - The seed-6 agent's wide KJFK sweep (20 seeds × 60 min): 0 collisions, and 2 gridlocks (seed 1 EVA1765/ICE8906, seed 4 KLM165/JBU8604). They're identical, same ticks and aircraft, on the collision fix alone, so they came before the turning change and the yield rule. Both are origin player: the sweep's scripted player taxis into standoffs. Not chased.
+  - **`MAX_DECEL_MPS2` moved to `src/sim/braking.ts`** (Q, 2026-11-16) so `traffic.ts` can read it without importing `movement.ts`, which imports `traffic.ts`. Its importers (`movement.ts`, `traffic.ts`, `apply.ts`, `tower.ts`, `sim.test.ts`) read it from there; same value. Typecheck clean, 460 of 460.
+
 ## Next Up
 
-- 1.13, the rest: the counters, the type export, logging holding short, arrivals turning around or despawning at a hangar, `docs/phase1-manual-test.md`, then Q's run.
+- 1.13: Q's run of `docs/phase1-manual-test.md` (seed 5). It completes 1.13 when the counters reach Departures 1, Arrivals 1.
 - 1.14 — Scoring-path and soak tests (needs 1.12, done, and the arrival turnaround or despawn).
 - Open for Q, none blocking: 1.6's questions 4–6 and 8; 1.10's 3–7 (5 matters for 1.14); the follow-ups' 2–6; 1.11's 5–9; 1.7's 2–5; 1.9's three; 1.5's five. All are in their Deviations entries.
