@@ -110,8 +110,9 @@ function plan(sim: Sim, occupancy: Occupancy, ac: Aircraft): Plan {
   }
   // Stopped for traffic, it waits for a real gap before moving up.
   if (stop.kind === 'traffic' && ac.v === 0 && stop.at - ac.s < RESTART_M) vMax = 0;
-  // With no clearance it doesn't move, and if it was moving, it stops.
-  if (ac.clearance === null) vMax = Math.min(vMax, Math.max(0, ac.v - DECEL_MPS2 * TICK_S));
+  // With no clearance it doesn't move, and if it was moving, it stops. The ramp's aircraft have
+  // none: the ramp taxis them along the track it made (ramp.ts), to its end.
+  if (ac.clearance === null && ac.controller !== 'ramp') vMax = Math.min(vMax, Math.max(0, ac.v - DECEL_MPS2 * TICK_S));
   if (ac.holdPosition) vMax = Math.min(vMax, Math.max(0, ac.v - MAX_DECEL_MPS2 * TICK_S));
   return { vMax, stop };
 }

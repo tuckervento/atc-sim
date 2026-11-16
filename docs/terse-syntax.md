@@ -437,6 +437,17 @@ one needs to change it, update this section and note it in STATUS.
   - Tower then lines it up (`lining-up`), launches it (`takeoff-roll`, then `took-off` at
     lift-off, the departure's scoring point) and, once it's airborne past the runway's far end,
     removes it from the sim (`departed`).
+  - **Ramp** (1.11, `src/sim/ramp.ts`) takes an aircraft handed off to it (`monitor` or
+    `contact`) once it's stopped at a ramp entrance, at the end of a taxi to the ramp
+    (`taxi ramp …`). Its own terminal, if known, must be one the entrance serves. Ramp assigns
+    it a free gate at that terminal, preferring one its airline uses. It's still ground's while
+    it waits for its way in to clear (traffic in the lane). Ramp then takes it (`ramp-accepted`,
+    with the gate), taxis it in over ramp lanes, and parks it: `arrived-at-gate`, the arrival's
+    scoring point. It stays parked, holding the gate.
+  - With **no gate free**, ramp doesn't take it: it waits at the entrance, still ground's, and
+    nothing is said (the pilot's "no gate yet" call is Phase 3).
+  - A handoff to ramp anywhere else is recorded and nothing more happens, as with tower; it
+    takes effect if the aircraft later stops at the end of a taxi to a ramp entrance.
 - **`correction`**: see "Corrections".
 - **`atis`** gives the pilot the current letter. It fixes an out-of-date-ATIS mistake.
 - **`say-again`**: the pilot repeats their last transmission.
@@ -459,15 +470,22 @@ one needs to change it, update this section and note it in STATUS.
   "clear of three one left at Kilo Echo" (`clear-of-runway`, with the runway end and the exit's
   taxiway, or null for an unnamed exit). It's then ground's: idle, with no clearance, on the
   exit taxiway, its tail past the hold line.
+- **The pilot's call to ground** from ramp: a departure the ramp has pushed back and taxied to
+  the ramp edge calls "taxiing on Kilo Foxtrot, information Oscar" (`check-in`, with the ramp
+  handoff, its name as the taxilane, and the ATIS letter the pilot has, or null). It's then
+  ground's: idle, with no clearance, its nose on the handoff point, having come along the ramp
+  lane. A taxi from there goes out along the stub (`taxi 31L via KF L:A G Z`, or at TEST
+  `taxi 27 via #7 L:A`).
 
 ### Aircraft on another controller's frequency
 
 An aircraft under tower or ramp (`controller` in the view: on final, landing, rolling out,
-taken at the hold, lining up, lined up, taking off, or ramp's from 1.11) isn't listening to
-ground. **A transmission to it gets no reply and has no effect**: the sim emits one
+taken at the hold, lining up, lined up, taking off; or parked at a gate, pushing back, or
+taxiing on the ramp) isn't listening to ground. **A transmission to it gets no reply and has no effect**: the sim emits one
 `not-on-frequency` event (with the controller) and changes nothing, whatever the instructions.
 A crossing request for it is answered `crossing-unable`. Once tower hands an arrival to ground
-(`clear-of-runway`), the player's transmissions apply as usual.
+(`clear-of-runway`), or ramp hands a departure to ground (`check-in`), the player's
+transmissions apply as usual. An arrival waiting at a ramp entrance for ramp is still ground's.
 
 There's no way for the player to take a departure back from tower once it's been taken at the
 hold (it would be a phone call to tower, not a radio call). An aircraft that's been handed off

@@ -14,14 +14,22 @@
 // come from streams in the options or from addAircraft on final:
 //   createSim(index, { seed: 1, arrivals: [{ runwayEnd: '31L', perHour: 15, flight: (n) => ({ callsign: `AAL${n + 1}`, type: 'A321' }) }] });
 //   addAircraft(sim, { callsign: 'UAE202', type: 'A388', at: { kind: 'final', runwayEnd: '31R', distanceM: 9000 } });
+//
+// The simulated ramp (ramp.ts, PLAN 1.11) owns the gates and ramp lanes. Departures come from
+// streams in the options or from addAircraft at a gate; they push back and call ground at the
+// ramp edge (`check-in`). Arrivals handed to ramp at a ramp entrance go to a gate (`arrived-at-gate`):
+//   createSim(index, { seed: 1, departures: [{ perHour: 12, flight: (n) => ({ callsign: `JBU${n + 1}`, type: 'A320', terminal: 'T1' }) }] });
+//   addAircraft(sim, { callsign: 'DAL4', type: 'A320', at: { kind: 'gate', gate: 'T1-1' } });
+//   getGate(sim, 'T1-1').occupant;         // 'DAL4'
 
 import { otherEnd, type AirportIndex } from '../airport/graph.ts';
-import type { EdgeId, NodeId, Point, RunwayEndDesignator, TerminalId } from '../airport/types.ts';
+import type { EdgeId, GateId, NodeId, Point, RunwayEndDesignator, TerminalId } from '../airport/types.ts';
 import { AIRCRAFT_TYPES, isAircraftType } from './aircraft-types.ts';
 import type { Taxi } from './commands.ts';
 import { hashOf } from './hash.ts';
 import { KNOT_MPS, moveTaxiing, PILOT_SPEED_SPREAD, TAXI_SPEED_KT, updateRunways } from './movement.ts';
 import { APPROACH_SPEED_MPS, dropAircraft, FINAL_SPAWN_M, finalOfArrival, initialTowerState, placeOnFinal, towerDecide, towerMove, towerSetup, towerSpawns, type TowerOptions } from './tower.ts';
+import { adoptAtGate, gateOccupant, initialRampState, placeAtGate, rampDecide, rampDrop, rampMove, rampSetup, rampSpawns, type RampOptions } from './ramp.ts';
 import { occupancyOf } from './traffic.ts';
 import { runwayAreas, runwaysOccupied } from './occupancy.ts';
 import { createRng, nextInRange } from './rng.ts';
@@ -33,10 +41,11 @@ export { AIRCRAFT_TYPES, type AircraftTypeCode } from './aircraft-types.ts';
 export { applyCommand } from './apply.ts';
 export { footprintOf, footprintsOverlap, polygonsOverlap } from './footprint.ts';
 export { TICK_HZ, TICK_S } from './movement.ts';
+export type { DepartureFlight, DepartureStream, RampOptions } from './ramp.ts';
 export type { ArrivalFlight, ArrivalStream, TowerOptions } from './tower.ts';
 export type { Advisories, AircraftStatus, Controller, CrossingClearance, Motion, Role, Sim, SimEvent } from './world.ts';
 
-export interface SimOptions extends TowerOptions {
+export interface SimOptions extends TowerOptions, RampOptions {
   /** Seeds the RNG. The same seed and the same commands give the same session. */
   seed: number;
 }
@@ -49,8 +58,9 @@ export interface SimOptions extends TowerOptions {
 export function createSim(index: AirportIndex, options: SimOptions): Sim {
   const areas = runwayAreas(index);
   const tower = towerSetup(index, areas, options);
-  const world = { tick: 0, rng: createRng(options.seed), aircraft: [], tower: initialTowerState(tower) };
-  return { index, world, events: [], runwayAreas: areas, tower };
+  const ramp = rampSetup(index, options);
+  const world = { tick: 0, rng: createRng(options.seed), aircraft: [], tower: initialTowerState(tower), ramp: initialRampState(ramp) };
+  return { index, world, events: [], runwayAreas: areas, tower, ramp };
 }
 
 /** Where a new aircraft appears. */
@@ -67,7 +77,14 @@ export type SpawnPosition =
    * (tower.ts). An arrival under tower: its role defaults to 'arrival', and `controller` and
    * `speedMps` can't be given. Throws if the runway end takes no arrivals in the configuration.
    */
-  | { kind: 'final'; runwayEnd: RunwayEndDesignator; distanceM: number };
+  | { kind: 'final'; runwayEnd: RunwayEndDesignator; distanceM: number }
+  /**
+   * Parked at `gate`, nose on the gate node, under ramp (ramp.ts). A departure (the default
+   * role) boards, then asks to push; an arrival stays parked. Its terminal defaults to the
+   * gate's. `controller` and `speedMps` can't be given. Throws if the gate is taken or can't
+   * take this type.
+   */
+  | { kind: 'gate'; gate: GateId };
 
 export interface AircraftSpec {
   callsign: string;
@@ -81,8 +98,9 @@ export interface AircraftSpec {
   /** ICAO airline designator, e.g. "DAL", for "the company hangar". Default null. */
   airline?: string | null;
   /**
-   * Default 'ground' ('tower' on final). 'ramp' aircraft take no player transmissions; the
-   * ramp itself is 1.11. Tower takes ground aircraft only by handoff.
+   * Default 'ground' ('tower' on final, 'ramp' at a gate). 'ramp' aircraft take no player
+   * transmissions; one added anywhere but a gate stays where it's put (ramp.ts has no plan for
+   * it). Tower takes ground aircraft only by handoff.
    */
   controller?: 'ground' | 'ramp';
   /** Initial speed, m/s. Default 0. */
@@ -106,7 +124,15 @@ export function addAircraft(sim: Sim, spec: AircraftSpec): void {
   if (onFinal && (spec.controller !== undefined || spec.speedMps !== undefined)) {
     throw new Error(`${spec.callsign}: an arrival on final is tower's, at the approach speed; don't give controller or speedMps`);
   }
-  const { track, s } = spec.at.kind === 'final' ? placeOnFinal(sim, spec.callsign, spec.at.runwayEnd, spec.at.distanceM, lengthM) : spawnTrack(sim.index, spec);
+  const atGate = spec.at.kind === 'gate' ? placeAtGate(sim, spec.callsign, spec.at.gate, spec.type, spec.role ?? 'departure') : null;
+  if (atGate && (spec.controller !== undefined || spec.speedMps !== undefined)) {
+    throw new Error(`${spec.callsign}: an aircraft at a gate is ramp's, parked; don't give controller or speedMps`);
+  }
+  if (atGate && spec.terminal != null && spec.terminal !== atGate.terminal) {
+    throw new Error(`${spec.callsign}: gate ${spec.at.kind === 'gate' ? spec.at.gate : ''} is at ${atGate.terminal}, not ${spec.terminal}`);
+  }
+  const { track, s } =
+    spec.at.kind === 'final' ? placeOnFinal(sim, spec.callsign, spec.at.runwayEnd, spec.at.distanceM, lengthM) : (atGate ?? spawnTrack(sim.index, spec));
   const factor = nextInRange(sim.world.rng, 1 - PILOT_SPEED_SPREAD, 1 + PILOT_SPEED_SPREAD);
   const cruiseKt = spec.taxiSpeedKt ?? TAXI_SPEED_KT * factor;
   const advisories: Advisories = {
@@ -124,10 +150,11 @@ export function addAircraft(sim: Sim, spec: AircraftSpec): void {
     wingspanM,
     role: spec.role ?? (onFinal ? 'arrival' : 'departure'),
     airline: spec.airline ?? null,
-    controller: onFinal ? 'tower' : (spec.controller ?? 'ground'),
-    motion: onFinal ? 'controller' : 'taxi',
+    controller: onFinal ? 'tower' : atGate ? 'ramp' : (spec.controller ?? 'ground'),
+    // The ramp moves its own; one with no gate stays where it was put.
+    motion: onFinal || atGate || spec.controller === 'ramp' ? 'controller' : 'taxi',
     airborne: onFinal,
-    terminal: spec.terminal ?? null,
+    terminal: atGate?.terminal ?? spec.terminal ?? null,
     cruiseMps: cruiseKt * KNOT_MPS,
     track,
     s,
@@ -135,18 +162,19 @@ export function addAircraft(sim: Sim, spec: AircraftSpec): void {
     clearance: null,
     crossings: [],
     holdPosition: false,
-    status: onFinal ? 'on-final' : 'idle',
+    status: onFinal ? 'on-final' : atGate ? 'parked' : 'idle',
     blockedBy: null,
     runways: [],
     advisories,
   };
   aircraft.runways = runwaysOccupied(sim.runwayAreas, aircraft);
   sim.world.aircraft.push(aircraft);
+  if (spec.at.kind === 'gate') adoptAtGate(sim, spec.callsign, spec.at.gate, aircraft.role);
 }
 
 function spawnTrack(index: AirportIndex, spec: AircraftSpec): { track: Track; s: number } {
   const at = spec.at;
-  if (at.kind === 'final') throw new Error('spawnTrack: a final position is placed by the tower');
+  if (at.kind === 'final' || at.kind === 'gate') throw new Error(`spawnTrack: a ${at.kind} position is placed by its controller`);
   const edgeOf = (id: EdgeId) => {
     const edge = index.edges.get(id);
     if (!edge) throw new Error(`${spec.callsign}: unknown edge "${id}"`);
@@ -174,23 +202,27 @@ export function step(sim: Sim, ticks = 1): void {
 }
 
 /**
- * Removes an aircraft from the sim, and everything tower holds about it (a test's or a later
- * task's sink, e.g. an arrival the ramp has parked). Throws if there's none.
+ * Removes an aircraft from the sim, and everything tower and ramp hold about it (a test's or a
+ * later task's sink, e.g. an arrival the ramp has parked): its gate is free. Throws if there's none.
  */
 export function removeAircraft(sim: Sim, callsign: string): void {
   if (!sim.world.aircraft.some((a) => a.callsign === callsign)) throw new Error(`no aircraft ${callsign}`);
   dropAircraft(sim, callsign);
+  rampDrop(sim, callsign);
 }
 
 /**
- * One tick, in this order (world.ts, "Controllers", has where the ramp, 1.11, slots in):
+ * One tick, in this order (world.ts, "Controllers"):
  * 1. The tick count goes up. Events of this tick carry the new count.
  * 2. The controllers decide, on the state as the last tick left it: the tower's arrival streams
- *    spawn, then the tower decides (towerDecide).
+ *    spawn, then the tower decides (towerDecide); the ramp's departure streams spawn at gates,
+ *    then the ramp decides (rampDecide).
  * 3. Every body's place is taken (traffic.ts): the start of this tick's movement.
- * 4. Aircraft that taxi move (movement.ts), each planning from those places.
- * 5. Aircraft a controller moves itself are moved by it, from the same places (towerMove). It
- *    removes the departures that have left.
+ * 4. Aircraft that taxi move (movement.ts), each planning from those places. That includes the
+ *    ramp's on ramp lanes.
+ * 5. Aircraft a controller moves itself are moved by it, from the same places: tower's (towerMove,
+ *    which removes the departures that have left), then the ramp's pushbacks (rampMove, which also
+ *    hands departures to ground at the ramp edge and parks arrivals at their gates).
  * 6. Each aircraft's runway areas are updated (crossed-runway events).
  */
 function advance(sim: Sim): void {
@@ -200,9 +232,12 @@ function advance(sim: Sim): void {
     addAircraft(sim, { callsign, type, airline: airline ?? null, terminal: terminal ?? null, at: { kind: 'final', runwayEnd, distanceM: FINAL_SPAWN_M } });
   }
   towerDecide(sim);
+  for (const { callsign, type, airline, gate } of rampSpawns(sim)) addAircraft(sim, { callsign, type, airline: airline ?? null, at: { kind: 'gate', gate } });
+  rampDecide(sim);
   const occupancy = occupancyOf(sim);
   moveTaxiing(sim, occupancy);
   towerMove(sim, occupancy);
+  rampMove(sim);
   updateRunways(sim);
 }
 
@@ -212,6 +247,20 @@ function advance(sim: Sim): void {
  */
 export function stateHash(sim: Sim): string {
   return hashOf(sim.world);
+}
+
+/** A gate, and the aircraft holding it: parked there, pushing from it, or an arrival assigned to it. */
+export interface GateView {
+  id: GateId;
+  terminal: TerminalId;
+  occupant: string | null;
+}
+
+/** The gate `id`. Throws if there's none. */
+export function getGate(sim: Sim, id: GateId): GateView {
+  const gate = sim.index.airport.gates.find((g) => g.id === id);
+  if (!gate) throw new Error(`no gate ${id}`);
+  return { id, terminal: gate.terminal, occupant: gateOccupant(sim, id) };
 }
 
 /** Takes every event since the last drain, oldest first. */

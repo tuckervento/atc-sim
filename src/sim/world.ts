@@ -3,11 +3,12 @@
 // and its command script (PRD §8.2, §9.3).
 
 import type { AirportIndex } from '../airport/graph.ts';
-import type { EdgeId, HoldShortId, NodeId, RunwayEndDesignator, RunwayExitId, RunwayId, TerminalId } from '../airport/types.ts';
+import type { EdgeId, GateId, HoldShortId, NodeId, RampHandoffId, RunwayEndDesignator, RunwayExitId, RunwayId, TerminalId } from '../airport/types.ts';
 import type { AircraftTypeCode } from './aircraft-types.ts';
 import type { HoldShortTarget, Instruction, Taxi } from './commands.ts';
 import type { Rng } from './rng.ts';
 import type { ReachedDestination, RouteStart, RoutePath } from './route.ts';
+import type { RampSetup } from './ramp.ts';
 import type { TowerSetup } from './tower.ts';
 import type { Track } from './track.ts';
 
@@ -21,6 +22,8 @@ export interface Sim {
   readonly runwayAreas: ReadonlyMap<EdgeId, RunwayId[]>;
   /** Derived from the airport and the options, not state: the runways in use and the arrival streams. */
   readonly tower: TowerSetup;
+  /** Derived from the airport and the options, not state: stands, departure streams, and plan caches. */
+  readonly ramp: RampSetup;
 }
 
 /**
@@ -35,16 +38,18 @@ export interface Sim {
  * - move: after movement.ts has moved the taxiing aircraft, it moves the aircraft it moves
  *   itself (motion 'controller'), planning from the same start-of-tick places. The tower:
  *   `towerMove`.
- * Where the ramp (1.11) fits:
- * - `ramp: RampState` beside `tower`, with gate occupancy and its aircraft's progress.
- * - `rampDecide` after `towerDecide`: spawn departures at gates (controller 'ramp', role
- *   'departure'), start pushbacks, take arrivals handed off at a ramp entrance (the way
- *   `towerDecide` takes departures at the hold), and hold aircraft when a lane is busy.
- * - Pushback is motion 'controller' (`s` may go backward); `rampMove` beside `towerMove` moves
- *   it. Ramp-lane taxi can stay motion 'taxi' with a ramp-made clearance, so see-and-avoid and
- *   turn speeds come from movement.ts.
- * - At the ramp edge it hands the aircraft to ground (controller 'ground') with a check-in
- *   event, as the tower does with `clear-of-runway`.
+ * The ramp (ramp.ts, 1.11):
+ * - `ramp: RampState` beside `tower`: who holds each gate, and its aircraft's progress.
+ * - `rampSpawns` and `rampDecide` after `towerDecide`: spawn departures at gates (controller
+ *   'ramp', role 'departure'), start pushbacks, take arrivals handed off at a ramp entrance (the
+ *   way `towerDecide` takes departures at the hold), and hold aircraft when a lane is busy.
+ * - Parked and pushing back, its aircraft are motion 'controller' (a pushback's `s` goes
+ *   backward); `rampMove`, after `towerMove`, moves the pushbacks. Ramp-lane taxi is motion
+ *   'taxi' on a track the ramp made, with no clearance (movement.ts lets the ramp's aircraft
+ *   taxi without one), so see-and-avoid and turn speeds come from movement.ts.
+ * - At the ramp edge it hands the aircraft to ground (controller 'ground') with a `check-in`
+ *   event, as the tower does with `clear-of-runway`. An arrival waiting at a ramp entrance is
+ *   still ground's: ramp takes it only once it can move it.
  * - Transmissions to its aircraft get `not-on-frequency` (apply.ts), as the tower's do.
  */
 export interface World {
@@ -54,6 +59,7 @@ export interface World {
   /** In the order added, which is also the order they're processed in. */
   aircraft: Aircraft[];
   tower: TowerState;
+  ramp: RampState;
 }
 
 /**
@@ -72,6 +78,10 @@ export interface World {
  * - `landing`: on the runway, from touchdown until its body is clear of the runway.
  * - `lining-up`: taxiing from the hold onto the runway; `lined-up`: stopped there, waiting.
  * - `taking-off`: on the takeoff roll; `airborne`: after lift-off, until it leaves.
+ * Under ramp (ramp.ts):
+ * - `parked`: at a gate, a departure before its pushback or an arrival that has arrived.
+ * - `pushing-back`: being pushed back from the gate, and stopped after it while the tug
+ *   disconnects. Its ramp-lane taxi has the taxi statuses above.
  */
 export type AircraftStatus =
   | 'idle'
@@ -85,7 +95,9 @@ export type AircraftStatus =
   | 'lining-up'
   | 'lined-up'
   | 'taking-off'
-  | 'airborne';
+  | 'airborne'
+  | 'parked'
+  | 'pushing-back';
 
 /**
  * The simulated tower's state (tower.ts). Track distances (`…At`) are meters along the
@@ -194,6 +206,52 @@ export interface CrossingApproval extends CrossingTarget {
   entered: boolean;
 }
 
+/**
+ * The simulated ramp's state (ramp.ts). A gate is taken while an aircraft's record names it:
+ * parked there, pushing from it, or an arrival it's assigned to.
+ */
+export interface RampState {
+  /** One per departure stream (SimOptions.departures), in the order given. */
+  streams: DepartureStreamState[];
+  /** The ramp's aircraft, and arrivals waiting at an entrance for it. In the order taken. */
+  aircraft: RampAircraft[];
+}
+
+export interface DepartureStreamState {
+  /** The tick of the next spawn, if a gate is free then. */
+  nextTick: number;
+  /** Departures spawned so far: the next flight's number. */
+  count: number;
+}
+
+/**
+ * Where a ramp aircraft is in its life, in order:
+ * - departure: `at-gate` (boarding), `ready` (asking to push), `pushback`, `pushed` (tug
+ *   disconnecting), `taxi-out`; it leaves the ramp's records at the check-in.
+ * - arrival: `called` (stopped at a ramp entrance, handed off, gate assigned, still ground's
+ *   until its way in is clear), `taxi-in`, `parked` (stays, holding its gate).
+ */
+export type RampPhase = 'at-gate' | 'ready' | 'pushback' | 'pushed' | 'taxi-out' | 'called' | 'taxi-in' | 'parked';
+
+export interface RampAircraft {
+  callsign: string;
+  phase: RampPhase;
+  /** The gate it holds. */
+  gate: GateId;
+  /** The tick it entered its phase. */
+  since: number;
+  /** A departure at its gate: the tick it asks to push. null otherwise. */
+  readyTick: number | null;
+  /** The ramp handoff it leaves by (departure) or came in at (arrival). null until known. */
+  rampHandoff: RampHandoffId | null;
+  /** Pushing back: the track distance where the nose stops. null otherwise. */
+  pushTo: number | null;
+  /** While it moves: the edges and nodes it holds (`e:<id>`, `n:<id>`). Empty otherwise. */
+  reserved: string[];
+  /** While the ramp taxis it slowly: its pilot's own taxi speed, given back at the check-in. */
+  pilotCruiseMps: number | null;
+}
+
 /** What the flight is here to do. The map colours aircraft by it. */
 export type Role = 'departure' | 'arrival';
 
@@ -201,7 +259,7 @@ export type Role = 'departure' | 'arrival';
  * Who it's talking to, and so who gives it instructions.
  * - `ground`: the player. Only these aircraft take the player's transmissions.
  * - `tower`: the simulated tower (tower.ts): on final, landing, or a departure from its handoff.
- * - `ramp`: the simulated ramp (1.11): pushback and ramp-lane taxi.
+ * - `ramp`: the simulated ramp (ramp.ts): parked at a gate, pushback and ramp-lane taxi.
  */
 export type Controller = 'ground' | 'tower' | 'ramp';
 
@@ -209,7 +267,7 @@ export type Controller = 'ground' | 'tower' | 'ramp';
  * Who moves it each tick.
  * - `taxi`: movement.ts, along its clearance (or braking to a stop without one).
  * - `controller`: its controller moves it itself, with its own kinematics: the tower's landing
- *   roll, line-up and takeoff; the ramp's pushback in 1.11. Such a mover may set `track`, `s` and
+ *   roll, line-up and takeoff; the ramp's parking and pushback. Such a mover may set `track`, `s` and
  *   `v` as it likes, `s` going backward included (pushback); movement.ts leaves it alone.
  */
 export type Motion = 'taxi' | 'controller';
@@ -356,6 +414,22 @@ export type SimEvent =
    * name, null for an unnamed exit.
    */
   | (AircraftEvent & { type: 'clear-of-runway'; runwayEnd: RunwayEndDesignator; exit: string | null; exitId: RunwayExitId })
+  /** Ramp: a departure starts its pushback from `gate`. */
+  | (AircraftEvent & { type: 'pushback'; gate: GateId })
+  /**
+   * The pilot's call to ground at the ramp edge: "Ground, Delta four, taxiing on Kilo Foxtrot,
+   * information Oscar" (PRD §4.2). `taxilane`: the handoff's name; `atis`: the letter the pilot
+   * has, null if none. Stopped with its nose on the handoff node, it's now ground's
+   * (controller 'ground', status 'idle').
+   */
+  | (AircraftEvent & { type: 'check-in'; rampHandoff: RampHandoffId; taxilane: string; atis: string | null })
+  /**
+   * Ramp takes an arrival handed off to it at a ramp entrance (`rampHandoff`), once its way in
+   * is clear, and taxis it to `gate`, assigned when it stopped there.
+   */
+  | (AircraftEvent & { type: 'ramp-accepted'; rampHandoff: RampHandoffId; gate: GateId })
+  /** Stopped at its gate, parked: an arrival's scoring point (PRD §4.3). */
+  | (AircraftEvent & { type: 'arrived-at-gate'; gate: GateId })
   /** A transmission or request named a callsign that isn't in the sim. */
   | { tick: number; type: 'unknown-callsign'; callsign: string }
   /** "Aircraft calling Ground, say again your callsign" (an unknown-station transmission). */
