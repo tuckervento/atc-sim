@@ -9,6 +9,7 @@ import type { HoldShortTarget, Instruction, Taxi } from './commands.ts';
 import type { Rng } from './rng.ts';
 import type { ReachedDestination, RouteStart, RoutePath } from './route.ts';
 import type { RampSetup } from './ramp.ts';
+import type { ReservationState } from './reservations.ts';
 import type { TowerSetup } from './tower.ts';
 import type { Track } from './track.ts';
 
@@ -42,7 +43,8 @@ export interface Sim {
  * - `ramp: RampState` beside `tower`: who holds each gate, and its aircraft's progress.
  * - `rampSpawns` and `rampDecide` after `towerDecide`: spawn departures at gates (controller
  *   'ramp', role 'departure'), start pushbacks, take arrivals handed off at a ramp entrance (the
- *   way `towerDecide` takes departures at the hold), and hold aircraft when a lane is busy.
+ *   way `towerDecide` takes departures at the hold); its movements are granted ground a stretch at a
+ *   time by the reservations (`world.reservations`, reservations.ts), brought up to date first.
  * - Parked and pushing back, its aircraft are motion 'controller' (a pushback's `s` goes
  *   backward); `rampMove`, after `towerMove`, moves the pushbacks. Ramp-lane taxi is motion
  *   'taxi' on a track the ramp made, with no clearance (movement.ts lets the ramp's aircraft
@@ -64,6 +66,8 @@ export interface World {
   aircraft: Aircraft[];
   tower: TowerState;
   ramp: RampState;
+  /** Who holds which stretch of ground as they move (reservations.ts): the ramp's movements, for now. */
+  reservations: ReservationState;
   session: Session;
   rules: RulesState;
   score: ScoreState;
@@ -286,7 +290,8 @@ export interface CrossingApproval extends CrossingTarget {
 
 /**
  * The simulated ramp's state (ramp.ts). A gate is taken while an aircraft's record names it:
- * parked there, pushing from it, or an arrival it's assigned to.
+ * parked there, pushing from it, or an arrival it's assigned to; or names it as the stand a
+ * departure will swing its tail into (`swingInto`).
  */
 export interface RampState {
   /** One per departure stream (SimOptions.departures), in the order given. */
@@ -324,8 +329,10 @@ export interface RampAircraft {
   rampHandoff: RampHandoffId | null;
   /** Pushing back: the track distance where the nose stops. null otherwise. */
   pushTo: number | null;
-  /** While it moves: the edges and nodes it holds (`e:<id>`, `n:<id>`). Empty otherwise. */
-  reserved: string[];
+  /** A departure: the index of the pushback plan it will use (ramp.ts, departurePlansFor). null otherwise. */
+  plan: number | null;
+  /** A departure whose pushback swings its tail into another gate's stand: that gate, claimed until it has left. */
+  swingInto: GateId | null;
   /** While the ramp taxis it slowly: its pilot's own taxi speed, given back at the check-in. */
   pilotCruiseMps: number | null;
 }

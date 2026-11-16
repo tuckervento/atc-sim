@@ -23,6 +23,7 @@
 //   about 35 m.
 
 import { runwaysOccupied } from './occupancy.ts';
+import { reservedStop } from './reservations.ts';
 import { crossingTaxiway, nextStop, nodeAt, useCrossing, type Stop } from './stops.ts';
 import { RESTART_M, trafficStop, type Occupancy, type TrafficStop } from './traffic.ts';
 import { emit, type Aircraft, type AircraftStatus, type Sim } from './world.ts';
@@ -101,7 +102,10 @@ export function updateRunways(sim: Sim): void {
 function plan(sim: Sim, occupancy: Occupancy, ac: Aircraft): Plan {
   const mandatory = nextStop(sim.index, ac);
   const traffic = trafficStop(sim.index, occupancy, ac, LOOKAHEAD_M);
-  const stop: Plan['stop'] = traffic !== null && traffic.at < mandatory.at ? { kind: 'traffic', ...traffic } : mandatory;
+  let stop: Plan['stop'] = traffic !== null && traffic.at < mandatory.at ? { kind: 'traffic', ...traffic } : mandatory;
+  // A reserved movement (reservations.ts) goes no farther than it holds: waiting for someone, that's traffic.
+  const held = reservedStop(sim, ac);
+  if (held !== null && held.at < stop.at) stop = held.behind !== null ? { kind: 'traffic', at: held.at, behind: held.behind } : { kind: 'end', at: held.at };
   let vMax = Math.min(ac.cruiseMps, safeSpeed(stop.at - ac.s, 0));
   for (const bend of ac.track.bends) {
     if (bend.at < ac.s) continue;

@@ -1,60 +1,80 @@
-// The simulated ramp (PLAN 1.11, PRD §8.3, §4.2–4.3). It owns the gates and the ramp lanes:
-// - Gates: which aircraft holds each (world.ramp.aircraft): parked there, pushing from it, or an
-//   arrival assigned to it.
+// The simulated ramp (PLAN 1.11, reworked in cycle 9; PRD §8.3, §4.2–4.3). It owns the gates and
+// the ramp lanes:
+// - Gates: which aircraft holds each (world.ramp.aircraft): parked there, pushing from it, an
+//   arrival assigned to it, or a departure that will swing its tail into it (`swingInto`).
 // - Departures: added at a gate (addAircraft, or a departure stream, SimOptions.departures), they
 //   board, then push back (the only backward motion in the sim), taxi over ramp lanes to a ramp
 //   edge serving their terminal, and call ground there (`check-in`, with the taxilane's name).
 // - Arrivals: a ground aircraft handed to ramp ("monitor ramp") and stopped at a ramp entrance at
-//   the end of its taxi there gets a free gate at its terminal, preferring its airline's. Once its
-//   way in is clear, ramp takes it (`ramp-accepted`) and taxis it in; at the gate it emits
-//   `arrived-at-gate` (1.12's arrival scoring point) and stays parked, holding the gate.
-// It decides at the start of each tick, after the tower, and moves its pushbacks after
-// movement.ts has moved the taxiing aircraft (sim.ts, `advance`; world.ts, "Controllers"). Its
-// ramp-lane taxiing is movement.ts's (motion 'taxi'), on a track the ramp made, with no
-// clearance, so see-and-avoid and turn speeds apply as everywhere else.
+//   the end of its taxi there gets a free gate at its terminal, preferring its airline's. Once it
+//   can get its whole body off the entrance, ramp takes it (`ramp-accepted`) and taxis it in; at
+//   the gate it emits `arrived-at-gate` (1.12's arrival scoring point) and stays parked.
+// It decides at the start of each tick, after the tower and after the reservations have been
+// brought up to date, and moves its pushbacks after movement.ts has moved the taxiing aircraft
+// (sim.ts, `advance`; world.ts, "Controllers"). Its ramp-lane taxiing is movement.ts's (motion
+// 'taxi'), on a track the ramp made, with no clearance, so see-and-avoid and turn speeds apply.
 //
-// Routes. The ramp finds its own way (the player names every taxiway; ramp doesn't): shortest by
-// length over open ramp lanes, never into another gate's stand, never back along the edge just
-// travelled, never turning more than MAX_TURN_DEG at a node. Ramp lanes never touch a runway, so
-// neither do its routes. A departure goes to the nearest ramp edge (`use` departures or both)
-// serving its terminal; an arrival from its entrance to its gate.
+// Moving: every movement goes through reservations.ts. A departure's pushback and taxi-out are
+// one movement of two legs (the push backward, then the taxi forward); an arrival's taxi-in is
+// one leg. The ramp asks for each to start (`admit`) and the reservations grant it a stretch at
+// a time, ahead of its nose, and take back what it has left behind (that module's header has the
+// rules, and why they can't deadlock). The pushback stops at the end of what it holds; movement.ts
+// stops a taxiing one there. So the ramp itself no longer holds whole paths:
+// - A departure asks to push once it has boarded; it starts when the reservations admit it.
+// - An arrival at its entrance is taken only when it can be granted, at once, enough to get its
+//   whole body off the entrance (PRD §4.3: until then "the arrival waits on the player's
+//   taxiway", still ground's). After that it's ramp's, and may wait inside for a lane to clear.
+// - A parked aircraft is a reservation for good (`reserveParked`): nothing is granted into it,
+//   and nothing is admitted whose way it's in. An arrival's assigned gate is held the same way
+//   from the moment it's assigned (`<callsign> gate`), until the arrival itself is admitted.
+//
+// Priority (Q, cycle 9: "arriving plane should take priority unless the pushback is opening a
+// gate for the incoming plane"). A departure asking to push yields (reservations.ts, "Priority")
+// to each arrival taxiing in that was taken in no later than the tick the departure was ready:
+// it doesn't start while such an arrival's way ahead crosses its push or taxi-out. The
+// exception is a departure whose way goes through where the arrival will park: it's leaving
+// the arrival's gate, so it goes first.
+// - At the ramp the exception can't arise today: an arrival is only given a gate no departure
+//   holds (a departure holds its gate until it checks in). An arrival waiting for a gate to come
+//   free isn't taken in, so there's nothing to yield to: the pushback that frees one goes as before.
+// - Not yielded to: arrivals taken in after the departure was ready (so it's held only until a
+//   known few have passed, never starved by a stream of later ones), and arrivals waiting at an
+//   entrance, still ground's.
+//
+// Which gates it uses. A gate takes a type if:
+// - its stand fits: the tail, parked, farther from the lane junction than its half-span
+//   (see-and-avoid, traffic.ts, counts a junction a body's wing may be over as occupied, so a
+//   parked aircraft never blocks the lane);
+// - it has a pushback (below), so a departure can leave and an arrival could;
+// - and, when it's to be used, its parked footprint (footprint.ts, grown by the reservations'
+//   margin) is clear of everything held: aircraft parked at neighbouring gates, assigned gates,
+//   and movements. The reservations hold a parked footprint's convex hull (the cross's outline,
+//   wingtip to nose to tailplane). At KJFK some neighbouring stands are closer than two of
+//   those, so those gates can't both be used at once (of 58 T4 gates an E175 can use, 52 can be
+//   filled together; 46 with cycle 9's first span × length footprints).
+// At KJFK an A320 can use 147 of the 184 gates (1.11: 123), a B77W 73 (58), measured with this
+// code. Of the 37 an A320 can't: 29 stands are too short for it, 7 gate nodes are on a lane
+// rather than at the end of a lead-in (the data), and 1 (T7's g1011144702) has no pushback
+// within MAX_PUSH_M and MAX_TURN_DEG.
 //
 // Pushback. A gate's stand is its lead-in: the unnamed ramp-lane chain from the gate node back to
-// the lane junction. The push is planned once per gate and type: pushed tail-first out of the
-// stand (and on along lanes if it must, through no ramp handoff), until it can stop with its nose
-// on a node and its tail swung onto a lane there that's long enough for its whole body, facing a
-// forward way to a ramp edge. The shortest such push wins; among tails at one push point, the
-// shortest taxi out. Its track runs from the far end of the tail's lane, through the push point,
-// back to the gate, and it's pushed from the gate end to the push point; the taxi-out track shares
-// it up to the push point, so the nose keeps its place when the tug lets go.
-//
-// Which gates it uses. A type can park at a gate only if its tail, parked, is farther from the
-// lane junction than its half-span: see-and-avoid (traffic.ts) counts a junction a body's wing
-// may be over as occupied, so a parked aircraft never blocks the lane. A departure needs a
-// pushback as above; so does an arrival's gate, so it could leave again. At TEST, T1-3 (at lane
-// 7's dead end) has none: the only lane from it runs back toward the ramp edge, so the nose
-// would face the dead end. At KJFK, an A320 can use 123 of the 184 gates (a B77W 58). Of the 61
-// it can't: 29 stands are too short (some shorter than the aircraft), 7 gate nodes are on a lane
-// rather than at the end of a lead-in, and 25 have no pushback (mostly the last gate in a
-// dead-end alley, or a lead-in from a ramp handoff).
-//
-// Holding, and never deadlocking itself. Each movement (a departure's pushback and taxi-out
-// together; an arrival's taxi in) holds every edge its body will touch, start to finish, and both
-// ends of each (`reserved`, `e:<id>` and `n:<id>`). It starts only when it can take them all at
-// once: none held by another movement, and no other body in the way by see-and-avoid's own rules
-// (staticBlocker). It lets them go only when it's done: checked in, or parked. Waiting aircraft
-// are tried oldest first each tick. So:
-// - Two ramp movements never share an edge or a node, so they never wait for each other once
-//   started. A movement waits for nothing but a body the ramp doesn't control that moves into its
-//   way (the player's), and the ramp's own bodies stay clear of the lanes: parked ones by the
-//   stand rule, waiting ones at their gates, new ones only at a stand no movement holds.
-// - An arrival waits at its entrance as ground's: ramp takes it only when it can move it at once
-//   (PRD §4.3: "the arrival waits on the player's taxiway until it clears"). So the ramp's own
-//   aircraft never wait for one another in a cycle.
-// - It doesn't push into a lane an arrival is coming in along, or send an arrival into a lane a
-//   departure is pushing into or taxiing out of: those movements share edges.
-// The cost is throughput: whole movements are serialized where they meet, about 2–4 minutes
-// each. Letting a movement give back what's behind its tail would be the next step.
+// the lane junction. The push is planned once per gate and type, as a search by the distance the
+// nose is pushed: out of the stand tail-first, on along lanes if it must, until it can stop with
+// its nose on a node and its tail swung onto something with room for its whole body, facing a
+// forward way out. The tail may swing:
+// - onto a ramp lane (a "lane" plan, preferred whenever one exists);
+// - into another gate's stand, if that stand is long enough (a "swing" plan). The departure
+//   claims that stand from when it's added at its gate until it has left, so it's free when it
+//   pushes; a gate whose only plans swing into taken stands can't take a departure then;
+// - onto the taxiway beyond a ramp edge, outside every runway's area (a "taxiway" plan), or the
+//   nose may be pushed out past the ramp edge onto the taxiway (at most MAX_TAXIWAY_PUSH_M), the
+//   tail swung along it, and the aircraft calls ground right there.
+// Facing a way out means: on lanes forward to a ramp edge serving its terminal; or the nose
+// is on that ramp edge already, facing out onto the taxiway (no taxi-out); or, pushed out past
+// the edge, facing on along a taxiway. Among plans of a kind, the shortest push wins, then the
+// shortest taxi-out. A taxiway plan starts only when no aircraft of ground's or tower's on the
+// ground is within TAXIWAY_PUSH_CLEAR_M of any taxiway it will use, and is then reserved whole,
+// before it moves; what it has left behind is released as it goes, as always.
 //
 // Not handled:
 // - "No gate free": the arrival waits at the entrance, ground's, and nothing is said (the pilot's
@@ -64,8 +84,10 @@
 //   of a taxi to a ramp entrance (as with tower's handoff). An aircraft whose own terminal the
 //   entrance doesn't serve isn't taken.
 // - Metering, release times and gate-availability delays (Phase 3); tugs and towing.
-// - Fairness: an older request blocked by a movement doesn't stop a younger one whose way is free
-//   from going first.
+// - Fairness: an older request that's refused doesn't stop a younger one whose way is free,
+//   except by arrival priority (above).
+// - An aircraft parked for good (an arrival) whose footprint is in a wider aircraft's way, at a
+//   short stand, keeps that one from being admitted until it's removed (1.14's turnaround).
 //
 // Values [Builder] (PRD §8.3: "behavior details are [Proposal]"), with their basis. "Mine" means
 // my own reasoning, not a source.
@@ -76,27 +98,25 @@
 //   common description; no figure checked.
 // - PUSH_SETTLE_S 30: stopped after the push, the tug disconnects and the crew gets the all-clear
 //   before taxiing. Mine. Engine start happens during the push, so it isn't added.
-// - Push distance: no fixed value. It's the stand's length plus any push along the lane before
-//   the tail swings; MAX_PUSH_M 400 only bounds the search. At KJFK an A320's pushes are 109 m
-//   (median) to 252 m (measured with this code).
+// - Push distance: no fixed value; MAX_PUSH_M 400 only bounds the search.
 // - RAMP_TAXI_KT 10: ramp-lane taxi speed on a straight, half movement.ts's 20 kt, since ramps are
-//   congested and close to stands; a pilot set slower keeps their own speed. Mine; turns slow
-//   further by movement.ts's turn speeds.
-// - MAX_TURN_DEG 135: the sharpest turn at a node a ramp route or a tail swing takes (movement.ts
-//   slows to about 7 kt there). Mine: sharper is close to reversing. At KJFK, an A320 can push
-//   from 122 gates at 120°, 123 at 135° and 134 at 170° (measured with this code).
-// - Spacing: no separate ramp value. Movements hold whole paths (above); see-and-avoid's SPACING_M
-//   applies against everything else.
+//   congested and close to stands; a pilot set slower keeps their own speed. Mine.
+// - MAX_TURN_DEG 135: the sharpest turn at a node a ramp route or a tail swing takes. Mine:
+//   sharper is close to reversing.
+// - TAXIWAY_PUSH_CLEAR_M 250 and MAX_TAXIWAY_PUSH_M 80: mine. 250 m is about 25 s at ground's
+//   20 kt, longer than the taxiway part of a push takes to be reserved and seen; 80 m is a stub
+//   and one aircraft length.
 // - DEPARTURE_JITTER 0.15: a departure stream's spacing varies ±15%, as tower's arrival streams.
 
 import { edgeLength, edgePolyline, edgesAt, otherEnd, type AirportIndex } from '../airport/graph.ts';
 import type { Edge, EdgeId, Gate, GateId, NodeId, Point, RampHandoff, RampHandoffId, TerminalId } from '../airport/types.ts';
 import { AIRCRAFT_TYPES, isAircraftType, type AircraftTypeCode } from './aircraft-types.ts';
-import { KNOT_MPS, safeSpeed, STOP_SNAP_M, TICK_HZ, TICK_S } from './movement.ts';
+import { footprintOf } from './footprint.ts';
+import { DECEL_MPS2, KNOT_MPS, safeSpeed, STOP_SNAP_M, TICK_HZ, TICK_S } from './movement.ts';
+import { admit, dropMovement, finishMovement, holdsEnd, parkedConflict, reserveParked, reservedStop, SEGMENT_M, setLeg, type Leg, type ParkedSpec } from './reservations.ts';
 import { nextFloat, nextInRange } from './rng.ts';
 import { nodeAt } from './stops.ts';
 import { buildTrack, placeOf, type Track } from './track.ts';
-import { occupancyOf, SPACING_M, type Occupancy } from './traffic.ts';
 import { emit, type Aircraft, type RampAircraft, type RampState, type Sim } from './world.ts';
 
 /** A departure waits this long at its gate, from when it's added, before it asks to push. */
@@ -115,6 +135,18 @@ export const RAMP_TAXI_KT = 10;
 export const MAX_TURN_DEG = 135;
 /** The longest pushback the ramp plans, gate to the nose's stop, meters. */
 export const MAX_PUSH_M = 400;
+/** A push onto a taxiway starts only with no aircraft of ground's or tower's this close to it, meters. */
+export const TAXIWAY_PUSH_CLEAR_M = 250;
+/** The farthest a push takes the nose past a ramp edge onto the taxiway, meters. */
+export const MAX_TAXIWAY_PUSH_M = 80;
+/** How far ahead a push asks to hold: its stopping distance, and two segments. */
+const PUSH_LOOKAHEAD_M = PUSH_SPEED_MPS ** 2 / (2 * PUSH_DECEL_MPS2) + 2 * SEGMENT_M;
+
+/** How far ahead a ramp taxi asks to hold: its stopping distance at its ramp speed (movement.ts's braking), and two segments. */
+function taxiLookahead(cruiseMps: number): number {
+  const v = Math.min(cruiseMps, RAMP_TAXI_KT * KNOT_MPS);
+  return (v * v) / (2 * DECEL_MPS2) + 2 * SEGMENT_M;
+}
 
 // ---------------------------------------------------------------------------------------------
 // Setup: derived from the airport and the options, not state
@@ -156,18 +188,20 @@ export interface Stand {
 export interface RampSetup {
   /** By gate id: its stand, or why the ramp can't use the gate. */
   readonly stands: ReadonlyMap<GateId, Stand | { unusable: string }>;
-  /** Every stand's edges: ramp routes and pushes never use another gate's stand. */
+  /** Every stand's edges: ramp routes never use another gate's stand (a pushed tail may swing into one). */
   readonly standEdges: ReadonlySet<EdgeId>;
+  /** Stands by the edge they start with at their junction. */
+  readonly standsByFirstEdge: ReadonlyMap<EdgeId, Stand>;
   readonly handoffNodes: ReadonlySet<NodeId>;
-  /** Pushback plans by `<gate>|<type>`, worked out when first needed. */
-  readonly plans: Map<string, DeparturePlan | { unable: string }>;
+  /** Pushback plans by `<gate>|<type>`, most preferred first, worked out when first needed. */
+  readonly plans: Map<string, DeparturePlan[] | { unable: string }>;
   /** Ways in by `<entrance node>|<edge arrived along>|<gate>`, worked out when first needed. */
   readonly arrivalWays: Map<string, Way | null>;
   readonly streams: readonly DepartureStream[];
-  /** Each plan's tracks and what a departure on them covers, by `<gate>|<type>`. */
-  readonly departureTracks: Map<string, { plan: DeparturePlan; push: Track; out: Track; elements: string[] }>;
+  /** Each plan's tracks, by `<gate>|<type>|<plan index>`. */
+  readonly departureTracks: Map<string, { plan: DeparturePlan; push: Track; out: Track }>;
   /** A waiting arrival's way in, by its record (wayInFor). Not state: derived from it. */
-  readonly waysIn: WeakMap<RampAircraft, { track: Track; s: number; elements: string[] }>;
+  readonly waysIn: WeakMap<RampAircraft, { track: Track; s: number }>;
 }
 
 export function rampSetup(index: AirportIndex, options: RampOptions): RampSetup {
@@ -178,9 +212,15 @@ export function rampSetup(index: AirportIndex, options: RampOptions): RampSetup 
   const stands = new Map<GateId, Stand | { unusable: string }>();
   for (const gate of index.airport.gates) stands.set(gate.id, standOf(index, gate));
   const standEdges = new Set<EdgeId>();
-  for (const stand of stands.values()) if (!('unusable' in stand)) for (const e of stand.edges) standEdges.add(e);
+  const standsByFirstEdge = new Map<EdgeId, Stand>();
+  for (const stand of stands.values()) {
+    if ('unusable' in stand) continue;
+    for (const e of stand.edges) standEdges.add(e);
+    const first = stand.edges[0];
+    if (first !== undefined) standsByFirstEdge.set(first, stand);
+  }
   const handoffNodes = new Set(index.airport.rampHandoffs.map((h) => h.node));
-  return { stands, standEdges, handoffNodes, plans: new Map(), arrivalWays: new Map(), streams, departureTracks: new Map(), waysIn: new WeakMap() };
+  return { stands, standEdges, standsByFirstEdge, handoffNodes, plans: new Map(), arrivalWays: new Map(), streams, departureTracks: new Map(), waysIn: new WeakMap() };
 }
 
 export function initialRampState(setup: RampSetup): RampState {
@@ -188,36 +228,33 @@ export function initialRampState(setup: RampSetup): RampState {
 }
 
 /**
- * Each stream's departure due now, with the gate it's spawned at, for sim.ts to add (it builds
- * aircraft): a free gate of its terminal that it fits and can push from, whose stand no movement
- * holds, preferring its airline's, at random (seeded). With none free, it stays due.
+ * The departure due now, if any, with the gate it's spawned at, for sim.ts to add (it builds
+ * aircraft): a free gate of its terminal that it fits, can push from now, and whose parked
+ * footprint is clear of everything held, preferring its airline's, at random (seeded). With
+ * none free, it stays due. At most one a tick, so two can't be given gates too close together.
  */
 export function rampSpawns(sim: Sim): (DepartureFlight & { gate: GateId })[] {
-  const due: (DepartureFlight & { gate: GateId })[] = [];
-  sim.ramp.streams.forEach((stream, i) => {
+  for (let i = 0; i < sim.ramp.streams.length; i++) {
+    const stream = sim.ramp.streams[i];
     const state = sim.world.ramp.streams[i];
-    if (!state) throw new Error(`no state for departure stream ${i}`);
-    if (sim.world.tick < state.nextTick) return;
+    if (!stream || !state) throw new Error(`no state for departure stream ${i}`);
+    if (sim.world.tick < state.nextTick) continue;
     const flight = stream.flight(state.count);
     if (!isAircraftType(flight.type)) throw new Error(`${flight.callsign}: unknown aircraft type "${flight.type}"`);
     const type = flight.type;
     const terminal = sim.index.airport.terminals.find((t) => t.id === flight.terminal);
     if (!terminal) throw new Error(`${flight.callsign}: no terminal ${flight.terminal}`);
-    const taken = new Set([...sim.world.ramp.aircraft.map((r) => r.gate), ...due.map((d) => d.gate)]);
-    const held = reservedElements(sim, '');
-    const free = sim.index.airport.gates.filter((g) => {
-      if (g.terminal !== terminal.id || taken.has(g.id) || 'unable' in departurePlanFor(sim, g.id, type)) return false;
-      const stand = usableStand(sim, g.id);
-      return !stand.edges.some((e) => held.has(`e:${e}`)) && !stand.nodes.some((n) => held.has(`n:${n}`));
-    });
+    const free = sim.index.airport.gates.filter(
+      (g) => g.terminal === terminal.id && gateOccupant(sim, g.id) === null && choosePlan(sim, g.id, type) !== null && parkedConflict(sim, parkedAt(sim, flight.callsign, g.id, type)) === null,
+    );
     const gate = pickGate(sim, free, terminal.airlines, flight.airline ?? null);
-    if (gate === null) return;
-    due.push({ ...flight, gate });
+    if (gate === null) continue;
     state.count += 1;
     const intervalS = (3600 / stream.perHour) * nextInRange(sim.world.rng, 1 - DEPARTURE_JITTER, 1 + DEPARTURE_JITTER);
     state.nextTick = sim.world.tick + Math.round(intervalS * TICK_HZ);
-  });
-  return due;
+    return [{ ...flight, gate }];
+  }
+  return [];
 }
 
 /** Among `free`, those `airline` uses (the gate's airlines, else `terminalAirlines`), if any; one at random (seeded). */
@@ -267,10 +304,23 @@ function usableStand(sim: Sim, gateId: GateId): Stand {
   return stand;
 }
 
+/** What a `type` parked at `gateId` holds, as the reservations see it, under the name `id`. */
+function parkedAt(sim: Sim, id: string, gateId: GateId, type: AircraftTypeCode): ParkedSpec {
+  const stand = usableStand(sim, gateId);
+  const { lengthM, wingspanM } = AIRCRAFT_TYPES[type];
+  return { id, nodes: stand.nodes, edges: stand.edges, s: stand.lengthM, lengthM, wingspanM };
+}
+
+/** The reservation that holds an arrival's assigned gate until the arrival itself is admitted. */
+function gateHoldId(callsign: string): string {
+  return `${callsign} gate`;
+}
+
 /**
  * Where an aircraft parked at `gateId` is: nose on the gate node, its body back along the
- * stand. Throws if the gate is unknown, taken, or can't park it, or for a departure, if it has
- * no way out (departurePlanFor).
+ * stand. Throws if the gate is unknown or taken, can't park it, its parked footprint isn't
+ * clear (a neighbour too close, or a movement), or for a departure, if it can't push from there
+ * now (departurePlansFor, choosePlan).
  */
 export function placeAtGate(sim: Sim, callsign: string, gateId: GateId, type: AircraftTypeCode, role: 'departure' | 'arrival'): { track: Track; s: number; terminal: TerminalId } {
   const stand = usableStand(sim, gateId);
@@ -278,9 +328,16 @@ export function placeAtGate(sim: Sim, callsign: string, gateId: GateId, type: Ai
   if (holder !== null) throw new Error(`${callsign}: gate ${gateId} is taken by ${holder}`);
   const fit = standFit(stand, type);
   if (fit !== null) throw new Error(`${callsign}: ${fit}`);
-  // A departure must have a way out.
-  const plan = role === 'departure' ? departurePlanFor(sim, gateId, type) : null;
-  if (plan && 'unable' in plan) throw new Error(`${callsign}: ${plan.unable}`);
+  if (role === 'departure') {
+    const plans = departurePlansFor(sim, gateId, type);
+    if ('unable' in plans) throw new Error(`${callsign}: ${plans.unable}`);
+    if (choosePlan(sim, gateId, type) === null) {
+      const into = plans.map((p) => p.swing).filter((g) => g !== null);
+      throw new Error(`${callsign}: gate ${gateId} can't push back now: its pushback swings into ${into.join(' or ')}, taken`);
+    }
+  }
+  const blocker = parkedConflict(sim, parkedAt(sim, callsign, gateId, type));
+  if (blocker !== null) throw new Error(`${callsign}: gate ${gateId} is blocked: parked there, a ${type} would be too close to ${blocker}`);
   return { track: buildTrack(sim.index, stand.nodes, stand.edges), s: stand.lengthM, terminal: stand.gate.terminal };
 }
 
@@ -297,36 +354,48 @@ function standFit(stand: Stand, type: AircraftTypeCode): string | null {
   return `gate ${stand.gate.id} is too short for a ${type}: its tail would be ${clear.toFixed(1)} m from the lane at ${junction}, inside its half-span ${(wingspanM / 2).toFixed(1)} m`;
 }
 
-/** Takes on an aircraft just added at a gate (placeAtGate): a departure boards, then asks to push. */
+/**
+ * Takes on an aircraft just added at a gate (placeAtGate): it's held there, parked; a departure
+ * picks its pushback (claiming the stand it will swing into, if any), boards, then asks to push.
+ */
 export function adoptAtGate(sim: Sim, callsign: string, gateId: GateId, role: 'departure' | 'arrival'): void {
+  const ac = aircraftOf(sim, callsign);
   const tick = sim.world.tick;
   const [lo, hi] = PUSH_READY_S;
   const readyTick = role === 'departure' ? tick + Math.round(nextInRange(sim.world.rng, lo, hi) * TICK_HZ) : null;
-  sim.world.ramp.aircraft.push({
-    callsign,
-    phase: role === 'departure' ? 'at-gate' : 'parked',
-    gate: gateId,
-    since: tick,
-    readyTick,
-    rampHandoff: null,
-    pushTo: null,
-    reserved: [],
-    pilotCruiseMps: null,
-  });
+  const plan = role === 'departure' ? choosePlan(sim, gateId, ac.type) : null;
+  if (role === 'departure' && plan === null) throw new Error(`${callsign}: no pushback from ${gateId} now`);
+  const plans = plan === null ? null : departurePlansFor(sim, gateId, ac.type);
+  const swingInto = plans && !('unable' in plans) && plan !== null ? (plans[plan]?.swing ?? null) : null;
+  const blocker = reserveParked(sim, parkedAt(sim, callsign, gateId, ac.type));
+  if (blocker !== null) throw new Error(`${callsign}: parked at ${gateId}, in the way of ${blocker}`);
+  sim.world.ramp.aircraft.push({ callsign, phase: role === 'departure' ? 'at-gate' : 'parked', gate: gateId, since: tick, readyTick, rampHandoff: null, pushTo: null, plan, swingInto, pilotCruiseMps: null });
 }
 
-/** Forgets an aircraft that's leaving the sim: its gate, and anything it held, are free. */
+/** Forgets an aircraft that's leaving the sim: its gate, the stand it claimed, and its gate hold are free. */
 export function rampDrop(sim: Sim, callsign: string): void {
   sim.world.ramp.aircraft = sim.world.ramp.aircraft.filter((r) => r.callsign !== callsign);
+  dropMovement(sim, gateHoldId(callsign));
 }
 
-/** The aircraft holding `gateId` (parked, pushing from it, or assigned to it), or null. */
+/** The aircraft holding `gateId` (parked, pushing from it, assigned to it, or to swing its tail into it), or null. */
 export function gateOccupant(sim: Sim, gateId: GateId): string | null {
-  return sim.world.ramp.aircraft.find((r) => r.gate === gateId)?.callsign ?? null;
+  return sim.world.ramp.aircraft.find((r) => r.gate === gateId || r.swingInto === gateId)?.callsign ?? null;
+}
+
+/**
+ * The plan a `type` departing `gateId` would use now: the first (most preferred) whose stand to
+ * swing into, if any, is free. Its index, or null: none now (or no plans at all).
+ */
+function choosePlan(sim: Sim, gateId: GateId, type: AircraftTypeCode): number | null {
+  const plans = departurePlansFor(sim, gateId, type);
+  if ('unable' in plans) return null;
+  const i = plans.findIndex((p) => p.swing === null || gateOccupant(sim, p.swing) === null);
+  return i < 0 ? null : i;
 }
 
 // ---------------------------------------------------------------------------------------------
-// Planning: pushbacks and ramp routes, over open ramp lanes only
+// Planning: pushbacks and ramp routes
 
 /** A chain of edges from `nodes[0]`: one more node than edges. */
 interface Way {
@@ -337,51 +406,67 @@ interface Way {
 
 /**
  * A departure's way out, for one gate and type:
- * - `push`: the pushback track, nose-forward: the tail's way onto the lane, the push point,
- *   then back along the way it's pushed to the gate. It's pushed from the end to `pushTo`.
+ * - `push`: the pushback track, nose-forward: the tail's way, the push point, then back along
+ *   the way it's pushed to the gate. It's pushed from the end to `pushTo`.
  * - `out`: the taxi-out track: the same start up to the push point, then on to the ramp edge.
+ *   It ends at the push point if there's no taxi-out (the push ends at or past the ramp edge).
+ * - `swing`: the gate whose stand the tail swings into, if any. `taxiway`: whether any of it is
+ *   on a taxiway (ground's area).
  */
 export interface DeparturePlan {
   push: Way;
   out: Way;
   pushTo: number;
   rampHandoff: RampHandoffId;
+  swing: GateId | null;
+  taxiway: boolean;
+}
+
+/** The most preferred way out for a `type` departing `gate` (departurePlansFor), or why there's none. */
+export function departurePlanFor(sim: Sim, gate: GateId, type: AircraftTypeCode): DeparturePlan | { unable: string } {
+  const plans = departurePlansFor(sim, gate, type);
+  if ('unable' in plans) return plans;
+  const first = plans[0];
+  if (!first) throw new Error(`gate ${gate}: an empty plan list`);
+  return first;
 }
 
 /**
- * The way out for a `type` departing `gate`, or why there's none: the gate can't be used, the
- * type doesn't fit its stand, or no pushback works. Throws for an unknown gate. Cached.
+ * The ways out for a `type` departing `gate`, most preferred first: the lane plan if there is
+ * one (then it's the only one); else the swing plans, shortest push first, then the taxiway
+ * plan. Or why there's none: the gate can't be used, the type doesn't fit its stand, or no
+ * pushback works. Throws for an unknown gate. Cached.
  */
-export function departurePlanFor(sim: Sim, gate: GateId, type: AircraftTypeCode): DeparturePlan | { unable: string } {
+export function departurePlansFor(sim: Sim, gate: GateId, type: AircraftTypeCode): DeparturePlan[] | { unable: string } {
   const key = `${gate}|${type}`;
   const cached = sim.ramp.plans.get(key);
   if (cached) return cached;
   const stand = sim.ramp.stands.get(gate);
   if (!stand) throw new Error(`no gate ${gate} at ${sim.index.airport.id}`);
-  const plan = 'unusable' in stand ? { unable: stand.unusable } : standFit(stand, type) !== null ? { unable: standFit(stand, type) ?? '' } : planDeparture(sim, gate, type);
-  sim.ramp.plans.set(key, plan);
-  return plan;
+  const fit = 'unusable' in stand ? stand.unusable : standFit(stand, type);
+  const plans = fit !== null ? { unable: fit } : planDeparture(sim, gate, type);
+  sim.ramp.plans.set(key, plans);
+  return plans;
 }
 
 /**
- * The shortest pushback, by the distance the nose is pushed, after which the aircraft can taxi
- * forward to a ramp edge serving its terminal. The push goes back out of the stand and along
- * ramp lanes, never into another stand or through a ramp handoff, and stops with the nose on
- * a node, the tail swung onto a lane there: `tail` lies along lanes for at least the aircraft's
- * length from that node. From there it taxis forward (no reversing onto the tail's lane) to the
- * nearest ramp edge. Among tails at the same push point, the one with the shortest taxi wins.
+ * The search (the header's "Pushback"): Dijkstra over where the nose has been pushed to and
+ * along which edge, by push distance. At each node, every tail swing that has room is tried,
+ * with its way out; the best plan of each kind is kept. It stops at the first lane plan.
  */
-function planDeparture(sim: Sim, gateId: GateId, type: AircraftTypeCode): DeparturePlan | { unable: string } {
+function planDeparture(sim: Sim, gateId: GateId, type: AircraftTypeCode): DeparturePlan[] | { unable: string } {
   const index = sim.index;
   const stand = usableStand(sim, gateId);
   const { lengthM } = AIRCRAFT_TYPES[type];
-  const goals = new Set(
-    index.airport.rampHandoffs
-      .filter((h) => h.use !== 'arrivals' && (h.terminals === undefined || h.terminals.includes(stand.gate.terminal)))
-      .map((h) => h.node),
-  );
-  if (goals.size === 0) return { unable: `no ramp edge serves ${stand.gate.terminal}` };
+  const exits = index.airport.rampHandoffs.filter((h) => h.use !== 'arrivals' && (h.terminals === undefined || h.terminals.includes(stand.gate.terminal)));
+  if (exits.length === 0) return { unable: `no ramp edge serves ${stand.gate.terminal}` };
+  const goals = new Set(exits.map((h) => h.node));
+  const exitAt = (n: NodeId) => exits.find((h) => h.node === n) ?? null;
   const laneOk = (e: Edge) => e.kind === 'rampLane' && !e.closed && !sim.ramp.standEdges.has(e.id);
+  const groundOk = (e: Edge) => e.kind === 'taxiway' && !e.closed && !sim.runwayAreas.has(e.id);
+  const turnOk = (node: NodeId, from: Edge, to: Edge) => turnAt(index, node, from, to) <= MAX_TURN_DEG;
+  /** Facing out onto a taxiway at `node`, having arrived along `along`. */
+  const facesGround = (node: NodeId, along: Edge, except: EdgeId | null) => edgesAt(index, node).some((e) => e.id !== along.id && e.id !== except && groundOk(e) && turnOk(node, along, e));
   const junction = stand.nodes[0];
   const standFirst = stand.edges[0];
   if (junction === undefined || standFirst === undefined) throw new Error(`gate ${gateId}: an empty stand`);
@@ -394,68 +479,133 @@ function planDeparture(sim: Sim, gateId: GateId, type: AircraftTypeCode): Depart
     /** Backward from the gate: nodes from the gate to `node`, and their edges. */
     nodes: NodeId[];
     edges: EdgeId[];
+    /** The ramp edge the nose has been pushed out past, onto the taxiway, and how far past. */
+    out: RampHandoff | null;
+    taxiwayM: number;
   }
-  const queue: Label[] = [
-    { node: junction, via: edgeOf(index, standFirst), dist: stand.lengthM, nodes: [...stand.nodes].reverse(), edges: [...stand.edges].reverse() },
-  ];
+  type Kind = 'lane' | 'taxiway' | GateId;
+  const best = new Map<Kind, { plan: DeparturePlan; dist: number; outM: number }>();
+  const offer = (label: Label, tail: Way, out: Way, handoff: RampHandoffId, swing: GateId | null, taxiway: boolean) => {
+    const kind: Kind = swing ?? (taxiway ? 'taxiway' : 'lane');
+    const held = best.get(kind);
+    if (held && (held.dist < label.dist || (held.dist === label.dist && held.outM <= out.lengthM))) return;
+    const tailNodes = [...tail.nodes].reverse();
+    const tailEdges = [...tail.edges].reverse();
+    const back = [...label.nodes].reverse();
+    const backEdges = [...label.edges].reverse();
+    const plan: DeparturePlan = {
+      push: { nodes: [...tailNodes, ...back.slice(1)], edges: [...tailEdges, ...backEdges], lengthM: tail.lengthM + label.dist },
+      out: { nodes: [...tailNodes, ...out.nodes.slice(1)], edges: [...tailEdges, ...out.edges], lengthM: tail.lengthM + out.lengthM },
+      pushTo: tail.lengthM,
+      rampHandoff: handoff,
+      swing,
+      taxiway,
+    };
+    best.set(kind, { plan, dist: label.dist, outM: out.lengthM });
+  };
+  /** The way out from `node`, the tail along `tail`: none needed at a ramp edge facing out; else forward over lanes. */
+  const wayOut = (node: NodeId, tail: Edge): { out: Way; handoff: RampHandoffId } | null => {
+    const here = exitAt(node);
+    if (here && facesGround(node, tail, null)) return { out: { nodes: [node], edges: [], lengthM: 0 }, handoff: here.id };
+    const out = forwardWay(index, node, tail, laneOk, (n) => goals.has(n));
+    const handoff = out && exitAt(out.nodes.at(-1) ?? '');
+    return out && handoff ? { out, handoff: handoff.id } : null;
+  };
+
+  const queue: Label[] = [{ node: junction, via: edgeOf(index, standFirst), dist: stand.lengthM, nodes: [...stand.nodes].reverse(), edges: [...stand.edges].reverse(), out: null, taxiwayM: 0 }];
   const settled = new Set<string>();
   while (queue.length > 0) {
     const label = queue.reduce((a, b) => (b.dist < a.dist ? b : a));
     queue.splice(queue.indexOf(label), 1);
-    const key = `${label.node}|${label.via.id}`;
+    if (best.has('lane')) break;
+    const key = `${label.node}|${label.via.id}|${label.out?.id ?? ''}`;
     if (settled.has(key)) continue;
     settled.add(key);
-    if (sim.ramp.handoffNodes.has(label.node)) continue;
-    const onward = edgesAt(index, label.node).filter((e) => e.id !== label.via.id && laneOk(e) && turnAt(index, label.node, label.via, e) <= MAX_TURN_DEG);
-    // Stop the push here, with the tail swung onto one of these lanes?
-    let best: { tail: Way; out: Way; rampHandoff: RampHandoffId } | null = null;
-    for (const t of onward) {
-      const tail = tailWay(sim, label.node, t, lengthM, laneOk);
-      if (tail === null) continue;
-      const out = forwardWay(index, label.node, t, laneOk, (n) => goals.has(n));
-      if (out === null || (best !== null && out.lengthM >= best.out.lengthM)) continue;
-      const handoff = index.airport.rampHandoffs.find((h) => h.node === out.nodes.at(-1) && h.use !== 'arrivals');
-      if (!handoff) throw new Error(`ramp route ended off a ramp edge, at ${out.nodes.at(-1)}`);
-      best = { tail, out, rampHandoff: handoff.id };
+    const node = label.node;
+    // Stop the push here, the tail swung onto one of these?
+    for (const t of edgesAt(index, node)) {
+      if (t.id === label.via.id || !turnOk(node, label.via, t)) continue;
+      if (label.out !== null) {
+        // Pushed out past the ramp edge: tail along the taxiway, nose facing on along it.
+        if (!groundOk(t) || !facesGround(node, t, label.via.id)) continue;
+        const tail = tailWay(sim, node, t, lengthM, groundOk, null);
+        if (tail) offer(label, tail.way, { nodes: [node], edges: [], lengthM: 0 }, label.out.id, null, true);
+        continue;
+      }
+      const into = sim.ramp.standsByFirstEdge.get(t.id);
+      if (into && into.gate.id !== gateId && into.nodes[0] === node) {
+        if (into.lengthM < lengthM) continue;
+        const way = wayOut(node, t);
+        if (way) offer(label, { nodes: into.nodes, edges: into.edges, lengthM: into.lengthM }, way.out, way.handoff, into.gate.id, false);
+        continue;
+      }
+      if (laneOk(t)) {
+        const tail = tailWay(sim, node, t, lengthM, laneOk, groundOk);
+        const way = tail && wayOut(node, t);
+        if (tail && way) offer(label, tail.way, way.out, way.handoff, null, tail.ground);
+        continue;
+      }
+      if (groundOk(t) && exitAt(node)) {
+        // At a ramp edge, the tail swung out onto the taxiway, nose facing back into the ramp.
+        const tail = tailWay(sim, node, t, lengthM, groundOk, null);
+        const out = tail && forwardWay(index, node, t, laneOk, (n) => goals.has(n));
+        const handoff = out && exitAt(out.nodes.at(-1) ?? '');
+        if (tail && out && handoff) offer(label, tail.way, out, handoff.id, null, true);
+      }
     }
-    if (best !== null) {
-      const tailNodes = [...best.tail.nodes].reverse();
-      const tailEdges = [...best.tail.edges].reverse();
-      const back = [...label.nodes].reverse();
-      const backEdges = [...label.edges].reverse();
-      return {
-        push: { nodes: [...tailNodes, ...back.slice(1)], edges: [...tailEdges, ...backEdges], lengthM: best.tail.lengthM + label.dist },
-        out: { nodes: [...tailNodes, ...best.out.nodes.slice(1)], edges: [...tailEdges, ...best.out.edges], lengthM: best.tail.lengthM + best.out.lengthM },
-        pushTo: best.tail.lengthM,
-        rampHandoff: best.rampHandoff,
-      };
-    }
-    for (const e of onward) {
-      const dist = label.dist + edgeLength(index, e);
-      if (dist > MAX_PUSH_M || label.edges.includes(e.id)) continue;
-      const to = otherEnd(e, label.node);
-      queue.push({ node: to, via: e, dist, nodes: [...label.nodes, to], edges: [...label.edges, e.id] });
+    // Push on.
+    for (const e of edgesAt(index, node)) {
+      if (e.id === label.via.id || label.edges.includes(e.id) || !turnOk(node, label.via, e)) continue;
+      const len = edgeLength(index, e);
+      const dist = label.dist + len;
+      if (dist > MAX_PUSH_M) continue;
+      const to = otherEnd(e, node);
+      const next = { node: to, via: e, dist, nodes: [...label.nodes, to], edges: [...label.edges, e.id] };
+      if (label.out !== null) {
+        if (groundOk(e) && label.taxiwayM + len <= MAX_TAXIWAY_PUSH_M) queue.push({ ...next, out: label.out, taxiwayM: label.taxiwayM + len });
+      } else if (sim.ramp.handoffNodes.has(node)) {
+        // Never along lanes through a ramp handoff; out past one that serves it, onto the taxiway.
+        const here = exitAt(node);
+        if (here && groundOk(e) && len <= MAX_TAXIWAY_PUSH_M) queue.push({ ...next, out: here, taxiwayM: len });
+      } else if (laneOk(e)) {
+        queue.push({ ...next, out: null, taxiwayM: 0 });
+      }
     }
   }
+  const lane = best.get('lane');
+  if (lane) return [lane.plan];
+  const swings = [...best.entries()].filter(([k]) => k !== 'lane' && k !== 'taxiway').map(([, v]) => v);
+  swings.sort((a, b) => a.dist - b.dist || a.outM - b.outM);
+  const taxiway = best.get('taxiway');
+  const plans = [...swings.map((s) => s.plan), ...(taxiway ? [taxiway.plan] : [])];
+  if (plans.length > 0) return plans;
   return { unable: `gate ${gateId} has no pushback for a ${type} that ends facing a way to a ramp edge for ${stand.gate.terminal} (within ${MAX_PUSH_M} m, turns up to ${MAX_TURN_DEG}°)` };
 }
 
 /**
- * Where a pushed tail goes from `node`: onto `first`, then on along the straightest lanes, until
- * it has the aircraft's length. Outward from `node`. null: the lanes run out first.
+ * Where a pushed tail goes from `node`: onto `first`, then on along the straightest edges that
+ * pass `ok`, until it has the aircraft's length. Outward from `node`. It never passes a ramp
+ * handoff, unless `beyond` is given: then past one it goes on over edges that pass `beyond`
+ * (the taxiway), and `ground` says so. null: the edges run out first.
  */
-function tailWay(sim: Sim, node: NodeId, first: Edge, lengthM: number, laneOk: (e: Edge) => boolean): Way | null {
+function tailWay(sim: Sim, node: NodeId, first: Edge, lengthM: number, ok: (e: Edge) => boolean, beyond: ((e: Edge) => boolean) | null): { way: Way; ground: boolean } | null {
   const index = sim.index;
   const way: Way = { nodes: [node], edges: [first.id], lengthM: edgeLength(index, first) };
+  let ground = first.kind === 'taxiway';
+  let edgeOk = ok;
   let at = otherEnd(first, node);
   let via = first;
   way.nodes.push(at);
   while (way.lengthM < lengthM) {
-    if (sim.ramp.handoffNodes.has(at) || way.edges.length > 50) return null;
+    if (way.edges.length > 50) return null;
+    if (sim.ramp.handoffNodes.has(at) && !ground) {
+      if (beyond === null) return null;
+      [ground, edgeOk] = [true, beyond];
+    }
     let next: Edge | null = null;
     let sharpest = Infinity;
     for (const e of edgesAt(index, at)) {
-      if (e.id === via.id || !laneOk(e) || way.edges.includes(e.id)) continue;
+      if (e.id === via.id || !edgeOk(e) || way.edges.includes(e.id)) continue;
       const turn = turnAt(index, at, via, e);
       if (turn <= MAX_TURN_DEG && turn < sharpest) [next, sharpest] = [e, turn];
     }
@@ -466,7 +616,7 @@ function tailWay(sim: Sim, node: NodeId, first: Edge, lengthM: number, laneOk: (
     via = next;
     way.nodes.push(at);
   }
-  return way;
+  return { way, ground };
 }
 
 /**
@@ -529,75 +679,12 @@ function edgeOf(index: AirportIndex, id: EdgeId): Edge {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Reservations and blocking
-
-/**
- * What a movement holds: every edge its body touches between track distances `from` and `to`,
- * and both ends of each.
- */
-function elementsOf(track: Track, from: number, to: number): string[] {
-  const out: string[] = [];
-  track.edges.forEach((edge, i) => {
-    const [a, b] = [track.nodeAt[i], track.nodeAt[i + 1]];
-    if (a === undefined || b === undefined) throw new Error(`track edge ${i} has no extent`);
-    if (b < from || a > to) return;
-    out.push(`e:${edge}`, `n:${track.nodes[i]}`, `n:${track.nodes[i + 1]}`);
-  });
-  return [...new Set(out)];
-}
-
-/** Everything held by moving ramp aircraft, other than `except`. */
-function reservedElements(sim: Sim, except: string): Set<string> {
-  const held = new Set<string>();
-  for (const r of sim.world.ramp.aircraft) if (r.callsign !== except) for (const x of r.reserved) held.add(x);
-  return held;
-}
-
-/**
- * A body, other than those in `ignore`, in the way of a body covering track distances `from`
- * to `to`, by see-and-avoid's rules (traffic.ts): any part of it on the track's edges there
- * (with the spacing either side), or near a node there, within its own half-span of it. Its
- * callsign, or null.
- */
-function staticBlocker(sim: Sim, occupancy: Occupancy, track: Track, from: number, to: number, ignore: ReadonlySet<string>): string | null {
-  const { nodes, edges, nodeAt } = track;
-  for (let i = 0; i < edges.length; i++) {
-    const [id, start, end] = [edges[i], nodeAt[i], nodeAt[i + 1]];
-    if (id === undefined || start === undefined || end === undefined) throw new Error(`track edge ${i} has no extent`);
-    if (end < from - SPACING_M || start > to + SPACING_M) continue;
-    const edge = edgeOf(sim.index, id);
-    const forward = edge.from === nodes[i];
-    const len = end - start;
-    for (const o of occupancy.byEdge.get(id) ?? []) {
-      if (ignore.has(o.callsign)) continue;
-      const [t0, t1] = forward ? [start + o.u0, start + o.u1] : [start + len - o.u1, start + len - o.u0];
-      if (t1 > from - SPACING_M && t0 < to + SPACING_M) return o.callsign;
-    }
-  }
-  for (let j = 0; j < nodes.length; j++) {
-    const [node, at] = [nodes[j], nodeAt[j]];
-    if (node === undefined || at === undefined) throw new Error(`track node ${j} is missing`);
-    if (at < from || at > to) continue;
-    for (const o of occupancy.byNode.get(node) ?? []) if (!ignore.has(o.callsign)) return o.callsign;
-    const own = new Set([edges[j - 1], edges[j]]);
-    for (const edge of edgesAt(sim.index, node)) {
-      if (own.has(edge.id)) continue;
-      for (const o of occupancy.byEdge.get(edge.id) ?? []) {
-        if (ignore.has(o.callsign)) continue;
-        const distance = edge.from === node ? o.u0 : o.edgeLengthM - o.u1;
-        if (distance <= o.wingspanM / 2) return o.callsign;
-      }
-    }
-  }
-  return null;
-}
-
-// ---------------------------------------------------------------------------------------------
 // The ramp's decisions, each tick
 
 /**
- * The ramp's decisions for this tick, on the state the last tick left: departures that have
- * boarded ask to push; then waiting aircraft, oldest first, start moving when their way is free.
+ * The ramp's decisions for this tick, on the state the last tick left (and the reservations
+ * brought up to date): departures that have boarded ask to push; then waiting aircraft, oldest
+ * first, ask the reservations to start.
  */
 export function rampDecide(sim: Sim): void {
   const ramp = sim.world.ramp;
@@ -609,46 +696,26 @@ export function rampDecide(sim: Sim): void {
   callArrivals(sim);
   // Oldest first (a stable sort keeps the record order for ties).
   const waiting = sim.world.ramp.aircraft.filter((r) => r.phase === 'ready' || r.phase === 'called').sort((a, b) => a.since - b.since);
-  if (waiting.length === 0) return;
-  let occupancy: Occupancy | null = null;
-  const round: Round = {
-    held: new Set(sim.world.ramp.aircraft.flatMap((r) => r.reserved)),
-    moving: new Set(sim.world.ramp.aircraft.filter((r) => r.reserved.length > 0).map((r) => r.callsign)),
-    occupancy: () => (occupancy ??= occupancyOf(sim)),
-  };
   for (const r of waiting) {
     const ac = aircraftOf(sim, r.callsign);
-    if (r.phase === 'ready') startPushback(sim, round, r, ac);
-    else startTaxiIn(sim, round, r, ac);
+    if (r.phase === 'ready') startPushback(sim, r, ac);
+    else startTaxiIn(sim, r, ac);
   }
 }
 
-/** What the waiting aircraft are checked against in one decide: it grows as movements start. */
-interface Round {
-  /** Everything held by moving ramp aircraft. */
-  held: Set<string>;
-  /** Their callsigns. */
-  moving: Set<string>;
-  /** Where every body is, at the start of this tick (worked out once, when first needed). */
-  occupancy: () => Occupancy;
-}
-
-/** Starts a movement holding `elements`: it now blocks the rest of this round. */
-function hold(round: Round, r: RampAircraft, elements: string[]): void {
-  r.reserved = [...elements];
-  for (const x of elements) round.held.add(x);
-  round.moving.add(r.callsign);
-}
-
 /**
- * Arrivals at a ramp entrance, handed to ramp: each is assigned a gate and waits, still
- * ground's, until its way in is clear. One with no gate free isn't taken: it waits where it is,
- * ground's, with nothing said (the "no gate yet" call is Phase 3). One that's no longer waiting
- * there (the player moved it) gives its gate back.
+ * Arrivals at a ramp entrance, handed to ramp: each is assigned a gate, held for it, and waits,
+ * still ground's, until it can be taken in. One with no gate free isn't taken: it waits where it
+ * is, ground's, with nothing said (the "no gate yet" call is Phase 3). One that's no longer
+ * waiting there (the player moved it) gives its gate back.
  */
 function callArrivals(sim: Sim): void {
   const ramp = sim.world.ramp;
-  ramp.aircraft = ramp.aircraft.filter((r) => r.phase !== 'called' || entranceOf(sim, aircraftOf(sim, r.callsign))?.id === r.rampHandoff);
+  ramp.aircraft = ramp.aircraft.filter((r) => {
+    if (r.phase !== 'called' || entranceOf(sim, aircraftOf(sim, r.callsign))?.id === r.rampHandoff) return true;
+    dropMovement(sim, gateHoldId(r.callsign));
+    return false;
+  });
   const known = new Set(ramp.aircraft.map((r) => r.callsign));
   for (const ac of sim.world.aircraft) {
     if (known.has(ac.callsign)) continue;
@@ -656,7 +723,9 @@ function callArrivals(sim: Sim): void {
     if (handoff === null) continue;
     const gate = assignGate(sim, ac, handoff);
     if (gate === null) continue;
-    ramp.aircraft.push({ callsign: ac.callsign, phase: 'called', gate, since: sim.world.tick, readyTick: null, rampHandoff: handoff.id, pushTo: null, reserved: [], pilotCruiseMps: null });
+    const blocker = reserveParked(sim, parkedAt(sim, gateHoldId(ac.callsign), gate, ac.type));
+    if (blocker !== null) throw new Error(`${ac.callsign}: gate ${gate} was free, but holding it is in the way of ${blocker}`);
+    ramp.aircraft.push({ callsign: ac.callsign, phase: 'called', gate, since: sim.world.tick, readyTick: null, rampHandoff: handoff.id, pushTo: null, plan: null, swingInto: null, pilotCruiseMps: null });
   }
 }
 
@@ -679,8 +748,9 @@ function entranceOf(sim: Sim, ac: Aircraft): RampHandoff | null {
 
 /**
  * A free gate for `ac` at its terminal (else the entrance's), that it fits and can leave again,
- * reachable from `handoff` over ramp lanes. Among them, those its airline uses (the gate's
- * airlines, or its terminal's), if any; one of those at random (seeded). null: none free.
+ * reachable from `handoff` over ramp lanes, whose parked footprint for it is clear of everything
+ * held. Among them, those its airline uses (the gate's airlines, or its terminal's), if any; one
+ * of those at random (seeded). null: none free.
  */
 function assignGate(sim: Sim, ac: Aircraft, handoff: RampHandoff): GateId | null {
   const destination = ac.clearance?.path.destination;
@@ -688,13 +758,13 @@ function assignGate(sim: Sim, ac: Aircraft, handoff: RampHandoff): GateId | null
   const terminal = sim.index.airport.terminals.find((t) => t.id === terminalId);
   if (!terminal) return null;
   const arrived = arrivedEdge(sim, ac);
-  const taken = new Set(sim.world.ramp.aircraft.map((r) => r.gate));
   const free = sim.index.airport.gates.filter(
     (g) =>
       g.terminal === terminal.id &&
-      !taken.has(g.id) &&
-      !('unable' in departurePlanFor(sim, g.id, ac.type)) &&
-      arrivalWay(sim, handoff.node, arrived, g.id) !== null,
+      gateOccupant(sim, g.id) === null &&
+      !('unable' in departurePlansFor(sim, g.id, ac.type)) &&
+      arrivalWay(sim, handoff.node, arrived, g.id) !== null &&
+      parkedConflict(sim, parkedAt(sim, gateHoldId(ac.callsign), g.id, ac.type)) === null,
   );
   return pickGate(sim, free, terminal.airlines, ac.airline);
 }
@@ -725,10 +795,10 @@ function arrivalWay(sim: Sim, from: NodeId, arrived: Edge, gateId: GateId): Way 
 
 /**
  * A waiting arrival's track in: its trail (the edge holding its tail) up to the entrance, then the
- * way to its gate; where its nose is on it; and what it covers. Worked out once per wait: while
- * it waits it doesn't move, and a new wait is a new record.
+ * way to its gate; and where its nose is on it. Worked out once per wait: while it waits it
+ * doesn't move, and a new wait is a new record.
  */
-function wayInFor(sim: Sim, r: RampAircraft, ac: Aircraft): { track: Track; s: number; elements: string[] } {
+function wayInFor(sim: Sim, r: RampAircraft, ac: Aircraft): { track: Track; s: number } {
   const cached = sim.ramp.waysIn.get(r);
   if (cached) return cached;
   const place = placeOf(ac.track, ac.s);
@@ -737,18 +807,25 @@ function wayInFor(sim: Sim, r: RampAircraft, ac: Aircraft): { track: Track; s: n
   if (way === null) throw new Error(`${ac.callsign}: assigned gate ${r.gate} with no way to it`);
   const t0 = Math.min(placeOf(ac.track, Math.max(0, ac.s - ac.lengthM)).i, place.i);
   const track = buildTrack(sim.index, [...ac.track.nodes.slice(t0, place.i + 1), ...way.nodes.slice(1)], [...ac.track.edges.slice(t0, place.i), ...way.edges]);
-  const s = nodeAt(track, place.i - t0);
-  const wayIn = { track, s, elements: elementsOf(track, s - ac.lengthM, track.lengthM) };
+  const wayIn = { track, s: nodeAt(track, place.i - t0) };
   sim.ramp.waysIn.set(r, wayIn);
   return wayIn;
 }
 
-/** Its way in is clear: ramp takes it, and taxis it to its gate (movement.ts moves it). */
-function startTaxiIn(sim: Sim, round: Round, r: RampAircraft, ac: Aircraft): boolean {
-  const { track, s, elements } = wayInFor(sim, r, ac);
-  if (elements.some((x) => round.held.has(x))) return false;
-  if (staticBlocker(sim, round.occupancy(), track, s - ac.lengthM, track.lengthM, new Set([...round.moving, r.callsign])) !== null) return false;
-  hold(round, r, elements);
+/**
+ * Takes the arrival in, if the reservations admit it with enough granted at once to get its
+ * whole body off the entrance: then it's ramp's, taxiing to its gate (movement.ts moves it).
+ */
+function startTaxiIn(sim: Sim, r: RampAircraft, ac: Aircraft): void {
+  const { track, s } = wayInFor(sim, r, ac);
+  const leg: Leg = { nodes: track.nodes, edges: track.edges, from: s, to: track.lengthM, seeAndAvoid: true, lookaheadM: taxiLookahead(ac.cruiseMps) };
+  // Its own gate hold gives way to the movement that ends there.
+  dropMovement(sim, gateHoldId(r.callsign));
+  if (admit(sim, { id: ac.callsign, lengthM: ac.lengthM, wingspanM: ac.wingspanM, legs: [leg], stays: true }, Math.min(ac.lengthM, track.lengthM - s)) !== null) {
+    const blocker = reserveParked(sim, parkedAt(sim, gateHoldId(r.callsign), r.gate, ac.type));
+    if (blocker !== null) throw new Error(`${ac.callsign}: its gate hold at ${r.gate} came back in the way of ${blocker}`);
+    return;
+  }
   Object.assign(r, { phase: 'taxi-in', since: sim.world.tick, pilotCruiseMps: ac.cruiseMps });
   Object.assign(ac, {
     controller: 'ramp',
@@ -764,39 +841,62 @@ function startTaxiIn(sim: Sim, round: Round, r: RampAircraft, ac: Aircraft): boo
   const rampHandoff = r.rampHandoff;
   if (rampHandoff === null) throw new Error(`${ac.callsign}: taken in at no ramp entrance`);
   emit(sim, { type: 'ramp-accepted', tick: sim.world.tick, callsign: ac.callsign, rampHandoff, gate: r.gate });
-  return true;
 }
 
 /**
- * A departure asking to push starts, if everything its pushback and taxi-out will cover is free:
- * held by no movement, and no other body in the way (staticBlocker).
+ * A departure asking to push starts if the reservations admit its pushback and taxi-out. A push
+ * that uses a taxiway also needs ground's traffic well clear, and is reserved whole first.
  */
-function startPushback(sim: Sim, round: Round, r: RampAircraft, ac: Aircraft): boolean {
-  const { plan, push, out, elements } = departureTracks(sim, r.gate, ac.type);
-  if (elements.some((x) => round.held.has(x))) return false;
-  const from = plan.pushTo - ac.lengthM;
-  const ignore = new Set([...round.moving, r.callsign]);
-  if (staticBlocker(sim, round.occupancy(), push, from, push.lengthM, ignore) !== null) return false;
-  if (staticBlocker(sim, round.occupancy(), out, from, out.lengthM, ignore) !== null) return false;
-  hold(round, r, elements);
+function startPushback(sim: Sim, r: RampAircraft, ac: Aircraft): void {
+  if (r.plan === null) throw new Error(`${ac.callsign}: asking to push with no plan`);
+  const { plan, push, out } = departureTracks(sim, r.gate, ac.type, r.plan);
+  if (plan.taxiway && groundTrafficNear(sim, ac, [...push.edges, ...out.edges])) return;
+  const legs: Leg[] = [
+    { nodes: push.nodes, edges: push.edges, from: push.lengthM, to: plan.pushTo, seeAndAvoid: false, lookaheadM: PUSH_LOOKAHEAD_M },
+    { nodes: out.nodes, edges: out.edges, from: plan.pushTo, to: out.lengthM, seeAndAvoid: true, lookaheadM: taxiLookahead(ac.cruiseMps) },
+  ];
+  const whole = plan.taxiway ? push.lengthM - plan.pushTo : 0;
+  // Arrivals taxiing in, taken in no later than this one was ready, go first (the header's "Priority").
+  const yieldTo = sim.world.ramp.aircraft.filter((a) => a.phase === 'taxi-in' && a.since <= r.since).map((a) => a.callsign);
+  if (admit(sim, { id: ac.callsign, lengthM: ac.lengthM, wingspanM: ac.wingspanM, legs, stays: false }, whole, yieldTo) !== null) return;
   Object.assign(r, { phase: 'pushback', since: sim.world.tick, pushTo: plan.pushTo, rampHandoff: plan.rampHandoff });
   Object.assign(ac, { track: copyTrack(push), s: push.lengthM, v: 0, status: 'pushing-back' });
   emit(sim, { type: 'pushback', tick: sim.world.tick, callsign: ac.callsign, gate: r.gate });
-  return true;
 }
 
-/** A departure plan's tracks, and everything the departure covers on them. Cached; don't change them. */
-function departureTracks(sim: Sim, gate: GateId, type: AircraftTypeCode): { plan: DeparturePlan; push: Track; out: Track; elements: string[] } {
-  const key = `${gate}|${type}`;
+/** Whether an aircraft on the ground that isn't the ramp's is within TAXIWAY_PUSH_CLEAR_M of any taxiway among `edges`. */
+function groundTrafficNear(sim: Sim, self: Aircraft, edges: EdgeId[]): boolean {
+  const lines = [...new Set(edges)].map((id) => edgeOf(sim.index, id)).filter((e) => e.kind === 'taxiway').map((e) => edgePolyline(sim.index, e));
+  for (const ac of sim.world.aircraft) {
+    if (ac === self || ac.airborne || ac.controller === 'ramp') continue;
+    for (const corner of footprintOf(ac)) {
+      for (const line of lines) {
+        for (let i = 1; i < line.length; i++) {
+          const [a, b] = [line[i - 1], line[i]];
+          if (a && b && distanceToSegment(corner, a, b) <= TAXIWAY_PUSH_CLEAR_M) return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function distanceToSegment(p: Point, a: Point, b: Point): number {
+  const [dx, dy] = [b[0] - a[0], b[1] - a[1]];
+  const len2 = dx * dx + dy * dy;
+  const t = len2 === 0 ? 0 : Math.min(1, Math.max(0, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2));
+  return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
+}
+
+/** A departure plan's tracks. Cached; don't change them. */
+function departureTracks(sim: Sim, gate: GateId, type: AircraftTypeCode, i: number): { plan: DeparturePlan; push: Track; out: Track } {
+  const key = `${gate}|${type}|${i}`;
   const cached = sim.ramp.departureTracks.get(key);
   if (cached) return cached;
-  const plan = departurePlanFor(sim, gate, type);
-  if ('unable' in plan) throw new Error(`a ${type} at ${gate}: ${plan.unable}`);
-  const push = buildTrack(sim.index, plan.push.nodes, plan.push.edges);
-  const out = buildTrack(sim.index, plan.out.nodes, plan.out.edges);
-  const from = plan.pushTo - AIRCRAFT_TYPES[type].lengthM;
-  const elements = [...new Set([...elementsOf(push, from, push.lengthM), ...elementsOf(out, from, out.lengthM)])];
-  const tracks = { plan, push, out, elements };
+  const plans = departurePlansFor(sim, gate, type);
+  const plan = 'unable' in plans ? undefined : plans[i];
+  if (!plan) throw new Error(`a ${type} at ${gate}: no plan ${i}`);
+  const tracks = { plan, push: buildTrack(sim.index, plan.push.nodes, plan.push.edges), out: buildTrack(sim.index, plan.out.nodes, plan.out.edges) };
   sim.ramp.departureTracks.set(key, tracks);
   return tracks;
 }
@@ -817,26 +917,28 @@ function copyTrack(track: Track): Track {
 /** The tug's gone: it taxis forward from the push point to the ramp edge (movement.ts moves it). */
 function startTaxiOut(sim: Sim, r: RampAircraft): void {
   const ac = aircraftOf(sim, r.callsign);
-  const { plan, out } = departureTracks(sim, r.gate, ac.type);
+  if (r.plan === null) throw new Error(`${ac.callsign}: taxiing out with no plan`);
+  const { plan, out } = departureTracks(sim, r.gate, ac.type, r.plan);
   // The taxi-out track shares the push track up to the push point, so the nose keeps its place.
-  const track = copyTrack(out);
+  setLeg(sim, ac.callsign, 1);
   Object.assign(r, { phase: 'taxi-out', since: sim.world.tick, pushTo: null, pilotCruiseMps: ac.cruiseMps });
-  Object.assign(ac, { track, s: plan.pushTo, v: 0, motion: 'taxi', status: 'taxiing', cruiseMps: Math.min(ac.cruiseMps, RAMP_TAXI_KT * KNOT_MPS) });
+  Object.assign(ac, { track: copyTrack(out), s: plan.pushTo, v: 0, motion: 'taxi', status: 'taxiing', cruiseMps: Math.min(ac.cruiseMps, RAMP_TAXI_KT * KNOT_MPS) });
 }
 
 // ---------------------------------------------------------------------------------------------
 // Moving the ramp's aircraft
 
 /**
- * Moves the aircraft the ramp moves itself (motion 'controller'): pushbacks. Then, after
- * movement.ts has moved the ones taxiing, hands departures stopped at the ramp edge to ground.
+ * Moves the aircraft the ramp moves itself (motion 'controller'): pushbacks, as far as their
+ * reservation goes. Then, after movement.ts has moved the ones taxiing, hands departures stopped
+ * at the ramp edge to ground, and parks arrivals at their gates.
  */
 export function rampMove(sim: Sim): void {
   const ramp = sim.world.ramp;
   for (const r of [...ramp.aircraft]) {
     if (r.phase === 'taxi-out' || r.phase === 'taxi-in') {
       const ac = aircraftOf(sim, r.callsign);
-      if (ac.v !== 0 || ac.s !== ac.track.lengthM) continue;
+      if (ac.v !== 0 || ac.s !== ac.track.lengthM || !holdsEnd(sim, ac.callsign)) continue;
       if (r.phase === 'taxi-out') checkIn(sim, r, ac);
       else park(sim, r, ac);
     }
@@ -844,27 +946,30 @@ export function rampMove(sim: Sim): void {
     const ac = aircraftOf(sim, r.callsign);
     const pushTo = r.pushTo;
     if (pushTo === null) throw new Error(`${ac.callsign}: pushing back with nowhere to stop`);
-    const vMax = Math.min(PUSH_SPEED_MPS, safeSpeed(ac.s - pushTo, 0, PUSH_DECEL_MPS2));
+    const stopAt = Math.max(pushTo, reservedStop(sim, ac)?.at ?? pushTo);
+    const vMax = Math.min(PUSH_SPEED_MPS, safeSpeed(ac.s - stopAt, 0, PUSH_DECEL_MPS2));
     let v = Math.min(ac.v + PUSH_ACCEL_MPS2 * TICK_S, vMax);
     v = Math.max(v, ac.v - PUSH_DECEL_MPS2 * TICK_S, 0);
     let s = ac.s - v * TICK_S;
-    if (s <= pushTo + STOP_SNAP_M && v <= PUSH_DECEL_MPS2 * TICK_S) [s, v] = [pushTo, 0];
-    [ac.s, ac.v] = [Math.max(s, pushTo), v];
+    if (s <= stopAt + STOP_SNAP_M && v <= PUSH_DECEL_MPS2 * TICK_S) [s, v] = [stopAt, 0];
+    [ac.s, ac.v] = [Math.max(s, stopAt), v];
     if (ac.s === pushTo && ac.v === 0) [r.phase, r.since] = ['pushed', sim.world.tick];
   }
 }
 
-/** At its gate: parked, holding the gate. "Arrived at gate" is the arrival's scoring point. */
+/** At its gate: parked, holding the gate for good. "Arrived at gate" is the arrival's scoring point. */
 function park(sim: Sim, r: RampAircraft, ac: Aircraft): void {
+  finishMovement(sim, ac.callsign);
   Object.assign(ac, { motion: 'controller', status: 'parked', cruiseMps: r.pilotCruiseMps ?? ac.cruiseMps, blockedBy: null });
-  Object.assign(r, { phase: 'parked', since: sim.world.tick, reserved: [], pilotCruiseMps: null });
+  Object.assign(r, { phase: 'parked', since: sim.world.tick, pilotCruiseMps: null });
   emit(sim, { type: 'arrived-at-gate', tick: sim.world.tick, callsign: ac.callsign, gate: r.gate });
 }
 
-/** At the ramp edge: the pilot calls ground. It's ground's, and off the ramp's books. */
+/** At the ramp edge: the pilot calls ground. It's ground's, and off the ramp's books (its reservation lets go once it's clear). */
 function checkIn(sim: Sim, r: RampAircraft, ac: Aircraft): void {
   const handoff = sim.index.airport.rampHandoffs.find((h) => h.id === r.rampHandoff);
   if (!handoff) throw new Error(`${ac.callsign}: checking in at unknown ramp edge ${r.rampHandoff}`);
+  finishMovement(sim, ac.callsign);
   Object.assign(ac, { controller: 'ground', status: 'idle', cruiseMps: r.pilotCruiseMps ?? ac.cruiseMps, blockedBy: null });
   sim.world.ramp.aircraft = sim.world.ramp.aircraft.filter((x) => x !== r);
   const atis = ac.advisories.atis?.letter ?? null;

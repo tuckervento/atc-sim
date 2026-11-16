@@ -8,7 +8,7 @@ import testAirport from '../../data/airports/TEST.json' with { type: 'json' };
 import { indexAirport } from '../airport/graph.ts';
 import { loadAirport } from '../airport/load.ts';
 import { AIRCRAFT_TYPES } from './aircraft-types.ts';
-import { departurePlanFor } from './ramp.ts';
+import { departurePlanFor, departurePlansFor } from './ramp.ts';
 import { addAircraft, applyCommand, createSim, drainEvents, footprintsOverlap, getAircraft, getGate, removeAircraft, step, type Sim, type SimEvent } from './sim.ts';
 import { parseTerse } from './terse.ts';
 
@@ -46,17 +46,43 @@ describe('gates', () => {
     expect(sim.world.aircraft.map((a) => a.callsign)).toEqual(['DAL2']);
   });
 
-  it("refuses a departure at a gate it can't push back from, but parks an arrival there (TEST T1-3, at lane 7's dead end)", () => {
+  it("a departure at T1-3 (lane 7's dead end) swings its tail into a free neighbouring stand, claimed from the start; with none free it's refused, but an arrival parks there (TEST)", () => {
+    // From l7B the only lane runs back toward the ramp edge: pushed onto it, the nose would face
+    // the dead end. Pushed on down to l7A, the tail can swing into T1-1's or T1-2's stand.
     const sim = createSim(TEST, { seed: 1 });
-    // From l7B the only lane is back toward the ramp edge: pushed onto it, the nose would face the dead end.
-    expect(() => addAircraft(sim, { callsign: 'DAL1', type: 'A320', at: { kind: 'gate', gate: 'T1-3' } })).toThrow(
-      'DAL1: gate T1-3 has no pushback for a A320 that ends facing a way to a ramp edge for T1 (within 400 m, turns up to 135°)',
-    );
-    expect(sim.world.aircraft).toEqual([]);
-    addAircraft(sim, { callsign: 'DAL2', type: 'A320', role: 'arrival', at: { kind: 'gate', gate: 'T1-3' } });
+    addAircraft(sim, { callsign: 'DAL1', type: 'A320', at: { kind: 'gate', gate: 'T1-3' } });
+    const claimed = ['T1-1', 'T1-2'].filter((g) => getGate(sim, g).occupant === 'DAL1');
+    expect(claimed).toHaveLength(1);
+    const events = runUntil(sim, (e) => e.type === 'check-in', 15 * 60 * 10);
+    expect(events.map((e) => e.type)).toEqual(['pushback', 'check-in']);
+    expect(getGate(sim, claimed[0] ?? '').occupant).toBeNull();
+    // An arrival parks there with nothing claimed.
+    const parked = createSim(TEST, { seed: 1 });
+    addAircraft(parked, { callsign: 'DAL2', type: 'A320', role: 'arrival', at: { kind: 'gate', gate: 'T1-3' } });
+    step(parked, 3000);
+    expect(getAircraft(parked, 'DAL2')).toMatchObject({ status: 'parked', controller: 'ramp', role: 'arrival' });
+    expect(['T1-1', 'T1-2', 'T1-3'].map((g) => getGate(parked, g).occupant)).toEqual([null, null, 'DAL2']);
+  });
+
+  it("with both neighbouring stands taken, T1-3's departure pushes out past the ramp edge onto taxiway A instead, but only once ground's traffic is 250 m clear (TEST)", () => {
+    const sim = createSim(TEST, { seed: 1 });
+    addAircraft(sim, { callsign: 'ARR1', type: 'A320', role: 'arrival', at: { kind: 'gate', gate: 'T1-1' } });
+    addAircraft(sim, { callsign: 'ARR2', type: 'A320', role: 'arrival', at: { kind: 'gate', gate: 'T1-2' } });
+    // Ground's, stopped on A 200 m east of a7 (the stub's foot), facing east.
+    addAircraft(sim, { callsign: 'JBU9', type: 'A320', at: { kind: 'edge', edge: 'a7-aD', from: 'a7', distanceM: 200 } });
+    addAircraft(sim, { callsign: 'DAL1', type: 'A320', at: { kind: 'gate', gate: 'T1-3' } });
+    const plans = departurePlansFor(sim, 'T1-3', 'A320');
+    const plan = 'unable' in plans ? null : plans[sim.world.ramp.aircraft.find((r) => r.callsign === 'DAL1')?.plan ?? -1];
+    expect(plan).toMatchObject({ swing: null, taxiway: true, rampHandoff: 'rh7' });
     step(sim, 3000);
-    expect(getAircraft(sim, 'DAL2')).toMatchObject({ status: 'parked', controller: 'ramp', role: 'arrival' });
-    expect(getGate(sim, 'T1-3').occupant).toBe('DAL2');
+    expect(drainEvents(sim).filter((e) => e.callsign === 'DAL1')).toEqual([]);
+    expect(getAircraft(sim, 'DAL1').status).toBe('parked');
+    // JBU9 moves off: DAL1 pushes, ends on A at a7, and calls ground there.
+    removeAircraft(sim, 'JBU9');
+    const events = runUntil(sim, (e) => e.type === 'check-in', 15 * 60 * 10);
+    expect(events.map((e) => e.type)).toEqual(['pushback', 'check-in']);
+    expect(events.at(-1)).toMatchObject({ callsign: 'DAL1', rampHandoff: 'rh7' });
+    expect(getAircraft(sim, 'DAL1')).toMatchObject({ controller: 'ground', location: { kind: 'node', node: 'a7' } });
   });
 });
 
@@ -114,46 +140,60 @@ describe('ramp routes', () => {
   it.each([
     ['TEST', TEST],
     ['KJFK', KJFK],
-  ])('every departure plan at %s stays on open ramp lanes, out of other stands, off every runway', (_name, index) => {
+  ])('every departure plan at %s stays on open ramp lanes (and only the stand it swings into, or taxiways outside runway areas), off every runway', (_name, index) => {
     const sim = createSim(index, { seed: 1 });
     const onRunway = new Set(index.airport.edges.filter((e) => e.kind === 'runway').flatMap((e) => [e.from, e.to]));
     const counts: Record<string, number> = {};
     for (const type of ['A320', 'B77W'] as const) {
       for (const gate of index.airport.gates) {
-        const plan = departurePlanFor(sim, gate.id, type);
-        if ('unable' in plan) {
+        const plans = departurePlansFor(sim, gate.id, type);
+        if ('unable' in plans) {
           counts[`${type} unable`] = (counts[`${type} unable`] ?? 0) + 1;
           continue;
         }
         counts[`${type} ok`] = (counts[`${type} ok`] ?? 0) + 1;
-        // Its own stand's edges are the only stand edges it uses.
-        const stand = sim.ramp.stands.get(gate.id);
-        const own = new Set(stand && 'edges' in stand ? stand.edges : []);
-        for (const way of [plan.push, plan.out]) {
-          for (const id of way.edges) {
-            const edge = index.edges.get(id);
-            expect(edge?.kind).toBe('rampLane');
-            expect(edge?.closed).toBeUndefined();
-            if (!own.has(id)) expect(sim.ramp.standEdges.has(id)).toBe(false);
+        for (const plan of plans) {
+          // Its own stand's edges, and the stand it swings into if any, are the only stand edges it uses.
+          const standOf = (id: string | null) => {
+            const stand = id === null ? undefined : sim.ramp.stands.get(id);
+            return stand && 'edges' in stand ? stand.edges : [];
+          };
+          const own = new Set([...standOf(gate.id), ...standOf(plan.swing)]);
+          let taxiway = false;
+          for (const way of [plan.push, plan.out]) {
+            for (const id of way.edges) {
+              const edge = index.edges.get(id);
+              expect(edge?.closed).toBeUndefined();
+              expect(edge?.kind).not.toBe('runway');
+              if (edge?.kind === 'taxiway') {
+                taxiway = true;
+                expect(sim.runwayAreas.has(id)).toBe(false);
+              } else if (!own.has(id)) expect(sim.ramp.standEdges.has(id)).toBe(false);
+            }
+            for (const n of way.nodes) expect(onRunway.has(n)).toBe(false);
           }
-          for (const n of way.nodes) expect(onRunway.has(n)).toBe(false);
+          expect(plan.taxiway).toBe(taxiway);
+          // It leaves by a ramp edge serving the gate's terminal, and ends on its node, or (pushed
+          // out past it) on the taxiway just beyond it, with no taxi-out.
+          const handoff = index.airport.rampHandoffs.find((h) => h.id === plan.rampHandoff);
+          expect(handoff?.use).not.toBe('arrivals');
+          expect(handoff?.terminals ?? [gate.terminal]).toContain(gate.terminal);
+          if (plan.out.nodes.at(-1) !== handoff?.node) {
+            expect(plan.out.lengthM).toBe(plan.pushTo);
+            expect(plan.push.nodes).toContain(handoff?.node);
+          }
+          // The push ends at the gate; the tail has the aircraft's length behind the push point.
+          expect(plan.push.nodes.at(-1)).toBe(gate.node);
+          expect(plan.pushTo).toBeGreaterThanOrEqual(AIRCRAFT_TYPES[type].lengthM);
         }
-        // It leaves by a ramp edge serving the gate's terminal, and ends on its node.
-        const handoff = index.airport.rampHandoffs.find((h) => h.id === plan.rampHandoff);
-        expect(handoff?.use).not.toBe('arrivals');
-        expect(handoff?.terminals ?? [gate.terminal]).toContain(gate.terminal);
-        expect(plan.out.nodes.at(-1)).toBe(handoff?.node);
-        // The push ends at the gate; the tail has the aircraft's length behind the push point.
-        expect(plan.push.nodes.at(-1)).toBe(gate.node);
-        expect(plan.pushTo).toBeGreaterThanOrEqual(AIRCRAFT_TYPES[type].lengthM);
       }
     }
-    // How many gates each type can use. TEST's T1-3 has no pushback, and its 70–80 m stands are too
-    // short for a B77W. KJFK's are floors: the data may only get better.
-    if (index === TEST) expect(counts).toEqual({ 'A320 ok': 4, 'A320 unable': 1, 'B77W unable': 5 });
+    // How many gates each type can use. TEST's T1-3 swings into T1-1's or T1-2's stand; its 70–80 m
+    // stands are too short for a B77W. KJFK's are floors: the data may only get better.
+    if (index === TEST) expect(counts).toEqual({ 'A320 ok': 5, 'B77W unable': 5 });
     else {
-      expect(counts['A320 ok']).toBeGreaterThanOrEqual(123);
-      expect(counts['B77W ok']).toBeGreaterThanOrEqual(58);
+      expect(counts['A320 ok']).toBeGreaterThanOrEqual(147);
+      expect(counts['B77W ok']).toBeGreaterThanOrEqual(73);
     }
   });
 });
@@ -274,36 +314,41 @@ describe('a busy lane', () => {
   };
   const tickOf = (events: SimEvent[], type: string, callsign: string) => events.find((e) => e.type === type && e.callsign === callsign)?.tick ?? NaN;
 
-  it('an arrival at the entrance waits there, ground\'s, while a departure pushes into its lane and taxis out (TEST T2)', () => {
+  /** Steps until both have finished (BAW1 parked, UAE5 checked in), failing on any footprint overlap. */
+  const finish = (sim: Sim, events: SimEvent[]) => {
+    for (let t = 0; t < 15 * 60 * 10 && !(events.some((e) => e.type === 'check-in') && events.some((e) => e.type === 'arrived-at-gate')); t++) {
+      step(sim, 1);
+      events.push(...drainEvents(sim));
+      expect(footprintsOverlap(sim, 'UAE5', 'BAW1')).toBe(false);
+    }
+    expect(events.filter((e) => e.type === 'check-in' || e.type === 'arrived-at-gate').map((e) => e.callsign).sort()).toEqual(['BAW1', 'UAE5']);
+  };
+
+  it('an arrival handed off while a departure pushes into its lane is taken in as soon as it can clear the entrance, waits on the ramp lane short of the departure, and follows it in (TEST T2)', () => {
     const sim = setup(1);
     const events = runUntil(sim, (e) => e.type === 'pushback', 1000);
     transmit(sim, 'BAW1 taxi ramp via TC, monitor ramp');
-    events.push(...runUntil(sim, (e) => e.type === 'arrived', 1000));
-    // At the entrance during the push: it stays there, ground's, with its gate held.
-    for (let t = 0; t < 10 * 60 * 10 && !events.some((e) => e.type === 'check-in'); t++) {
-      step(sim, 1);
-      events.push(...drainEvents(sim));
-      if (events.some((e) => e.type === 'check-in')) break;
-      expect(getAircraft(sim, 'BAW1')).toMatchObject({ controller: 'ground', status: 'arrived', speedMps: 0 });
-    }
-    expect(getGate(sim, 'T2-B1').occupant).toBe('BAW1');
-    events.push(...runUntil(sim, (e) => e.type === 'arrived-at-gate', 10 * 60 * 10));
-    expect(tickOf(events, 'arrived', 'BAW1')).toBeLessThan(tickOf(events, 'check-in', 'UAE5'));
-    expect(tickOf(events, 'ramp-accepted', 'BAW1')).toBeGreaterThanOrEqual(tickOf(events, 'check-in', 'UAE5'));
+    finish(sim, events);
+    // Taken in during the push (1.11 kept it at the entrance, ground's, until the departure had
+    // checked in), it stopped for the departure on the way, and parked before it checked in.
+    expect(tickOf(events, 'ramp-accepted', 'BAW1')).toBe(tickOf(events, 'arrived', 'BAW1') + 1);
+    expect(tickOf(events, 'ramp-accepted', 'BAW1')).toBeLessThan(tickOf(events, 'check-in', 'UAE5'));
+    expect(events.find((e) => e.type === 'stopped-for-traffic' && e.callsign === 'BAW1')).toMatchObject({ behind: 'UAE5' });
+    expect(tickOf(events, 'arrived-at-gate', 'BAW1')).toBeLessThan(tickOf(events, 'check-in', 'UAE5'));
   });
 
-  it("a departure doesn't push into the lane an arrival is taxiing in along: it waits at the gate until the arrival has parked (TEST T2)", () => {
+  it('an arrival taxiing in goes first: a departure that becomes ready after it was taken in waits at its gate until the arrival is past, and the arrival never stops for it (TEST T2, seed 4)', () => {
     const sim = setup(4);
     transmit(sim, 'BAW1 taxi ramp via TC, monitor ramp');
     const readyTick = sim.world.ramp.aircraft.find((r) => r.callsign === 'UAE5')?.readyTick ?? NaN;
-    const events = runUntil(sim, (e) => e.type === 'arrived-at-gate', 10 * 60 * 10);
-    // UAE5 was ready to push while BAW1 was on its way in, and stayed parked.
+    const events = runUntil(sim, (e) => e.type === 'pushback', 15 * 60 * 10);
     expect(readyTick).toBeGreaterThan(tickOf(events, 'ramp-accepted', 'BAW1'));
-    expect(readyTick).toBeLessThan(sim.world.tick);
-    expect(events.some((e) => e.type === 'pushback')).toBe(false);
-    expect(getAircraft(sim, 'UAE5')).toMatchObject({ status: 'parked', speedMps: 0 });
-    events.push(...runUntil(sim, (e) => e.type === 'check-in', 10 * 60 * 10));
-    expect(tickOf(events, 'pushback', 'UAE5')).toBeGreaterThanOrEqual(tickOf(events, 'arrived-at-gate', 'BAW1'));
+    // It waited at B2 well past its ready tick (it pushed at once before), and pushed only once
+    // BAW1 was off the lane, on B1's lead-in: then nothing BAW1 still had to do crossed its way.
+    expect(sim.world.tick).toBeGreaterThan(readyTick + 60 * 10);
+    expect(getAircraft(sim, 'BAW1').location).toMatchObject({ kind: 'edge', edge: 'tdA-gB1' });
+    finish(sim, events);
+    expect(events.filter((e) => e.type === 'stopped-for-traffic' && e.callsign === 'BAW1')).toEqual([]);
   });
 });
 
@@ -326,8 +371,8 @@ describe('departure streams', () => {
     expect(one.length).toBeGreaterThanOrEqual(12);
     expect(one.length).toBeLessThanOrEqual(13);
     expect(one[0]?.[0]).toBe(1);
-    // T1-3 has no pushback, so only T1-1 and T1-2.
-    expect(new Set(one.map(([, , g]) => g))).toEqual(new Set(['T1-1', 'T1-2']));
+    // T1-3 pushes by swinging into T1-1's or T1-2's stand when one's free, so all three are used.
+    expect(new Set(one.map(([, , g]) => g))).toEqual(new Set(['T1-1', 'T1-2', 'T1-3']));
     for (let i = 1; i < one.length; i++) {
       const gap = ((one[i]?.[0] ?? NaN) - (one[i - 1]?.[0] ?? NaN)) / 10;
       expect(gap).toBeGreaterThanOrEqual(300 * 0.85);
@@ -339,7 +384,7 @@ describe('departure streams', () => {
 });
 
 describe('paths that only meet at a junction', () => {
-  it("are taken one at a time: two departures whose ways out cross at one node don't meet there (KJFK T4, out by HB and by G)", () => {
+  it("two departures whose ways out cross at one node both go, at once where they can, and never overlap (KJFK T4, out by HB and by G)", () => {
     const sim = createSim(KJFK, { seed: 1 });
     addAircraft(sim, { callsign: 'DAL1', type: 'A320', at: { kind: 'gate', gate: 'g744203522' } });
     addAircraft(sim, { callsign: 'DAL2', type: 'A320', at: { kind: 'gate', gate: 'g744203549' } });
@@ -359,15 +404,14 @@ describe('paths that only meet at a junction', () => {
       expect(footprintsOverlap(sim, 'DAL1', 'DAL2')).toBe(false);
     }
     expect(events.filter((e) => e.type === 'check-in').map((e) => e.callsign).sort()).toEqual(['DAL1', 'DAL2']);
-    expect(events.filter((e) => e.type === 'stopped-for-traffic')).toEqual([]);
-    // The second pushes only once the first is out.
-    const [first, second] = events.filter((e) => e.type === 'pushback');
-    expect(second?.tick ?? NaN).toBeGreaterThanOrEqual(events.find((e) => e.type === 'check-in' && e.callsign === first?.callsign)?.tick ?? NaN);
+    // No longer one at a time (1.11 held whole paths): both push before either has checked in.
+    const [, second] = events.filter((e) => e.type === 'pushback');
+    expect(second?.tick ?? NaN).toBeLessThan(events.find((e) => e.type === 'check-in')?.tick ?? NaN);
   });
 });
 
 describe('removing an aircraft', () => {
-  it('frees its gate and whatever it held: a waiting arrival goes in once the departure pushing ahead of it is removed (TEST T2)', () => {
+  it('frees its gate and whatever it held: an arrival waiting for the departure pushing ahead of it moves on once that one is removed (TEST T2)', () => {
     const sim = createSim(TEST, { seed: 1 });
     addAircraft(sim, { callsign: 'AFR9', type: 'A320', role: 'arrival', at: { kind: 'gate', gate: 'T2-B1' } });
     removeAircraft(sim, 'AFR9');
@@ -377,13 +421,15 @@ describe('removing an aircraft', () => {
     addAircraft(sim, { callsign: 'BAW1', type: 'A320', role: 'arrival', airline: 'BAW', terminal: 'T2', at: { kind: 'node', node: 'aTC', arrivedVia: 'aTC-aJ' } });
     runUntil(sim, (e) => e.type === 'pushback', 1000);
     transmit(sim, 'BAW1 taxi ramp via TC, monitor ramp');
-    runUntil(sim, (e) => e.type === 'arrived', 1000);
+    // Taken in, it stops on the lane for UAE5.
+    runUntil(sim, (e) => e.type === 'stopped-for-traffic' && e.callsign === 'BAW1', 3000);
     step(sim, 50);
-    expect(getAircraft(sim, 'BAW1').controller).toBe('ground');
+    expect(getAircraft(sim, 'BAW1')).toMatchObject({ controller: 'ramp', speedMps: 0, blockedBy: 'UAE5' });
     removeAircraft(sim, 'UAE5');
     expect(getGate(sim, 'T2-B2').occupant).toBeNull();
-    const events = runUntil(sim, (e) => e.type === 'ramp-accepted', 2);
-    expect(events.map((e) => e.type)).toEqual(['ramp-accepted']);
+    expect(sim.world.reservations.movements.map((m) => m.id)).toEqual(['BAW1']);
+    step(sim, 50);
+    expect(getAircraft(sim, 'BAW1').speedMps).toBeGreaterThan(0);
   });
 });
 

@@ -307,18 +307,21 @@ describe('determinism', () => {
 });
 
 describe('footprints', () => {
-  it('overlap when bodies share pavement (nose into tail, or a wingtip across a junction), and not with a gap', () => {
+  it('overlap when bodies share pavement (nose into tail), and not with a gap, nor with a nose stopped beside another nose at a junction', () => {
     const sim = createSim(TEST, { seed: 1 });
     // A is straight east–west at y = 200: a7 is x = −800, aD x = −300. A320: 37.6 m long, 35.8 m span.
     addAircraft(sim, { callsign: 'LEAD1', type: 'A320', at: { kind: 'node', node: 'aD', arrivedVia: 'a7-aD' } });
     addAircraft(sim, { callsign: 'CLOSE1', type: 'A320', at: { kind: 'edge', edge: 'a7-aD', from: 'a7', distanceM: 470 } });
     addAircraft(sim, { callsign: 'GAP1', type: 'A320', at: { kind: 'edge', edge: 'a7-aD', from: 'a7', distanceM: 400 } });
     // Northbound on D toward aD (x = −300; dI is y = 150): nose 10 m short of A's centreline, and 50 m short.
+    // WING1's nose is beside LEAD1's: 7.9 m short of LEAD1's fuselage side (half of 0.11 × 37.6 m
+    // off the centreline), and ahead of LEAD1's wing, which starts 11.3 m behind its nose
+    // (footprint.ts). Real aircraft there don't touch; a span × length box said they did.
     addAircraft(sim, { callsign: 'WING1', type: 'A320', at: { kind: 'edge', edge: 'aD-dI', from: 'dI', distanceM: 40 } });
     addAircraft(sim, { callsign: 'CLEAR1', type: 'A320', at: { kind: 'node', node: 'dI', arrivedVia: 'dI-dHN' } });
     expect(footprintsOverlap(sim, 'LEAD1', 'CLOSE1')).toBe(true);
     expect(footprintsOverlap(sim, 'LEAD1', 'GAP1')).toBe(false);
-    expect(footprintsOverlap(sim, 'LEAD1', 'WING1')).toBe(true);
+    expect(footprintsOverlap(sim, 'LEAD1', 'WING1')).toBe(false);
     expect(footprintsOverlap(sim, 'LEAD1', 'CLEAR1')).toBe(false);
   });
 });

@@ -36,13 +36,13 @@ interface Shape {
 }
 
 /**
- * Pairs of aircraft on the ground whose footprints overlap, where at least one is moving (two
- * parked aircraft don't change). A bounding-box test first, then the exact one.
+ * Pairs of aircraft on the ground whose rigid footprints overlap (footprint.ts, as
+ * footprintsOverlap): every pair, parked ones included. A bounding-box test first, then the
+ * exact one. A parked aircraft's shape is kept until its status changes.
  */
 function overlaps(sim: Sim, parkedShapes: Map<string, Shape>): string[] {
   const ground = sim.world.aircraft.filter((a) => !a.airborne);
   const moving = (a: (typeof ground)[number]) => a.v > 0 || a.status === 'pushing-back';
-  if (!ground.some(moving)) return [];
   const shapes = ground.map((a) => {
     // A parked aircraft doesn't move until its status changes: its shape is kept.
     const kept = a.status === 'parked' ? parkedShapes.get(a.callsign) : undefined;
@@ -59,7 +59,7 @@ function overlaps(sim: Sim, parkedShapes: Map<string, Shape>): string[] {
   for (let i = 0; i < shapes.length; i++) {
     for (let j = i + 1; j < shapes.length; j++) {
       const [p, q] = [shapes[i], shapes[j]];
-      if (!p || !q || (!p.moving && !q.moving)) continue;
+      if (!p || !q) continue;
       if (p.box[2] <= q.box[0] || q.box[2] <= p.box[0] || p.box[3] <= q.box[1] || q.box[3] <= p.box[1]) continue;
       if (polygonsOverlap(p.corners, q.corners)) found.push(`${p.callsign}/${q.callsign}`);
     }
@@ -137,7 +137,7 @@ function run(scenario: Scenario, seed: number): { ticks: number; checkIns: numbe
  * ramp), and removes parked arrivals after a 1-minute turnaround. Checks every tick that on the
  * ground, motion is backward only in a pushback. Returns the state hash every 10 minutes.
  */
-function longRun(seed: number): { hashes: string[]; counts: Record<string, number> } {
+function longRun(seed: number): { hashes: string[]; counts: Record<string, number>; leaving: number } {
   const sim = createSim(TEST, {
     seed,
     arrivals: [{ runwayEnd: '27', perHour: 8, flight: (n) => ({ callsign: `BAW${n + 1}`, type: n % 3 ? 'A320' : 'B738', airline: 'BAW', terminal: 'T2' }) }],
@@ -195,7 +195,8 @@ function longRun(seed: number): { hashes: string[]; counts: Record<string, numbe
     last = now;
     if (t % (10 * 60 * 10) === 0) hashes.push(stateHash(sim));
   }
-  return { hashes, counts };
+  const leaving = sim.world.ramp.aircraft.filter((r) => ['pushback', 'pushed', 'taxi-out'].includes(r.phase)).length;
+  return { hashes, counts, leaving };
 }
 
 describe('ramp and tower together', () => {
@@ -203,7 +204,8 @@ describe('ramp and tower together', () => {
     const first = longRun(1);
     // It flowed: departures pushed, checked in and took off; arrivals reached their gates.
     expect(first.counts['pushback']).toBeGreaterThanOrEqual(20);
-    expect(first.counts['check-in']).toBe(first.counts['pushback']);
+    // Every pushback has checked in, or is still on its way out at the end.
+    expect((first.counts['check-in'] ?? 0) + first.leaving).toBe(first.counts['pushback']);
     expect(first.counts['took-off']).toBeGreaterThanOrEqual(18);
     expect(first.counts['arrived-at-gate']).toBeGreaterThanOrEqual(8);
     expect(first.hashes).toHaveLength(12);
@@ -227,7 +229,8 @@ describe('opposing ramp movements in one lane', () => {
       // Every type T2's 80 m stands take.
       types: ['E175', 'A320', 'A321', 'B738', 'B739', 'B763'],
       arrivalGapS: 150,
-      boundTicks: 30 * 60 * 10,
+      // Measured with granular reservations: 8.1 min at worst over these seeds (the bound was 30 with 1.11's whole-path holds).
+      boundTicks: 9 * 60 * 10,
     };
     for (let seed = 1; seed <= 100; seed++) {
       expect(run(scenario, seed)).toMatchObject({ checkIns: 2, atGate: 2 });
@@ -240,7 +243,18 @@ describe('opposing ramp movements in one lane', () => {
     // arrivals' gates (and the departures', once they've left).
     const alley = ['g1009800793', 'g1009800794', 'g1009800795', 'g1009800796', 'g1009800797', 'g1009800798'];
     const probe = createSim(KJFK, { seed: 1 });
-    const fillers = KJFK.airport.gates.filter((g) => g.terminal === 'T4' && !alley.includes(g.id) && !('unable' in departurePlanFor(probe, g.id, 'E175')));
+    // Fillers go at every other T4 gate where a parked E175 is clear of the fillers already
+    // placed (some neighbouring KJFK stands are closer than two rigid footprints).
+    const fillers: string[] = [];
+    for (const g of KJFK.airport.gates) {
+      if (g.terminal !== 'T4' || alley.includes(g.id) || 'unable' in departurePlanFor(probe, g.id, 'E175')) continue;
+      try {
+        addAircraft(probe, { callsign: `PRK${fillers.length + 1}`, type: 'E175', role: 'arrival', at: { kind: 'gate', gate: g.id } });
+        fillers.push(g.id);
+      } catch (e) {
+        if (!String(e).includes('is blocked')) throw e;
+      }
+    }
     const scenario: Scenario = {
       index: KJFK,
       departures: [
@@ -253,8 +267,10 @@ describe('opposing ramp movements in one lane', () => {
       // The types all six gates take.
       types: ['E175', 'A320', 'B738'],
       arrivalGapS: 120,
-      parked: fillers.map((g, i) => ({ callsign: `PRK${i + 1}`, type: 'E175', gate: g.id })),
-      boundTicks: 40 * 60 * 10,
+      parked: fillers.map((gate, i) => ({ callsign: `PRK${i + 1}`, type: 'E175', gate })),
+      // Measured with granular reservations: 9.9 min at worst, 7.7 median (17–20 with 1.11's whole-path holds).
+      // The arrival feed alone can bring the third arrival to KG as late as about 8.5 min.
+      boundTicks: 11 * 60 * 10,
     };
     expect(fillers.length).toBeGreaterThan(0);
     for (let seed = 1; seed <= 100; seed++) {

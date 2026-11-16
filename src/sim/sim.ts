@@ -38,6 +38,7 @@ import { APPROACH_SPEED_MPS, dropAircraft, FINAL_SPAWN_M, finalOfArrival, initia
 import { adoptAtGate, gateOccupant, initialRampState, placeAtGate, rampDecide, rampDrop, rampMove, rampSetup, rampSpawns, type RampOptions } from './ramp.ts';
 import { checkRules, initialRulesState } from './rules.ts';
 import { initialScore, recordScore, scoreView, type ScoreView } from './score.ts';
+import { dropMovement, initialReservations, updateReservations } from './reservations.ts';
 import { occupancyOf } from './traffic.ts';
 import { runwayAreas, runwaysOccupied } from './occupancy.ts';
 import { createRng, nextInRange } from './rng.ts';
@@ -78,6 +79,7 @@ export function createSim(index: AirportIndex, options: SimOptions): Sim {
     session: { state: 'running' } as const,
     rules: initialRulesState(),
     score: initialScore(),
+    reservations: initialReservations(),
   };
   return { index, world, events: [], runwayAreas: areas, tower, ramp };
 }
@@ -233,14 +235,16 @@ export function removeAircraft(sim: Sim, callsign: string): void {
   if (!sim.world.aircraft.some((a) => a.callsign === callsign)) throw new Error(`no aircraft ${callsign}`);
   dropAircraft(sim, callsign);
   rampDrop(sim, callsign);
+  dropMovement(sim, callsign);
 }
 
 /**
  * One tick, in this order (world.ts, "Controllers"):
  * 1. The tick count goes up. Events of this tick carry the new count.
  * 2. The controllers decide, on the state as the last tick left it: the tower's arrival streams
- *    spawn, then the tower decides (towerDecide); the ramp's departure streams spawn at gates,
- *    then the ramp decides (rampDecide).
+ *    spawn, then the tower decides (towerDecide); the reservations give back what movements have
+ *    left and grant them more ahead (updateReservations); the ramp's departure streams spawn at
+ *    gates, then the ramp decides (rampDecide).
  * 3. Every body's place is taken (traffic.ts): the start of this tick's movement.
  * 4. Aircraft that taxi move (movement.ts), each planning from those places. That includes the
  *    ramp's on ramp lanes.
@@ -260,6 +264,7 @@ function advance(sim: Sim): void {
     addAircraft(sim, { callsign, type, airline: airline ?? null, terminal: terminal ?? null, at: { kind: 'final', runwayEnd, distanceM: FINAL_SPAWN_M } });
   }
   towerDecide(sim);
+  updateReservations(sim);
   for (const { callsign, type, airline, gate } of rampSpawns(sim)) addAircraft(sim, { callsign, type, airline: airline ?? null, at: { kind: 'gate', gate } });
   rampDecide(sim);
   const occupancy = occupancyOf(sim);
