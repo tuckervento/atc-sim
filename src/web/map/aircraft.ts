@@ -17,7 +17,11 @@ export interface MapAircraft {
   type: string;
   /** The nose, in the airport's local frame (meters east, north). */
   nose: Point;
-  /** Degrees true, clockwise from north. null: no heading; drawn as a marker, not a shape. */
+  /**
+   * The body's heading, degrees true, clockwise from north: the shape is drawn back from the nose
+   * along it (the sim's `bodyHeadingDeg`, the axis from the main gear to the nose, which the
+   * collision footprint lies along too). null: no heading; drawn as a marker, not a shape.
+   */
   headingDeg: number | null;
   lengthM: number;
   wingspanM: number;
@@ -38,7 +42,7 @@ export function fromAircraftView(view: AircraftView, extras: MapAircraftExtras):
     callsign: view.callsign,
     type: view.type,
     nose: [view.nose[0], view.nose[1]],
-    headingDeg: view.headingDeg,
+    headingDeg: view.bodyHeadingDeg,
     lengthM: view.lengthM,
     wingspanM: view.wingspanM,
     role: extras.delayed ? 'delayed' : view.role,

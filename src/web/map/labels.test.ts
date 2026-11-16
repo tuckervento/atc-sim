@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chooseLabels, LABEL_RULES, type LabelCandidate, type MeasureLabel } from './labels.ts';
+import { chooseLabels, createLabelLayer, LABEL_RULES, type LabelCandidate, type MeasureLabel } from './labels.ts';
 import type { Viewport } from './view.ts';
 
 /** Fixed-width text: 7 px a character plus 6 px padding, 14 px tall. */
@@ -60,20 +60,6 @@ describe('chooseLabels', () => {
     expect(texts([offScreen, runwayOff], 1)).toEqual([]);
   });
 
-  it('keeps labels off the obstacles given (aircraft data blocks), except runway labels', () => {
-    const candidates: LabelCandidate[] = [
-      { text: 'Kilo pad', kind: 'place', at: [0, 0], sizeM: 200 },
-      { text: '4L', kind: 'runway', at: [100, 0], sizeM: 3000 },
-      { text: 'K', kind: 'taxiway', at: [-300, 0], sizeM: 1000 },
-    ];
-    // Boxes are centered, in screen px; the view's center (0, 0) is at (1000, 1000).
-    const obstacles = [
-      { x: 1000, y: 1000, widthPx: 80, heightPx: 30 },
-      { x: 1100, y: 1000, widthPx: 80, heightPx: 30 },
-    ];
-    expect(chooseLabels(candidates, viewAt(1), measure, obstacles).map((l) => l.text)).toEqual(['4L', 'K']);
-  });
-
   it('keeps the input order between candidates of the same kind and size', () => {
     // The scene relies on this to put a run's label on its longest edge.
     const candidates: LabelCandidate[] = ['first', 'second', 'third'].map((text, i) => ({ text, kind: 'taxiway', at: [i * 200, 0], sizeM: 1000 }));
@@ -86,5 +72,60 @@ describe('chooseLabels', () => {
       const [placed] = chooseLabels([end], viewAt(scale), measure);
       expect(placed && [placed.x, placed.y]).toEqual([1000 + 100 * scale + 12, 1000 - 20]);
     }
+  });
+});
+
+describe('createLabelLayer', () => {
+  // At 2 px/m (gates show from 1.5): K and G1 are 10 px apart, so their boxes overlap and K, the
+  // taxiway, wins. B is far from both. The view's center (0, 0) is at (1000, 1000).
+  const candidates: LabelCandidate[] = [
+    { text: 'K', kind: 'taxiway', at: [0, 0], sizeM: 900 },
+    { text: 'G1', kind: 'gate', at: [5, 0], sizeM: 50 },
+    { text: 'B', kind: 'taxiway', at: [200, 0], sizeM: 900 },
+  ];
+  const at = (labels: { text: string; x: number; y: number }[]) => labels.map((l) => `${l.text}@${l.x},${l.y}`);
+
+  it("hides a label an aircraft covers, and nothing else changes: the label it beat doesn't appear in its place, and the rest stay put", () => {
+    const layer = createLabelLayer(candidates, measure);
+    const view = viewAt(2);
+    expect(at(layer.visible(view, []))).toEqual(['K@1000,1000', 'B@1400,1000']);
+    // A data block over K's left end, clear of G1 (K is 13 px wide at x = 1000, G1 20 px at
+    // 1010; boxes keep 2 px apart): laid out again with it as an obstacle, G1 would take K's place.
+    const block = { x: 977, y: 1000, widthPx: 36, heightPx: 28 };
+    expect(at(layer.visible(view, [block]))).toEqual(['B@1400,1000']);
+  });
+
+  it('keeps one layout while an aircraft crosses the map: a label blinks out as it passes over and comes back in the same place', () => {
+    const layer = createLabelLayer(candidates, measure);
+    const view = viewAt(2);
+    const layout = layer.layout(view);
+    const k = layout.find((l) => l.text === 'K');
+    if (!k) throw new Error('K not laid out');
+    const seen: string[] = [];
+    // A 60 × 28 px data block moving east along y = 1000, from well left of K to past B.
+    for (let x = 900; x <= 1500; x += 5) {
+      const shown = layer.visible(view, [{ x, y: 1000, widthPx: 60, heightPx: 28 }]);
+      expect(layer.layout(view)).toBe(layout);
+      for (const l of shown) expect(layout).toContain(l);
+      const kNow = shown.includes(k) ? 'K' : '-';
+      if (seen.at(-1) !== kNow) seen.push(kNow);
+    }
+    expect(seen).toEqual(['K', '-', 'K']);
+    expect(at(layer.visible(view, []))).toEqual(['K@1000,1000', 'B@1400,1000']);
+  });
+
+  it('lays out again only when the view changes: pan, zoom or resize', () => {
+    const layer = createLabelLayer(candidates, measure);
+    const first = layer.layout(viewAt(2));
+    // The same view, as a new object (the map makes one per pan or zoom step).
+    expect(layer.layout(viewAt(2))).toBe(first);
+    // Panned 50 px right: everything moves with the map, once.
+    const panned = { ...viewAt(2), centerX: -25 };
+    const moved = layer.layout(panned);
+    expect(moved).not.toBe(first);
+    expect(at(moved)).toEqual(['K@1050,1000', 'B@1450,1000']);
+    expect(layer.layout({ ...panned })).toBe(moved);
+    expect(layer.layout({ ...panned, widthPx: 1500 })).not.toBe(moved);
+    expect(at(layer.layout(viewAt(1)))).toEqual(['K@1000,1000', 'B@1200,1000']);
   });
 });

@@ -35,6 +35,7 @@ import { otherEnd, type AirportIndex } from '../airport/graph.ts';
 import type { EdgeId, GateId, NodeId, Point, RunwayEndDesignator, TerminalId } from '../airport/types.ts';
 import { AIRCRAFT_TYPES, isAircraftType } from './aircraft-types.ts';
 import type { Taxi } from './commands.ts';
+import { bodyAxisOf } from './footprint.ts';
 import { hashOf } from './hash.ts';
 import { KNOT_MPS, moveTaxiing, PILOT_SPEED_SPREAD, TAXI_SPEED_KT, updateRunways } from './movement.ts';
 import { APPROACH_SPEED_MPS, dropAircraft, FINAL_SPAWN_M, finalOfArrival, initialTowerState, placeOnFinal, towerDecide, towerMove, towerSetup, towerSpawns, type TowerOptions } from './tower.ts';
@@ -373,8 +374,14 @@ export interface AircraftView {
   location: Location;
   /** The nose, in the airport's local frame. */
   nose: Point;
-  /** Degrees clockwise from north. null: no heading (parked on a node with no edge). */
+  /** The track's direction at the nose, degrees clockwise from north. null: no heading (parked on a node with no edge). */
   headingDeg: number | null;
+  /**
+   * The body's heading: along its axis from the main gear to the nose (footprint.ts
+   * `bodyAxisOf`), which the footprint lies along and the map draws along. The same as
+   * `headingDeg` on a straight; between the legs' headings through a bend. null with it.
+   */
+  bodyHeadingDeg: number | null;
   /**
    * The taxi clearance and its path. `distanceM`: how far the nose is along the path from
    * its first node; negative while still on the edge it was on when the clearance came.
@@ -416,6 +423,7 @@ function view(sim: Sim, ac: Aircraft): AircraftView {
     location: locationOf(ac),
     nose: point,
     headingDeg,
+    bodyHeadingDeg: bodyAxisOf(ac.track, ac.s, ac.lengthM).headingDeg,
     clearance: clearance && {
       taxi: clearance.taxi,
       start: clearance.start,

@@ -4,6 +4,7 @@
 import type { MapAircraft } from './aircraft.ts';
 import { aircraftBlocks, drawMap, labelMeasurer } from './draw.ts';
 import { hitTest } from './hit.ts';
+import { createLabelLayer } from './labels.ts';
 import type { Scene } from './scene.ts';
 import { fitView, panBy, zoomAt, type Viewport } from './view.ts';
 
@@ -36,7 +37,8 @@ export function mountMap(container: HTMLElement, scene: Scene, initialAircraft: 
   container.append(canvas);
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('this browser gives no 2D canvas context');
-  const measure = labelMeasurer(ctx);
+  // Laid out once per view, not per frame: aircraft only hide the labels they cover (labels.ts).
+  const labels = createLabelLayer(scene.labels, labelMeasurer(ctx));
 
   let aircraft = initialAircraft;
   let selected: string | null = null;
@@ -50,7 +52,7 @@ export function mountMap(container: HTMLElement, scene: Scene, initialAircraft: 
       frame = 0;
       const dpr = window.devicePixelRatio || 1;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawMap(ctx, scene, view, aircraft, measure, selected);
+      drawMap(ctx, scene, view, aircraft, labels, selected);
     });
   };
 

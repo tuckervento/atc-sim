@@ -4,9 +4,10 @@
 import type { Point, RunwayRole } from '../../airport/types.ts';
 import type { MapAircraft } from './aircraft.ts';
 import { BLOCK_DX, BLOCK_DY, BLOCK_LINE_PX, dataBlockLayout, type DataBlock } from './datablock.ts';
-import { chooseLabels, type LabelKind, type MeasureLabel, type PlacedLabel } from './labels.ts';
+import type { LabelKind, LabelLayer, MeasureLabel, PlacedLabel } from './labels.ts';
+import { aircraftBox, aircraftMarkerRadius, aircraftOutline, aircraftScale } from './outline.ts';
 import type { Scene, ScenePlace, SceneRunway } from './scene.ts';
-import { AIRCRAFT_FONT, LABEL_FONT, MIN_AIRCRAFT_PX, MIN_WIDTH_PX, PALETTE, roleColor, RUNWAY_USE_COLOR, SELECTED_COLOR } from './style.ts';
+import { AIRCRAFT_FONT, LABEL_FONT, MIN_WIDTH_PX, PALETTE, roleColor, RUNWAY_USE_COLOR, SELECTED_COLOR } from './style.ts';
 import { worldToScreen, type Viewport } from './view.ts';
 
 /** Box padding around label text, px. */
@@ -34,7 +35,8 @@ export function drawMap(
   scene: Scene,
   view: Viewport,
   aircraft: MapAircraft[],
-  measure: MeasureLabel,
+  /** The scene's labels (createLabelLayer over scene.labels), kept across frames. */
+  labels: LabelLayer,
   /** The selected aircraft's callsign, highlighted. */
   selected: string | null = null,
 ): void {
@@ -90,11 +92,12 @@ export function drawMap(
     }
   }
 
-  // Aircraft data blocks first in layout, so map labels make room for them.
+  // The map's labels are laid out against the map alone, once per view (labels.ts); an aircraft
+  // or its data block only hides the ones it covers, so the rest never move.
   const blocks = aircraftBlocks(ctx, aircraft, view);
-  const labels = chooseLabels(scene.labels, view, measure, blocks.map((b) => b.box));
+  const covers = [...aircraft.map((ac) => aircraftBox(ac, view)), ...blocks.map((b) => b.box)];
   const activeEnds = activeEndRoles(scene);
-  for (const label of labels) drawLabel(ctx, label, activeEnds.get(label.text));
+  for (const label of labels.visible(view, covers)) drawLabel(ctx, label, activeEnds.get(label.text));
 
   aircraft.forEach((ac, i) => {
     const block = blocks[i];
@@ -114,7 +117,7 @@ export function aircraftBlocks(ctx: CanvasRenderingContext2D, aircraft: readonly
 /** The selected aircraft (PLAN 1.13): a ring round its shape and a frame round its data block, under both. */
 function drawSelection(ctx: CanvasRenderingContext2D, ac: MapAircraft, view: Viewport, block: DataBlock | undefined): void {
   const [x, y] = worldToScreen(view, ac.nose);
-  const k = Math.max(view.scale, MIN_AIRCRAFT_PX / ac.lengthM);
+  const k = aircraftScale(ac, view);
   const rad = ((ac.headingDeg ?? 0) * Math.PI) / 180;
   // The shape's middle: half its length back from the nose (the nose itself with no heading).
   const back = ac.headingDeg === null ? 0 : (ac.lengthM * k) / 2;
@@ -292,45 +295,19 @@ function haloText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 function drawAircraft(ctx: CanvasRenderingContext2D, ac: MapAircraft, view: Viewport): void {
-  const [x, y] = worldToScreen(view, ac.nose);
-  const color = roleColor(ac.role);
-  // Px per meter for the shape: true size, but at least MIN_AIRCRAFT_PX long.
-  const k = Math.max(view.scale, MIN_AIRCRAFT_PX / ac.lengthM);
-  const L = ac.lengthM * k;
-  const W = ac.wingspanM * k;
-  ctx.save();
-  ctx.translate(x, y);
-  if (ac.headingDeg === null) {
-    ctx.beginPath();
-    ctx.arc(0, 0, L / 3, 0, 2 * Math.PI);
+  // The shape lies back from the nose along the body's heading (outline.ts): it turns about its
+  // main gear, as the sim's footprint does.
+  const outline = aircraftOutline(ac, view);
+  if (outline) {
+    path(ctx, outline, true);
   } else {
-    // Drawn nose-up (screen -y) at the origin; rotating by the heading turns it clockwise from north.
-    ctx.rotate((ac.headingDeg * Math.PI) / 180);
-    const f = L * 0.06; // half the fuselage width
+    const [x, y] = worldToScreen(view, ac.nose);
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(f, L * 0.12);
-    ctx.lineTo(f, L * 0.38);
-    ctx.lineTo(W / 2, L * 0.58);
-    ctx.lineTo(W / 2, L * 0.64);
-    ctx.lineTo(f, L * 0.56);
-    ctx.lineTo(f, L * 0.84);
-    ctx.lineTo(W * 0.2, L * 0.96);
-    ctx.lineTo(W * 0.2, L);
-    ctx.lineTo(-W * 0.2, L);
-    ctx.lineTo(-W * 0.2, L * 0.96);
-    ctx.lineTo(-f, L * 0.84);
-    ctx.lineTo(-f, L * 0.56);
-    ctx.lineTo(-W / 2, L * 0.64);
-    ctx.lineTo(-W / 2, L * 0.58);
-    ctx.lineTo(-f, L * 0.38);
-    ctx.lineTo(-f, L * 0.12);
-    ctx.closePath();
+    ctx.arc(x, y, aircraftMarkerRadius(ac, view), 0, 2 * Math.PI);
   }
-  ctx.fillStyle = color;
+  ctx.fillStyle = roleColor(ac.role);
   ctx.fill();
   ctx.strokeStyle = PALETTE.halo;
   ctx.lineWidth = 1;
   ctx.stroke();
-  ctx.restore();
 }

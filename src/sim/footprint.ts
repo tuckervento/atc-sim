@@ -7,9 +7,17 @@
 // - the fuselage: the whole length, FUSELAGE_WIDTH × length wide, its front edge through the nose;
 // - the wing: the whole span, from WING_FROM × length behind the nose, WING_CHORD × span deep;
 // - the tailplane: TAIL_SPAN × span across, the last TAIL_CHORD × length of the body.
-// They lie along the body's axis: the line from the tail (one length back along the track) to
-// the nose. On a straight that's exact. Through a turn the shape is a rigid stand-in for a body
-// that bends along the centreline, so it sweeps a little wider than the real aircraft.
+// They lie along the body's axis (bodyAxisOf): from the main gear, a point on the track
+// MAIN_GEAR_FROM of the length behind the nose, to the nose, and on back from the nose for the
+// whole length. On a straight that's the track. Through a turn the nose gear steers along the
+// centreline and the body pivots about its main gear, so the tail swings out a little (Q,
+// 2026-11-16: before, the map turned the body about the nose and this shape lay along the
+// nose-to-tail chord, so the two disagreed in every turn). The sim's view (bodyHeadingDeg) and
+// the map use the same axis.
+//
+// MAIN_GEAR_FROM 0.48: the published main-gear positions are 0.471 (A320) to 0.494 (A321) of
+// the length (aircraft-types.ts has each, with its source). One fraction for every type,
+// because a footprint knows only a body's length and span.
 //
 // Values [Builder], mine: proportions of the length and span (aircraft-types.ts), since that's
 // all a footprint knows (the reservations ask for bodies by length and span alone). Each part
@@ -29,8 +37,30 @@
 // The vertical fin is above the fuselage, inside its width.
 
 import type { Point } from '../airport/types.ts';
-import { pointOf } from './track.ts';
+import { pointOf, type Track } from './track.ts';
 import type { Aircraft, Sim } from './world.ts';
+
+/** How far the main gear is behind the nose, as a fraction of the length (the body's pivot). */
+export const MAIN_GEAR_FROM = 0.48;
+
+/**
+ * The body's axis with the nose at `s` on `track`: from the main gear (on the track,
+ * MAIN_GEAR_FROM × `lengthM` behind the nose) to the nose. `u` is the unit vector along it, nose
+ * forward, x east and y north. With no length between the two (the trail runs out, or a one-node
+ * track): the track's heading at the nose, or north with none; `headingDeg` is then null only
+ * when the track has no heading at all.
+ */
+export function bodyAxisOf(track: Track, s: number, lengthM: number): { nose: Point; u: [number, number]; headingDeg: number | null } {
+  const nose = pointOf(track, s);
+  const gear = pointOf(track, s - MAIN_GEAR_FROM * lengthM).point;
+  const [dx, dy] = [nose.point[0] - gear[0], nose.point[1] - gear[1]];
+  const norm = Math.hypot(dx, dy);
+  if (norm === 0) {
+    const rad = ((nose.headingDeg ?? 0) * Math.PI) / 180;
+    return { nose: nose.point, u: [Math.sin(rad), Math.cos(rad)], headingDeg: nose.headingDeg };
+  }
+  return { nose: nose.point, u: [dx / norm, dy / norm], headingDeg: ((Math.atan2(dx, dy) * 180) / Math.PI + 360) % 360 };
+}
 
 /** Fuselage width, as a fraction of the length. */
 export const FUSELAGE_WIDTH = 0.11;
@@ -55,17 +85,9 @@ export type FootprintShape = Point[] & { readonly parts: readonly Point[][] };
  */
 export function footprintOf(ac: Aircraft): FootprintShape {
   const { lengthM: length, wingspanM: span } = ac;
-  const nose = pointOf(ac.track, ac.s);
-  const tail = pointOf(ac.track, ac.s - length).point;
-  let [ux, uy] = [nose.point[0] - tail[0], nose.point[1] - tail[1]];
-  let norm = Math.hypot(ux, uy);
-  if (norm === 0) {
-    // No trail to lie along (parked on a node with no edge): face the way the track goes, or north.
-    const rad = ((nose.headingDeg ?? 0) * Math.PI) / 180;
-    [ux, uy, norm] = [Math.sin(rad), Math.cos(rad), 1];
-  }
-  [ux, uy] = [ux / norm, uy / norm];
-  const [nx, ny] = nose.point;
+  const axis = bodyAxisOf(ac.track, ac.s, length);
+  const [ux, uy] = axis.u;
+  const [nx, ny] = axis.nose;
   /** A box `back0` to `back1` behind the nose, `width` across the axis. */
   const box = (back0: number, back1: number, width: number): Point[] => {
     // Right of the heading is (uy, −ux) in an x-east, y-north frame.

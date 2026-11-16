@@ -67,11 +67,11 @@ const KIND_ORDER: readonly LabelKind[] = ['runway', 'taxiway', 'place', 'termina
 /**
  * The labels to draw: placed by kind (KIND_ORDER), then bigger features first, then in the
  * given order. A label is skipped when it's below its kind's zoom or feature-size threshold,
- * off screen, near a placed label with the same text, or overlapping a placed label or one of
- * `obstacles` (aircraft data blocks). Runway labels are never skipped for overlap, and
- * everything else avoids them.
+ * off screen, near a placed label with the same text, or overlapping a placed label. Runway
+ * labels are never skipped for overlap, and everything else avoids them. Aircraft play no part
+ * (createLabelLayer hides what they cover).
  */
-export function chooseLabels(candidates: LabelCandidate[], view: Viewport, measure: MeasureLabel, obstacles: ScreenBox[] = []): PlacedLabel[] {
+export function chooseLabels(candidates: LabelCandidate[], view: Viewport, measure: MeasureLabel): PlacedLabel[] {
   const rank = (c: LabelCandidate) => KIND_ORDER.indexOf(c.kind);
   const ordered = candidates
     .filter((c) => view.scale >= LABEL_RULES[c.kind].minScale && c.sizeM * view.scale >= LABEL_RULES[c.kind].minFeaturePx)
@@ -87,10 +87,41 @@ export function chooseLabels(candidates: LabelCandidate[], view: Viewport, measu
     const label: PlacedLabel = { ...c, x, y, ...measure(c.text, c.kind) };
     if (!onScreen(label, view)) continue;
     // Runway labels are always kept, and everything after them must avoid them.
-    if (c.kind !== 'runway' && (placed.some((p) => overlaps(p, label)) || obstacles.some((o) => overlaps(o, label)))) continue;
+    if (c.kind !== 'runway' && placed.some((p) => overlaps(p, label))) continue;
     placed.push(label);
   }
   return placed;
+}
+
+/**
+ * The map's labels as drawn each frame (Q, 2026-11-16: "it should just toggle visibility of the
+ * occluded icons, but they should still be treated as if they are there for the overall map
+ * positioning"):
+ * - `layout`: chooseLabels against the map alone, no aircraft. Laid out again only when the view
+ *   changes (pan, zoom, resize); otherwise the same array as last time.
+ * - `visible`: that layout, less any label one of `covers` overlaps (aircraft shapes and data
+ *   blocks, screen boxes). Nothing is laid out again, so the rest stay where they are, and a
+ *   label a covered one beat stays hidden.
+ */
+export interface LabelLayer {
+  layout(view: Viewport): PlacedLabel[];
+  visible(view: Viewport, covers: readonly ScreenBox[]): PlacedLabel[];
+}
+
+export function createLabelLayer(candidates: LabelCandidate[], measure: MeasureLabel): LabelLayer {
+  let last: { view: Viewport; labels: PlacedLabel[] } | null = null;
+  const layout = (view: Viewport) => {
+    if (!last || !sameView(last.view, view)) last = { view: { ...view }, labels: chooseLabels(candidates, view, measure) };
+    return last.labels;
+  };
+  return {
+    layout,
+    visible: (view, covers) => layout(view).filter((label) => !covers.some((c) => overlaps(c, label))),
+  };
+}
+
+function sameView(a: Viewport, b: Viewport): boolean {
+  return a.centerX === b.centerX && a.centerY === b.centerY && a.scale === b.scale && a.widthPx === b.widthPx && a.heightPx === b.heightPx;
 }
 
 /** Space kept clear around each label, px. */
