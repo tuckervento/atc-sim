@@ -1,10 +1,10 @@
 # STATUS
 
-_Last updated: 2026-11-16 (cycle 10 merged: 1.13 ready for Q's run after two fixes)_
+_Last updated: 2026-11-16 (1.13 done: Q's manual run passed)_
 
 ## Snapshot
 
-18 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.12. **LGA imports as a format check** (1.6), and **the map renders any airport** (1.7, Q checked it against the FAA diagram). **The simulated tower** (1.10, about 37 takeoffs an hour on 31L alongside 15 landings), **the reworked ramp** (1.11, with granular locks) and **the rule checks and score** (1.12) run. **The browser app (1.13) plays KJFK live with typed commands**; its counters, manual-test doc and Q's run are left.
+19 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.13. **LGA imports as a format check** (1.6), and **the map renders any airport** (1.7, Q checked it against the FAA diagram). **The simulated tower** (1.10, about 37 takeoffs an hour on 31L alongside 15 landings), **the reworked ramp** (1.11, with granular locks) and **the rule checks and score** (1.12) run. **The browser app (1.13) plays KJFK live with typed commands**: Q's manual run ended at Departures 5, Arrivals 3.
 
 **Phase 0's picks (Q signed off 2026-11-14):**
 - speech-to-text: Deepgram Nova-3
@@ -13,10 +13,38 @@ _Last updated: 2026-11-16 (cycle 10 merged: 1.13 ready for Q's run after two fix
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-In progress: 1.13. Its manual test (`docs/phase1-manual-test.md`) is written, and the fixes before Q's run are committed: the seed-6 head-on collision (0a5808b), pilots yielding at junctions (abe250f), and turning about the main gear plus stable labels (a3317d9). Next: Q's run, then 1.14.
+Next: 1.14, the last Phase 1 task. Three friction items from Q's run are open (Deviations, 2026-11-16, "Q's manual run").
 
 ## Completed
 
+- [x] 1.13 — Playable in the browser with typed commands; Q tests — done 2026-11-16.
+  - **Q's run (the acceptance):** Q ran `docs/phase1-manual-test.md` on seed 5 in Chrome, typed commands and T only, to 20:39 sim time. Counters: **Departures 5, Arrivals 3, Total 8**, rate 23.0/h, peak 15 min 32.0/h (Q's paste). No session-over banner (Q). Q directed all the traffic, not just the doc's two aircraft. The log Q pasted agrees: 5 `took off`, 3 `arrived at … gate`, and all 6 runway crossings requested with T and approved before `cross`. Friction from the log: Deviations, 2026-11-16, "Q's manual run".
+  - **Built and merged** (subagent, own worktree): the real-time loop, the terse console, click to select with T for crossings, the event log, pause and 1×/2×/4× speed, and traffic streams from deterministic seeds.
+  - **Verified by me in Chrome:**
+    - bound to `[::1]:5173` only
+    - at 4×, departures check in, including from T7, and arrivals call clear of 31L and 31R
+    - a malformed command shows its error and keeps the text; a valid one is echoed and answered
+    - no console messages
+  - **Not verified by me:** T after a canvas click, since the DevTools tools can't click a canvas by position. The agent verified it with synthetic pointer events, and a real click on the agent's tab, which it took to be Q's, selected an aircraft.
+  - **Done in cycle 10** (one subagent, own worktree; merged and verified by me):
+    - Typecheck exit 0, **439 of 439** (47 files).
+    - **The one existing test edited:** `event-log.test.ts` drops `holding-short` and runway `arrived` from its silent list. Both are logged now, by Q's request.
+    - No `Math.random` in `ramp.ts`.
+    - **The manual test:** `docs/phase1-manual-test.md` (seed 5). WJA3571 departs: G, crossing 4L at G with T, the 31L hold at Z, monitor tower. ANA7953 arrives on 31R, exits at D, `taxi ramp T7 via W`, crosses 31R at W with T, then monitor ramp.
+      - Its scripted twin `src/web/game/manual-test.test.ts` passes.
+      - The agent's Chrome run ended at Departures 1, Arrivals 1.
+  - **Done in this cycle's list** (the items below):
+    - wire the counters to `score.ts` (the interface is in `src/web/game/counters.ts`)
+    - a session-ended banner with the cause (my call: 1.12 ends sessions, and the app doesn't show it yet)
+    - a sim export for which types can depart from a terminal, replacing the app's startup probe (Q)
+    - log holding short (Q)
+    - parked arrivals turn around or tow to a hangar and despawn (Q; needed for 1.14)
+    - `docs/phase1-manual-test.md`
+  - **Fixed before Q's run** (committed on `main`; Deviations, 2026-11-16):
+    - the seed-6 head-on collision (a footprint see-and-avoid rule): 0a5808b
+    - pilots yielding at junctions (Q's decision), found when the two merges met: abe250f
+    - turning about the main gear, and stable map labels (Q's feedback): a3317d9
+    - In that order so each commit passes on its own, each tested in a scratch worktree: 444, 449, then 460 of 460, typecheck clean. Turning before the yield would have left a commit failing `ramp-safety` (the 17-takeoff state).
 - [x] Ramp rework, with cross-shaped footprints and arrival priority — done 2026-11-15 (one subagent in its own worktree, a second in the main checkout; merged and finished by me). Verified by me on `main` with 1.12 and 1.13 merged:
   - typecheck exit 0, **409 of 409** (38 files, 59.6 s)
   - **No false collisions:** the 50-seed tower safety scenario with 1.12's collision filter (the agent's sweep, re-run by me) gives 0 overlap episodes and 0 ended sessions on TEST and KJFK. Before, TEST had 5 episodes in seeds 4, 13, 20 and 32.
@@ -253,34 +281,6 @@ In progress: 1.13. Its manual test (`docs/phase1-manual-test.md`) is written, an
   - Partial (documented as [Unverified] in the doc): where the 31L queue forms and its exits, the penalty box / pad locations, and the arrival/departure split of the peak.
 
 ## In Progress
-
-- [ ] 1.13 — Playable in the browser. **Built and merged** (subagent, own worktree): the real-time loop, the terse console, click to select with T for crossings, the event log, pause and 1×/2×/4× speed, and traffic streams from deterministic seeds.
-  - **Verified by me in Chrome:**
-    - bound to `[::1]:5173` only
-    - at 4×, departures check in, including from T7, and arrivals call clear of 31L and 31R
-    - a malformed command shows its error and keeps the text; a valid one is echoed and answered
-    - no console messages
-  - **Not verified by me:** T after a canvas click, since the DevTools tools can't click a canvas by position. The agent verified it with synthetic pointer events, and a real click on the agent's tab, which it took to be Q's, selected an aircraft.
-  - **Done in cycle 10** (one subagent, own worktree; merged and verified by me):
-    - Typecheck exit 0, **439 of 439** (47 files).
-    - **The one existing test edited:** `event-log.test.ts` drops `holding-short` and runway `arrived` from its silent list. Both are logged now, by Q's request.
-    - No `Math.random` in `ramp.ts`.
-    - **The manual test:** `docs/phase1-manual-test.md` (seed 5). WJA3571 departs: G, crossing 4L at G with T, the 31L hold at Z, monitor tower. ANA7953 arrives on 31R, exits at D, `taxi ramp T7 via W`, crosses 31R at W with T, then monitor ramp.
-      - Its scripted twin `src/web/game/manual-test.test.ts` passes.
-      - The agent's Chrome run ended at Departures 1, Arrivals 1.
-  - **Done in this cycle's list** (the items below):
-    - wire the counters to `score.ts` (the interface is in `src/web/game/counters.ts`)
-    - a session-ended banner with the cause (my call: 1.12 ends sessions, and the app doesn't show it yet)
-    - a sim export for which types can depart from a terminal, replacing the app's startup probe (Q)
-    - log holding short (Q)
-    - parked arrivals turn around or tow to a hangar and despawn (Q; needed for 1.14)
-    - `docs/phase1-manual-test.md`
-  - **Fixed before Q's run** (committed on `main`; Deviations, 2026-11-16):
-    - the seed-6 head-on collision (a footprint see-and-avoid rule): 0a5808b
-    - pilots yielding at junctions (Q's decision), found when the two merges met: abe250f
-    - turning about the main gear, and stable map labels (Q's feedback): a3317d9
-    - In that order so each commit passes on its own, each tested in a scratch worktree: 444, 449, then 460 of 460, typecheck clean. Turning before the yield would have left a commit failing `ramp-safety` (the 17-takeoff state).
-  - Then Q's run.
 
 ## Blocked
 
@@ -1028,8 +1028,13 @@ In progress: 1.13. Its manual test (`docs/phase1-manual-test.md`) is written, an
     - The seed-6 agent's wide KJFK sweep (20 seeds × 60 min): 0 collisions, and 2 gridlocks (seed 1 EVA1765/ICE8906, seed 4 KLM165/JBU8604). They're identical, same ticks and aircraft, on the collision fix alone, so they came before the turning change and the yield rule. Both are origin player: the sweep's scripted player taxis into standoffs. Not chased.
   - **`MAX_DECEL_MPS2` moved to `src/sim/braking.ts`** (Q, 2026-11-16) so `traffic.ts` can read it without importing `movement.ts`, which imports `traffic.ts`. Its importers (`movement.ts`, `traffic.ts`, `apply.ts`, `tower.ts`, `sim.test.ts`) read it from there; same value. Typecheck clean, 460 of 460.
 
+- 2026-11-16 — **Q's manual run (1.13's acceptance).** Passed (Completed, 1.13). Q expected only the doc's two flights and asked whether to ignore the rest: the doc said so, but under "Before you start", after the setup steps, and my hand-off didn't mention it. Moved that paragraph up, under the two-aircraft table, with how many others to expect. Friction in Q's log, not fixed, for Q to prioritise:
+  1. **Raw node IDs in unables:** `ANA9089 unable (hold-short): too close to stop short of J at n10709945044`, `WJA7466 unable (taxi): taxiway G doesn't go right from n4058789613`. A player can't act on a node ID.
+  2. **Finding a route to a ramp is trial and error:** 6 unables (EVA5194 `via P` twice for T1; WJA7466 G, R:G, HB, KF for T4, before KG). The message says which taxiway doesn't lead to the ramp, not which do.
+  3. **Turn ambiguity:** 3 `which way on X?` unables (JBU6330 on A, DLH4707 on B and on A). As designed (1.8), but frequent.
+  - Also seen, as designed: `DLH4707 taxi ramp via L:B N, contact ramp` at 15:09 left it on ground until the ramp entrance (19:38), since a handoff takes effect at the facility's handoff point (`apply.ts`). And Q's `EVA5194 taxi ramp via N hs Q` held short of Q, and a later `taxi ramp via N` released it.
+
 ## Next Up
 
-- 1.13: Q's run of `docs/phase1-manual-test.md` (seed 5). It completes 1.13 when the counters reach Departures 1, Arrivals 1.
 - 1.14 — Scoring-path and soak tests (needs 1.12, done, and the arrival turnaround or despawn).
-- Open for Q, none blocking: 1.6's questions 4–6 and 8; 1.10's 3–7 (5 matters for 1.14); the follow-ups' 2–6; 1.11's 5–9; 1.7's 2–5; 1.9's three; 1.5's five. All are in their Deviations entries.
+- Open for Q, none blocking: the three friction items from Q's 1.13 run (Deviations, 2026-11-16); 1.6's questions 4–6 and 8; 1.10's 3–7 (5 matters for 1.14); the follow-ups' 2–6; 1.11's 5–9; 1.7's 2–5; 1.9's three; 1.5's five. All are in their Deviations entries.

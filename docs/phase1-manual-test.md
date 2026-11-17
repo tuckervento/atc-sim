@@ -16,6 +16,12 @@ and the counters show **1 departure and 1 arrival**. Q's result goes in STATUS.
 | **WJA3571**, WestJet 737-800, departure | T4 gate → pushback → checks in on **G** | `taxi 31L via G`, crossing **4L** at G, to the **31L** hold at Z, then tower |
 | **ANA7953**, ANA 787-9, arrival | lands **31R**, exits right onto **D** | `taxi ramp T7 via W`, crossing **31R** at W back to the T7 side, then ramp to its gate |
 
+**The other traffic: leave it alone.** The airport is busy. In Q's run (2026-11-16), five
+others called in before WJA3571 took off (JBU6330, ANA9089, EVA5194, SAS812, JAL1948), and more
+after. Other departures check in and other arrivals call clear of the runway; they wait
+where they called, out of these two aircraft's way, and their lines in the log can be ignored.
+Directing them too is fine, but it's not part of the test.
+
 Both runway crossings need tower's approval first (the T key), then your `cross` instruction.
 4L/22R isn't in use on the 31s, so tower approves that one at once; 31R is landing traffic, so
 tower may hold you (see "If tower holds the crossing").
@@ -41,10 +47,6 @@ tower may hold you (see "If tower holds the crossing").
   then P** to resume.
 - **Pause (P) whenever you need time.** Commands you type while paused apply at once. Tower
   answers a crossing request after a few seconds of sim time, so resume after pressing T.
-
-**The other traffic.** Other departures check in and other arrivals call clear of the runway.
-Leave them alone: they wait where they called, out of these two aircraft's way. Their lines in the
-log can be ignored.
 
 ## The steps
 
