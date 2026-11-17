@@ -517,7 +517,7 @@ describe("the clearance's hold-shorts", () => {
         tick: expect.any(Number),
         callsign: 'DAL4',
         instruction: { type: 'hold-short', target: { kind: 'taxiway', name: 'A' } },
-        reason: 'too close to stop short of A at D near A',
+        reason: 'too close to stop short of A at D south of A',
       },
     ]);
     expect(getAircraft(sim, 'DAL4').clearance?.taxi.holdShort).toEqual([]);
@@ -601,7 +601,7 @@ describe('runway hold-shorts', () => {
     drainEvents(sim);
     transmit(sim, 'DAL4 taxi 27 via A hs 36');
     expect(drainEvents(sim)).toEqual([
-      expect.objectContaining({ type: 'unable', callsign: 'DAL4', reason: 'too close to stop at the hold line for runway 18/36 at A near runway 18/36' }),
+      expect.objectContaining({ type: 'unable', callsign: 'DAL4', reason: 'too close to stop at the hold line for runway 18/36 at A west of runway 18/36' }),
     ]);
     expect(getAircraft(sim, 'DAL4').crossings).toEqual([{ runways: ['18/36'], at: null }]);
     step(sim, 100);
@@ -625,7 +625,7 @@ describe('runway hold-shorts', () => {
         tick: expect.any(Number),
         callsign: 'DAL4',
         instruction: { type: 'continue' },
-        reason: 'holding short of runway 18/36 at A near runway 18/36: crossing it takes a crossing clearance',
+        reason: 'holding short of runway 18/36 at A west of runway 18/36: crossing it takes a crossing clearance',
       },
     ]);
     step(sim, 600);

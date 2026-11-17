@@ -106,8 +106,9 @@ export function polylineLength(points: Point[]): number {
  * A node as a player can find it on the map, for messages (node ids mean nothing to a player):
  * the taxiways and lanes that meet there, "B/MB/P", with any runway, "C1/U1 (runway 13L/31R)".
  * A node with fewer than two names and no runway goes by the nearest such junction along the
- * graph (within JUNCTION_SEARCH_M), less its own name: "U near A" (U's fork, near where it
- * meets A), "C near runway 9/27", or "near A/P1" off the named taxiways.
+ * graph (within JUNCTION_SEARCH_M), less its own name, and which side of it: "U north-west of A"
+ * (U's fork, near where it meets A), "C south of runway 9/27", or "west of A/P1" off the named
+ * taxiways.
  */
 export function junctionName(index: AirportIndex, nodeId: string): string {
   const own = labelAt(index, nodeId);
@@ -121,7 +122,10 @@ export function junctionName(index: AirportIndex, nodeId: string): string {
     if (next === null) break;
     done.add(next);
     const there = labelAt(index, next);
-    if (there.full) return own.text === '' ? `near ${there.text}` : `${own.text} near ${labelAt(index, next, own.text).text}`;
+    if (there.full) {
+      const side = compassFrom(index, next, nodeId);
+      return own.text === '' ? `${side} of ${there.text}` : `${own.text} ${side} of ${labelAt(index, next, own.text).text}`;
+    }
     for (const e of edgesAt(index, next)) {
       const to = otherEnd(e, next);
       const d = (dist.get(next) ?? 0) + edgeLength(index, e);
@@ -129,6 +133,18 @@ export function junctionName(index: AirportIndex, nodeId: string): string {
     }
   }
   return own.text === '' ? 'off the named taxiways' : own.text;
+}
+
+/**
+ * Which way `to` lies from `from`, as one of 8 compass points ("north-west"): so the nodes either
+ * side of a junction get different names (seed 666: two were both "F near B").
+ */
+function compassFrom(index: AirportIndex, from: string, to: string): string {
+  const [a, b] = [index.nodes.get(from), index.nodes.get(to)];
+  if (!a || !b) throw new Error(`compassFrom: unknown node "${a ? to : from}"`);
+  const bearing = ((Math.atan2(b.x - a.x, b.y - a.y) * 180) / Math.PI + 360) % 360;
+  const points = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
+  return points[Math.round(bearing / 45) % 8] ?? 'north';
 }
 
 /** How far `junctionName` looks for a named junction, meters along the edges. */

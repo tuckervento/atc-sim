@@ -199,3 +199,13 @@ describe('ramp entrances: all take arrivals, the arrival-marked ones first', () 
     expect(pathOf(route('taxi ramp via R:G', bG, alongB, 'T4')).destination).toMatchObject({ rampHandoff: 'rhG' });
   });
 });
+
+describe('a ramp route that misses', () => {
+  it("names the terminal's ramp entrances, so the player knows which do lead there (seed 666, JBU639: six tries for T5)", () => {
+    // Off 31L northbound on MB at B/MB/P; right onto B is east, and G meets no T5 entrance.
+    expect(route('taxi ramp via R:B G', 'n45349123', 'n5969626551', 'T5')).toEqual({
+      type: 'unable',
+      reason: "taxiway G doesn't lead to a ramp entrance for T5 in the direction of travel (T5's ramp entrances: A4, D, DA, F)",
+    });
+  });
+});

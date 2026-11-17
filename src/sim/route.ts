@@ -605,7 +605,7 @@ function walkItem(
   if (forward.length === 0) {
     const reason = next
       ? notReachedReason(ctx.index, item.taxiway, next.taxiway)
-      : (closedWayIn ?? `taxiway ${item.taxiway} doesn't lead to ${ctx.wayIn.describe} in the direction of travel`);
+      : (closedWayIn ?? `taxiway ${item.taxiway} doesn't lead to ${ctx.wayIn.describe} in the direction of travel${ctx.wayIn.kind === 'ramp' ? ` (${ctx.wayIn.entrances})` : ''}`);
     return failed(i, used, reason);
   }
   // More than one way on along the same name: a fork (a Y onto another taxiway, say). The turn
@@ -766,7 +766,8 @@ function prefix(step: Step, outcome: Outcome): Outcome {
 
 type WayIn =
   | { kind: 'runway'; describe: string; runwayEnd: RunwayEndDesignator; lines: LineWay[] }
-  | { kind: 'ramp'; describe: string; terminal: TerminalId; handoffs: RampHandoff[] }
+  /** `entrances`: every entrance serving the terminal, named in a reason that misses them all. */
+  | { kind: 'ramp'; describe: string; terminal: TerminalId; handoffs: RampHandoff[]; entrances: string }
   | { kind: 'holding'; describe: string; destination: HoldingDestination; areas: HoldingArea[] }
   | { kind: 'hangar'; describe: string; hangars: Hangar[] };
 
@@ -815,7 +816,8 @@ function resolveWayIn(index: AirportIndex, taxi: Taxi, start: RouteStart): WayIn
       // "they all need to be accessible by all"); resolveRoute tries the arrival-marked ones first.
       const handoffs = index.airport.rampHandoffs.filter((h) => h.terminals === undefined || h.terminals.includes(terminal.id));
       if (handoffs.length === 0) return { type: 'unable', reason: `no ramp entrance serves ${terminal.id} at ${index.airport.id}` };
-      return { kind: 'ramp', describe: `a ramp entrance for ${terminal.id}`, terminal: terminal.id, handoffs };
+      const entrances = `${terminal.id}'s ramp entrances: ${[...new Set(handoffs.map((h) => h.name))].sort().join(', ')}`;
+      return { kind: 'ramp', describe: `a ramp entrance for ${terminal.id}`, terminal: terminal.id, handoffs, entrances };
     }
     case 'pad':
     case 'penalty-box':
