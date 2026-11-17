@@ -581,15 +581,10 @@ class Validator {
         this.error('gate-not-on-ramp', `${owner} at node "${g.node}" touches ${notRamp[0]?.kind} edge(s) ${quoteList(notRamp.map((e) => e.id))}; gates sit at the end of ramp-lane lead-ins, inside the ramp`, [g.id]);
       }
       const serves = (h: RampHandoff) => h.terminals === undefined || h.terminals.includes(g.terminal);
-      const inOk = this.a.rampHandoffs.some((h) => h.use !== 'departures' && serves(h) && reachOf(h).has(g.node));
-      const outOk = this.a.rampHandoffs.some((h) => h.use !== 'arrivals' && serves(h) && reachOf(h).has(g.node));
-      if (inOk && outOk) continue;
-      const how = !inOk && !outOk
-        ? 'reached from any ramp entrance (arrivals), nor left toward any ramp edge (departures),'
-        : !inOk
-          ? 'reached from any ramp entrance (arrivals)'
-          : 'left toward any ramp edge (departures)';
-      this.error('gate-unreachable', `${owner} can't be ${how} serving terminal "${g.terminal}" over open ramp lanes. ${this.gateHint(g.node, g.terminal, handoffNodes)}`, [g.id]);
+      // Any handoff serving the terminal takes arrivals and, failing one marked for them, departures
+      // (route.ts, ramp.ts), so one that reaches the gate is enough both ways.
+      if (this.a.rampHandoffs.some((h) => serves(h) && reachOf(h).has(g.node))) continue;
+      this.error('gate-unreachable', `${owner} can't be reached from any ramp handoff serving terminal "${g.terminal}" over open ramp lanes. ${this.gateHint(g.node, g.terminal, handoffNodes)}`, [g.id]);
     }
   }
 

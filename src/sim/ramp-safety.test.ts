@@ -8,6 +8,7 @@ import testAirport from '../../data/airports/TEST.json' with { type: 'json' };
 import { indexAirport, type AirportIndex } from '../airport/graph.ts';
 import { loadAirport } from '../airport/load.ts';
 import { footprintOf, polygonsOverlap } from './footprint.ts';
+import { bodySpans } from './occupancy.ts';
 import { departurePlanFor } from './ramp.ts';
 import { createRng, nextFloat, type Rng } from './rng.ts';
 import { addAircraft, applyCommand, createSim, drainEvents, getAircraft, removeAircraft, stateHash, step, type Session, type Sim } from './sim.ts';
@@ -181,6 +182,13 @@ function longRun(seed: number): { hashes: string[]; counts: Record<string, numbe
       const entry = { track, s: ac.s, nose: view.nose, heading: view.headingDeg, pushing: ac.status === 'pushing-back' };
       now.set(ac.callsign, entry);
       const before = last.get(ac.callsign);
+      // A pushback never puts any of the body on a taxiway (Q, PLAN 1.13b): only ramp lanes.
+      if (entry.pushing) {
+        for (const span of bodySpans(ac)) {
+          const edge = sim.index.edges.get(ac.track.edges[span.i] ?? '');
+          if (edge?.kind !== 'rampLane') throw new Error(`seed ${seed}, tick ${sim.world.tick}: ${ac.callsign} pushing back with its body on ${edge?.kind} ${edge?.id}`);
+        }
+      }
       // Pushing back now (including the tick it starts, on its new push track) is the exception.
       // The switch from the push to the taxi-out isn't: its nose must stay put.
       if (!before || entry.pushing) continue;

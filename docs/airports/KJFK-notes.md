@@ -134,6 +134,7 @@ Generated items keep OSM ids. Hand-made items start with `x`: nodes `xk…` (Kil
 | 9 hangars | `nodes.add`, `edges.add`, `hangars.add` | Q10; below |
 | 21 arrival exits (31L 8, 31R 13), in Q's order | `runwayExits.add`, `configurations[31s].arrivalExits` | Q8 |
 | Area `w284907690` name "Terminl 8" → "Terminal 8" | `areas.patch` | OSM typo |
+| Ramp-lane stubs for pushbacks (`x13b-…`): one at T1 off n5763789134 (84 m, 290°) for the four T1 stands off N; at T7, off n9328838876 (g1011144698) and n9328838893 (g1011144701), and off new junctions where the stand lanes of g1011144697 (VV, 4 m in) and g1011144695 (VA, 10 m in) are split | `nodes.add`, `edges.add`, `edges.remove` | Q, PLAN 1.13b: pushback stays inside the ramp; below |
 | Terminal airlines | `terminals.patch` | jfkairport.com, below |
 
 ### Q's answers, applied
@@ -209,6 +210,27 @@ mine, not sourced.
   lane behind it, so SA is one check-in point, n5763789087.
 - **A10/H** is named A10: the movement-area stub to it is A10; H is the ramp lane behind it.
 - **31L line exits** take the branch away from the 31L end (H west, J west).
+
+### Stands with room to push back inside the ramp (PLAN 1.13b, 2026-11-16)
+
+Pushback never puts any of the aircraft on a taxiway (Q, after the 1.13 run). Nine stands had
+no way out without one: T1 g632238189, …190, …191, …193 (N lane, toward NA) and T7
+g1011144695 (VA), …697 (VV), …698 (A1), …701, and, for the 777 only, g1011116768 (W). Each
+stub was found by a search: a straight ramp lane from a node on the push path, every 10°, long
+enough for the longest type the stand takes plus 10 m; kept only if it stays on the apron,
+crosses no lane, taxiway or building, ends 15 m clear of other edges, and gives the ramp's own
+planner a plan inside the ramp for those types. Q approved them from rendered maps.
+
+**Open, needs data work by hand (Q, 2026-11-16):** two T7 stands can't take a B777-300ER
+(B77W), arriving or departing, because no pushback for one stays inside the ramp:
+- **g1011144695 (by VA):** the corner has no room for a stub long enough for a 777's tail. It
+  takes every other type up to the A333 (not the A359 or A380 either).
+- **g1011116768 (by W):** its only workable stub would make every other type there leave by W
+  instead of W2, head-on with arrivals coming in at W (the seed-6 test, traffic.test.ts). Left
+  without one: it takes every type except the B77W.
+
+T7 still takes the B77W at g1011144698 and g1011144701. KJFK has 71 stands a B77W can use
+(73 before 1.13b, all of the difference being these two).
 
 ### Airlines (jfkairport.com, fetched 2026-11-14T19:40–19:41Z)
 

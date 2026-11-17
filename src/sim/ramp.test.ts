@@ -64,25 +64,18 @@ describe('gates', () => {
     expect(['T1-1', 'T1-2', 'T1-3'].map((g) => getGate(parked, g).occupant)).toEqual([null, null, 'DAL2']);
   });
 
-  it("with both neighbouring stands taken, T1-3's departure pushes out past the ramp edge onto taxiway A instead, but only once ground's traffic is 250 m clear (TEST)", () => {
+  it("with both neighbouring stands taken, T1-3 can't take a departure: its only ways out swing into them, never out onto taxiway A (Q, 1.13b) (TEST)", () => {
     const sim = createSim(TEST, { seed: 1 });
     addAircraft(sim, { callsign: 'ARR1', type: 'A320', role: 'arrival', at: { kind: 'gate', gate: 'T1-1' } });
     addAircraft(sim, { callsign: 'ARR2', type: 'A320', role: 'arrival', at: { kind: 'gate', gate: 'T1-2' } });
-    // Ground's, stopped on A 200 m east of a7 (the stub's foot), facing east.
-    addAircraft(sim, { callsign: 'JBU9', type: 'A320', at: { kind: 'edge', edge: 'a7-aD', from: 'a7', distanceM: 200 } });
-    addAircraft(sim, { callsign: 'DAL1', type: 'A320', at: { kind: 'gate', gate: 'T1-3' } });
     const plans = departurePlansFor(sim, 'T1-3', 'A320');
-    const plan = 'unable' in plans ? null : plans[sim.world.ramp.aircraft.find((r) => r.callsign === 'DAL1')?.plan ?? -1];
-    expect(plan).toMatchObject({ swing: null, taxiway: true, rampHandoff: 'rh7' });
-    step(sim, 3000);
-    expect(drainEvents(sim).filter((e) => e.callsign === 'DAL1')).toEqual([]);
-    expect(getAircraft(sim, 'DAL1').status).toBe('parked');
-    // JBU9 moves off: DAL1 pushes, ends on A at a7, and calls ground there.
-    removeAircraft(sim, 'JBU9');
-    const events = runUntil(sim, (e) => e.type === 'check-in', 15 * 60 * 10);
-    expect(events.map((e) => e.type)).toEqual(['pushback', 'check-in']);
-    expect(events.at(-1)).toMatchObject({ callsign: 'DAL1', rampHandoff: 'rh7' });
-    expect(getAircraft(sim, 'DAL1')).toMatchObject({ controller: 'ground', location: { kind: 'node', node: 'a7' } });
+    expect('unable' in plans ? plans.unable : plans.map((p) => [p.swing, p.rampHandoff])).toEqual([
+      ['T1-1', 'rh7'],
+      ['T1-2', 'rh7'],
+    ]);
+    expect(() => addAircraft(sim, { callsign: 'DAL1', type: 'A320', at: { kind: 'gate', gate: 'T1-3' } })).toThrow(
+      "DAL1: gate T1-3 can't push back now: its pushback swings into T1-1 or T1-2, taken",
+    );
   });
 });
 
@@ -140,7 +133,7 @@ describe('ramp routes', () => {
   it.each([
     ['TEST', TEST],
     ['KJFK', KJFK],
-  ])('every departure plan at %s stays on open ramp lanes (and only the stand it swings into, or taxiways outside runway areas), off every runway', (_name, index) => {
+  ])('every departure plan at %s stays on open ramp lanes (and only the stand it swings into), never a taxiway (Q, 1.13b), off every runway', (_name, index) => {
     const sim = createSim(index, { seed: 1 });
     const onRunway = new Set(index.airport.edges.filter((e) => e.kind === 'runway').flatMap((e) => [e.from, e.to]));
     const counts: Record<string, number> = {};
@@ -159,29 +152,20 @@ describe('ramp routes', () => {
             return stand && 'edges' in stand ? stand.edges : [];
           };
           const own = new Set([...standOf(gate.id), ...standOf(plan.swing)]);
-          let taxiway = false;
           for (const way of [plan.push, plan.out]) {
             for (const id of way.edges) {
               const edge = index.edges.get(id);
               expect(edge?.closed).toBeUndefined();
-              expect(edge?.kind).not.toBe('runway');
-              if (edge?.kind === 'taxiway') {
-                taxiway = true;
-                expect(sim.runwayAreas.has(id)).toBe(false);
-              } else if (!own.has(id)) expect(sim.ramp.standEdges.has(id)).toBe(false);
+              expect(edge?.kind, `${gate.id} ${type}`).toBe('rampLane');
+              if (!own.has(id)) expect(sim.ramp.standEdges.has(id)).toBe(false);
             }
             for (const n of way.nodes) expect(onRunway.has(n)).toBe(false);
           }
-          expect(plan.taxiway).toBe(taxiway);
-          // It leaves by a ramp edge serving the gate's terminal, and ends on its node, or (pushed
-          // out past it) on the taxiway just beyond it, with no taxi-out.
+          // It leaves by a ramp edge serving the gate's terminal, and ends on its node.
           const handoff = index.airport.rampHandoffs.find((h) => h.id === plan.rampHandoff);
           expect(handoff?.use).not.toBe('arrivals');
           expect(handoff?.terminals ?? [gate.terminal]).toContain(gate.terminal);
-          if (plan.out.nodes.at(-1) !== handoff?.node) {
-            expect(plan.out.lengthM).toBe(plan.pushTo);
-            expect(plan.push.nodes).toContain(handoff?.node);
-          }
+          expect(plan.out.nodes.at(-1)).toBe(handoff?.node);
           // The push ends at the gate; the tail has the aircraft's length behind the push point.
           expect(plan.push.nodes.at(-1)).toBe(gate.node);
           expect(plan.pushTo).toBeGreaterThanOrEqual(AIRCRAFT_TYPES[type].lengthM);
@@ -189,11 +173,15 @@ describe('ramp routes', () => {
       }
     }
     // How many gates each type can use. TEST's T1-3 swings into T1-1's or T1-2's stand; its 70–80 m
-    // stands are too short for a B77W. KJFK's are floors: the data may only get better.
+    // stands are too short for a B77W. KJFK's are floors: the data may only get better. B77W 71,
+    // not 73 (Q, 2026-11-16): pushback no longer goes onto a taxiway, and two T7 stands have no
+    // way out inside the ramp for a 777: g1011144695's corner by VA has no room for its tail, and
+    // g1011116768's only stub would move every other type's exit from W2 to W, head-on with
+    // arrivals. Both need data work by hand (PLAN 1.13b; docs/airports/KJFK-notes.md; STATUS).
     if (index === TEST) expect(counts).toEqual({ 'A320 ok': 5, 'B77W unable': 5 });
     else {
       expect(counts['A320 ok']).toBeGreaterThanOrEqual(147);
-      expect(counts['B77W ok']).toBeGreaterThanOrEqual(73);
+      expect(counts['B77W ok']).toBeGreaterThanOrEqual(71);
     }
   });
 });
@@ -434,6 +422,14 @@ describe('removing an aircraft', () => {
 });
 
 describe('departures', () => {
+  it("go out an exit marked for arrivals when no other serves them (Q's run: every entrance accessible by all)", () => {
+    const arrivalsOnly = indexAirport(
+      loadAirport(testAirport, { formatVersion: 1, airport: 'TEST', rampHandoffs: { patch: [{ id: 'rh7', use: 'arrivals' }, { id: 'rhTB', use: 'arrivals' }] } }),
+    );
+    const plan = departurePlanFor(createSim(arrivalsOnly, { seed: 1 }), 'T1-1', 'A320');
+    expect('unable' in plan ? plan.unable : plan.rampHandoff).toMatch(/^rh(7|TB)$/);
+  });
+
   it('push back after boarding: tail-first out of the stand and north onto lane 7, ending nose on l7A facing south toward the ramp edge (TEST T1-1)', () => {
     const sim = createSim(TEST, { seed: 1 });
     addAircraft(sim, { callsign: 'DAL4', type: 'A320', at: { kind: 'gate', gate: 'T1-1' } });

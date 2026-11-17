@@ -40,7 +40,7 @@ The movement surface is an undirected graph. Everything else points into it.
 | `runways` | a runway | `ends: [end, end]`, each `{ designator, node, displacedThresholdM? }`, where `node` is the pavement end that direction starts from. Its runway edges must form one path from `ends[0].node` to `ends[1].node`. Intersecting runways share the crossing node. `widthM`, `towerPosition?`. |
 | `runwayExits` | a way off a runway for one landing direction | `runwayEnd`, `taxiway` (spoken name, must equal the edge's name; omitted for an unnamed exit, e.g. JFK's unnamed high-speed exits off 31R), `node` (on the centerline), `edge` (first edge off). Order along the runway comes from geometry. |
 | `holdShorts` | a hold line at a node | `kind`: `runway`, `ils`, `lahso`, `intermediate`. `runways`: the protected runway(s), one or more (several at intersections); empty only for `intermediate`. Directional: applies at `node` to traffic about to enter `towardEdge`. |
-| `rampHandoffs` | a ramp ↔ ground handoff point | `name` (check-in name: `"KF"`, `"HB"`, `"TA"`, `"7"`), `node` (where a rampLane edge meets a taxiway edge), `use`: `departures` (ramp edge, where departures check in), `arrivals` (ramp entrance), `both`. `terminals?` it serves. |
+| `rampHandoffs` | a ramp ↔ ground handoff point | `name` (check-in name: `"KF"`, `"HB"`, `"TA"`, `"7"`), `node` (where a rampLane edge meets a taxiway edge), `use`: `departures` (ramp edge, where departures check in), `arrivals` (ramp entrance), `both`. Every handoff takes both (Q, 2026-11-16), but `use` sets which come first: a taxi to the ramp goes to an entrance marked for arrivals (or both) when one completes the route, and to any other only when none does; the ramp sends its departures out by exits marked for departures (or both), and by any other only when it has no way out by those. `terminals?` it serves. |
 | `terminals` | a terminal | `name`, `airlines` (ICAO designators: `"DAL"`). |
 | `gates` | a parking position | `name`, `terminal`, `node` (touched only by rampLane edges), `headingDeg?`, `airlines?` (subset of the terminal's). |
 | `holdingAreas` | a pad, the penalty box or a hardstand | `kind`: `pad`, `penaltyBox` or `hardstand` (ground-controlled parking off the ramp, e.g. JFK's South Hardstand). `name`; `spokenNames?` (other ways the player says it: "Quebec box"); `entrances?` (taxiway names it's entered from; required for a hardstand). `spots`: nodes where one aircraft each waits, reached over unnamed taxiway lead-ins. `outline?`. |
@@ -121,8 +121,8 @@ toEdge }]`. It's an additive format change, possible because edges and nodes hav
   passing one of that runway's `runway` holds in the protected direction
   (`runway-entry-unprotected`).
 - **Ramp:** each ramp handoff sits on a ramp-lane/taxiway boundary and is connected. Gates touch
-  only ramp lanes. Every gate is reachable over open ramp lanes from a ramp entrance serving its
-  terminal, and can reach a ramp edge (`gate-unreachable`). Gate names are unique per terminal,
+  only ramp lanes. Every gate is reachable over open ramp lanes from a ramp handoff serving its
+  terminal (`gate-unreachable`). Gate names are unique per terminal,
   and gate airlines are a subset of the terminal's.
 - **Holding areas:** each has spots; the spots aren't on a runway, and each is reached from a
   named taxiway over open taxiway edges (ground taxis aircraft there). A hardstand lists its
