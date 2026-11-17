@@ -78,8 +78,8 @@ describe("logEvents: the player's instruction didn't take", () => {
   });
 
   it('ambiguous: which way on the taxiway, and how to say it', () => {
-    expect(lines({ tick: 50, type: 'ambiguous', callsign: 'DAL4', instruction: taxi, node: 'n1', taxiway: 'KE', edges: ['e1', 'e2'] })).toEqual([
-      { tick: 50, time: '0:05', kind: 'unable', callsign: 'DAL4', text: 'DAL4 unable (taxi): which way on KE? Give the turn, L:KE or R:KE' },
+    expect(lines({ tick: 50, type: 'ambiguous', callsign: 'DAL4', instruction: taxi, node: 'n1', at: 'A/KE', taxiway: 'KE', edges: ['e1', 'e2'] })).toEqual([
+      { tick: 50, time: '0:05', kind: 'unable', callsign: 'DAL4', text: 'DAL4 unable (taxi): which way on KE at A/KE? Give the turn, L:KE or R:KE' },
     ]);
   });
 

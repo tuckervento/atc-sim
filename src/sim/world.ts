@@ -453,7 +453,7 @@ export type SimEvent =
   /** The pilot can't comply. The aircraft keeps what it had. */
   | (AircraftEvent & { type: 'unable'; instruction: Instruction; reason: string })
   /** A taxi (or correction) needs a turn direction: both ways on `taxiway` from `node` work. */
-  | (AircraftEvent & { type: 'ambiguous'; instruction: Instruction; node: NodeId; taxiway: string; edges: EdgeId[] })
+  | (AircraftEvent & { type: 'ambiguous'; instruction: Instruction; node: NodeId; /** `node` as a player finds it (junctionName). */ at: string; taxiway: string; edges: EdgeId[] })
   /** Stopped at the end of its path. */
   | (AircraftEvent & { type: 'arrived'; destination: ReachedDestination })
   /**

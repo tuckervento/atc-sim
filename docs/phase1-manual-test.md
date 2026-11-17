@@ -80,7 +80,7 @@ surprised you.
   or landing traffic came. Don't cross; select the aircraft and press T again.
 - **If the pilot says unable:** the line is `ANA7953 unable (taxi): <why>`. Nothing changed: check
   the command against the table (a typo that's still a valid name, like `V` for `W`, gives this)
-  and type it again. `… which way on X? Give the turn, L:X or R:X` means add the turn to that
+  and type it again. `… which way on X at Y/Z? Give the turn, L:X or R:X` means add the turn to that
   taxiway in the route.
 - **If a typed command shows a red error** under the console: it didn't parse; nothing was sent.
   Fix the highlighted word and press Enter.

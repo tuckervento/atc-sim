@@ -88,9 +88,19 @@ describe('destinations', () => {
     expect(route('taxi 31L via A', offC(null))).toEqual(unable('no runway 31L at TEST'));
     expect(route('taxi 18 via A', offC(null))).toEqual(unable('runway 18 has no departure line at TEST'));
     const noEntrance = indexAirport(
-      loadAirport(testAirport, { formatVersion: 1, airport: 'TEST', rampHandoffs: { patch: [{ id: 'rhTC', use: 'departures' }] } }),
+      loadAirport(testAirport, {
+        formatVersion: 1,
+        airport: 'TEST',
+        rampHandoffs: { patch: [{ id: 'rhTC', terminals: ['T1'] }, { id: 'rhTB', terminals: ['T1'] }] },
+      }),
     );
     expect(route('taxi ramp T2 via A', offC(null), noEntrance)).toEqual(unable('no ramp entrance serves T2 at TEST'));
+  });
+
+  it("takes arrivals in at an entrance marked for departures (Q's run: \"they all need to be accessible by all\")", () => {
+    // TB serves every terminal and is marked for departures; east on A from a7, it comes before TC.
+    const path = pathOf(route('taxi ramp T2 via A TB', at('a7', 'aK-a7')));
+    expect(path.destination).toEqual({ kind: 'ramp', terminal: 'T2', rampHandoff: 'rhTB' });
   });
 });
 
@@ -164,7 +174,7 @@ describe('unnamed connectors count as turns (Q6)', () => {
     expect(left.nodes).toEqual(['dHS', 'bD', 'bE1', 'eW', 'e1', 'pbS1']);
     expect(route('taxi penalty via D B R:E', at('dHS', 'r1D-dHS'), CONNECTOR)).toEqual({
       type: 'unable',
-      reason: "taxiway E doesn't go right from bE1",
+      reason: "taxiway E doesn't go right from B near D",
     });
   });
 
@@ -186,7 +196,7 @@ describe('unnamed connectors count as turns (Q6)', () => {
     const offF = at('bF', 'bF-fH');
     expect(pathOf(route('taxi penalty via B E', offF, BOTH)).nodes).toEqual(['bF', 'bE2', 'eE', 'e2', 'pbS2']);
     expect(pathOf(route('taxi penalty via B L:E', offF, BOTH)).nodes).toEqual(['bF', 'bE2', 'eE', 'e2', 'pbS2']);
-    expect(route('taxi penalty via B R:E', offF, BOTH)).toEqual({ type: 'unable', reason: "taxiway E doesn't go right from bE2" });
+    expect(route('taxi penalty via B R:E', offF, BOTH)).toEqual({ type: 'unable', reason: "taxiway E doesn't go right from B near C" });
   });
 
   it("never crosses a runway: an unnamed edge from F's hold onto 18/36, where Z starts, is no connector", () => {
@@ -223,7 +233,7 @@ describe('unnamed connectors count as turns (Q6)', () => {
     expect(pathOf(route('taxi pad padH via B H', at('bD', 'bE1-bD'), hairpin)).nodes).toEqual(['bD', 'hp', 'hq']);
     expect(route('taxi pad padH via B H', at('bD', 'bD-bC'), hairpin)).toEqual({
       type: 'unable',
-      reason: "taxiway B doesn't reach H in the direction of travel (they meet only through unnamed connectors from bD)",
+      reason: "taxiway B doesn't reach H in the direction of travel (they meet only through unnamed connectors from B/D)",
     });
   });
 
@@ -262,7 +272,7 @@ describe('unnamed connectors count as turns (Q6)', () => {
   it("explains a connector behind the aircraft: east on B, E's connector is back at bE1", () => {
     expect(route('taxi penalty via B E', at('bD', 'bE1-bD'), CONNECTOR)).toEqual({
       type: 'unable',
-      reason: "taxiway B doesn't reach E in the direction of travel (they meet only through unnamed connectors from bE1)",
+      reason: "taxiway B doesn't reach E in the direction of travel (they meet only through unnamed connectors from B near D)",
     });
   });
 });
@@ -292,7 +302,7 @@ describe('turns', () => {
     // K to aK, where runway 9's departure line (on A) begins.
     expect(path.nodes).toEqual(['wpS', 'aK', 'aW', 'a1H']);
     expect(path.destination).toEqual({ kind: 'runway', runwayEnd: '9', departureLine: 'line9', holdShort: 'hA1' });
-    expect(route('taxi 9 via R:K', parked)).toEqual({ type: 'unable', reason: "can't turn right onto K at wpS with no heading" });
+    expect(route('taxi 9 via R:K', parked)).toEqual({ type: 'unable', reason: "can't turn right onto K at K near A with no heading" });
   });
 
   it('is unable to turn onto the taxiway it is already on, rather than ignoring the turn', () => {
@@ -344,7 +354,7 @@ describe('unable, with a reason', () => {
     // A and D do meet, at aD, but that's behind an aircraft westbound at a7.
     expect(route('taxi ramp T1 via A D', at('a7', 'a7-aD'))).toEqual({
       type: 'unable',
-      reason: "taxiway A doesn't reach D in the direction of travel (they meet only at aD)",
+      reason: "taxiway A doesn't reach D in the direction of travel (they meet only at A/D)",
     });
   });
 
@@ -367,7 +377,7 @@ describe('unable, with a reason', () => {
   it('never uses a closed edge: the route needs C south of the runway, closed, so the reason names it', () => {
     expect(route('taxi penalty via C B E1 E', at('aC', 'aTB-aC'))).toEqual({
       type: 'unable',
-      reason: 'taxiway C is closed between cHS and bC (Construction: Twy C closed between Rwy 9/27 and Twy B (synthetic))',
+      reason: 'taxiway C is closed between C near runway 9/27 and B/C (Construction: Twy C closed between Rwy 9/27 and Twy B (synthetic))',
     });
   });
 
@@ -384,7 +394,7 @@ describe('unable, with a reason', () => {
     );
     expect(route('taxi penalty via B E', offF, closedAtBE2)).toEqual({
       type: 'unable',
-      reason: 'taxiway E is closed between bE2 and eE (test closure)',
+      reason: 'taxiway E is closed between B/E and E near B (test closure)',
     });
   });
 
@@ -398,7 +408,7 @@ describe('unable, with a reason', () => {
     );
     expect(route('taxi 27 via A', at('aJ', 'aTC-aJ'), lineClosed)).toEqual({
       type: 'unable',
-      reason: 'taxiway A9 is closed between aE and a9I (test closure)',
+      reason: 'taxiway A9 is closed between A/A9 and A9 near A (test closure)',
     });
   });
 
@@ -412,7 +422,7 @@ describe('unable, with a reason', () => {
     );
     expect(route('taxi ramp T2 via A', at('aC', 'aTB-aC'), stubClosed)).toEqual({
       type: 'unable',
-      reason: 'taxiway TC is closed between aTC and rbTC (test closure)',
+      reason: 'taxiway TC is closed between A/TC and TC near A (test closure)',
     });
   });
 });
@@ -445,7 +455,7 @@ describe("the aircraft's own way out, before the first route item", () => {
     expect(path.nodes).toEqual(['npS1', 'np1', 'np2', 'npE', 'aP2', 'aE', 'a9I', 'a9H']);
     expect(path.destination).toEqual({ kind: 'runway', runwayEnd: '27', departureLine: 'line27', holdShort: 'hA9' });
     // A is past P1 or P2: the route has to name one.
-    expect(route('taxi 27 via A', parked)).toEqual({ type: 'unable', reason: "taxiway A can't be reached from npS1" });
+    expect(route('taxi 27 via A', parked)).toEqual({ type: 'unable', reason: "taxiway A can't be reached from near A/P1" });
   });
 
   it("leaves the departure line at the route's first taxiway, an exit ahead (docs/terse-syntax.md, C6)", () => {
@@ -455,7 +465,7 @@ describe("the aircraft's own way out, before the first route item", () => {
     // Already past P1 at aP2: it can't go back.
     expect(route('taxi pad via L:P1', at('aP2', 'aP1-aP2'))).toEqual({
       type: 'unable',
-      reason: "taxiway A doesn't reach P1 in the direction of travel (they meet only at aP1)",
+      reason: "taxiway A doesn't reach P1 in the direction of travel (they meet only at A/P1)",
     });
   });
 

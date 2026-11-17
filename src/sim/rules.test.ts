@@ -13,6 +13,18 @@ import { TICK_HZ } from './movement.ts';
 
 const TEST = indexAirport(loadAirport(testAirport));
 
+/**
+ * One tick of a wait for something to happen, failing at `WAIT_LIMIT_TICKS` instead of hanging
+ * when it never does (a route that no longer goes there).
+ */
+function stepWaiting(sim: Sim): void {
+  if (sim.world.tick >= WAIT_LIMIT_TICKS) throw new Error(`still waiting at tick ${sim.world.tick}`);
+  step(sim, 1);
+}
+
+/** An hour of sim time: every wait here ends within a few minutes. */
+const WAIT_LIMIT_TICKS = 36_000;
+
 function transmit(sim: Sim, text: string): void {
   const result = parseTerse(text);
   if (!result.ok) throw new Error(`'${text}' doesn't parse: ${result.error.message}`);
@@ -46,7 +58,7 @@ function incursion(seed: number): Sim {
   transmit(sim, 'JBU11 taxi ramp T2 via C A TC');
   runUntil(sim, (e) => e.type === 'takeoff-roll' && e.callsign === 'DAL4', 3000);
   transmit(sim, 'JBU11 cross 27');
-  while (getAircraft(sim, 'JBU11').nose[1] <= 0) step(sim, 1);
+  while (getAircraft(sim, 'JBU11').nose[1] <= 0) stepWaiting(sim);
   transmit(sim, 'JBU11 hold');
   return sim;
 }
@@ -131,7 +143,7 @@ describe('collision, with parked footprints reused', () => {
 describe('after the session ends', () => {
   it('the sim keeps advancing, but nothing more is counted: the score is the session as it ended', () => {
     const sim = incursion(1);
-    while (getSession(sim).state === 'running') step(sim, 1);
+    while (getSession(sim).state === 'running') stepWaiting(sim);
     const endTick = sim.world.tick;
     drainEvents(sim);
     const atEnd = getScore(sim);
@@ -222,7 +234,7 @@ describe('gridlock', () => {
     transmit(sim, 'DAL4 taxi 27 via A');
     transmit(sim, 'JBU11 taxi ramp T2 via A TC');
     while (!inCycle(sim, ['DAL4', 'JBU11'])) {
-      step(sim, 1);
+      stepWaiting(sim);
       if (sim.world.tick > 3000) throw new Error('no standoff');
     }
     const since = sim.world.tick;

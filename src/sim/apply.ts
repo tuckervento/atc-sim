@@ -10,6 +10,7 @@
 // - A runway hold-short given in any instruction (a taxi's list, `hold-short`, a correction's
 //   list) withdraws earlier clearances to cross that runway: the later instruction wins.
 
+import { junctionName } from '../airport/graph.ts';
 import type { EdgeId, NodeId, RunwayId } from '../airport/types.ts';
 import { MAX_DECEL_MPS2 } from './braking.ts';
 import type { Command, Continue, Correction, Cross, HoldShort, HoldShortTarget, Instruction, Taxi } from './commands.ts';
@@ -136,8 +137,8 @@ function applyContinue(sim: Sim, ac: Aircraft, instruction: Continue): void {
   const runwayHold = here.find((stop) => stop.kind === 'runway-hold');
   if (!ac.holdPosition && taxiwayHolds.length === 0 && runwayHold) {
     const runways = runwayHold.runways.join(' and ');
-    const node = nodeOf(ac.track, runwayHold.trackIndex);
-    return unable(sim, ac, instruction, `holding short of runway ${runways} at ${node}: crossing it takes a crossing clearance`);
+    const at = junctionName(sim.index, nodeOf(ac.track, runwayHold.trackIndex));
+    return unable(sim, ac, instruction, `holding short of runway ${runways} at ${at}: crossing it takes a crossing clearance`);
   }
   ac.holdPosition = false;
   clearance?.released.push(...taxiwayHolds);
@@ -232,7 +233,7 @@ type Reroute =
 function settle(sim: Sim, ac: Aircraft, instruction: Instruction, reroute: Reroute): boolean {
   if (reroute.kind === 'ambiguous') {
     const { node, taxiway, edges } = reroute;
-    emit(sim, { tick: sim.world.tick, callsign: ac.callsign, type: 'ambiguous', instruction, node, taxiway, edges });
+    emit(sim, { tick: sim.world.tick, callsign: ac.callsign, type: 'ambiguous', instruction, node, at: junctionName(sim.index, node), taxiway, edges });
     return false;
   }
   if (reroute.kind === 'unable') {
@@ -279,8 +280,8 @@ function rerouteFromStart(sim: Sim, ac: Aircraft, clearance: Clearance, taxi: Ta
   const entered = Math.max(0, (place.kind === 'node' ? place.i : place.i + 1) - clearance.pathOffset);
   for (let k = 0; k < entered; k++) {
     if (result.edges[k] !== clearance.path.edges[k]) {
-      const node = nodeOf(ac.track, k + clearance.pathOffset);
-      return { kind: 'unable', reason: `too late: the corrected route leaves the route taxied at ${node}` };
+      const at = junctionName(sim.index, nodeOf(ac.track, k + clearance.pathOffset));
+      return { kind: 'unable', reason: `too late: the corrected route leaves the route taxied at ${at}` };
     }
   }
   // The track up to the path's start, then the new path: the part already taxied is the same.
@@ -339,11 +340,11 @@ function stopProblem(sim: Sim, ac: Aircraft): string | null {
   if (stop.at - ac.s >= braking - 1e-9) return null;
   switch (stop.kind) {
     case 'runway-hold':
-      return `too close to stop at hold line ${stop.holdShort} at ${nodeOf(ac.track, stop.trackIndex)}`;
+      return `too close to stop at the hold line for runway ${stop.runways.join(' and ')} at ${junctionName(sim.index, nodeOf(ac.track, stop.trackIndex))}`;
     case 'clearance-hold':
-      return `too close to stop short of ${describeTarget(stop.target)} at ${nodeOf(ac.track, stop.trackIndex)}`;
+      return `too close to stop short of ${describeTarget(stop.target)} at ${junctionName(sim.index, nodeOf(ac.track, stop.trackIndex))}`;
     case 'end':
-      return `too close to stop at the end of the route at ${nodeOf(ac.track, ac.track.nodes.length - 1)}`;
+      return `too close to stop at the end of the route at ${junctionName(sim.index, nodeOf(ac.track, ac.track.nodes.length - 1))}`;
   }
 }
 

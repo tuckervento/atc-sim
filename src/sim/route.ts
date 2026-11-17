@@ -23,10 +23,13 @@
 // - A turn direction picks the way by geometry, relative to the heading it arrived with.
 //   Through a connector it's measured over the whole turn, from the heading along X to the
 //   heading along Y (`waySide`); a jog between parallel taxiways, where that sums to under
-//   CONNECTOR_JOG_DEG, turns the way its first bend does. With no direction, it takes the way
-//   that completes the route; if more than one does (both ways along Y, or connectors either
-//   side), it's ambiguous; if none does, unable. With no heading at all (`arrivedVia` null), a
-//   direction is unable.
+//   CONNECTOR_JOG_DEG, turns the way its first bend does. A direct turn within STRAIGHT_ON_DEG
+//   of straight is straight on, neither left nor right (Q's run: where Y carries straight on and
+//   also branches back sharply on the same side, both were "left", and no route could pick one).
+//   With no direction, a straight-on way that completes the route is taken (a turn has to be
+//   said); otherwise the way that completes the route; if more than one does (both ways along
+//   Y, or connectors either side), it's ambiguous; if none does, unable. With no heading at all
+//   (`arrivedVia` null), a direction is unable.
 // - Before the first item, the aircraft's own way out: if it isn't on the first item already,
 //   it goes forward along the taxiway it's on, or along unnamed taxiway edges, to the first
 //   node where the first item begins. That's how it leaves a pad spot (unnamed lead-out), a
@@ -48,7 +51,7 @@
 //   edge.
 // - Where several failures compete, the reason given is the one that got furthest along.
 
-import { edgeLength, edgePolyline, edgesAt, holdingAreaNames, otherEnd, type AirportIndex } from '../airport/graph.ts';
+import { edgeLength, edgePolyline, edgesAt, holdingAreaNames, junctionName, otherEnd, type AirportIndex } from '../airport/graph.ts';
 import type {
   Closure,
   DepartureLine,
@@ -195,6 +198,23 @@ export function resolveRoute(index: AirportIndex, taxi: Taxi, start: RouteStart)
   if (routeProblem !== null) return { type: 'unable', reason: routeProblem };
   const wayIn = resolveWayIn(index, taxi, start);
   if ('type' in wayIn) return wayIn;
+  if (wayIn.kind === 'ramp') {
+    // Entrances marked for arrivals (or both) first; any other serving the terminal only when
+    // none of those completes the route (Q, 2026-11-16: every entrance accessible by all, and
+    // the ramp's departures leave by the departure-marked ones, the mirror of this).
+    const preferred = wayIn.handoffs.filter((h) => h.use !== 'departures');
+    if (preferred.length > 0 && preferred.length < wayIn.handoffs.length) {
+      const result = resolveVia(index, taxi, start, arrived, { ...wayIn, handoffs: preferred });
+      if (result.type !== 'unable') return result;
+      const any = resolveVia(index, taxi, start, arrived, wayIn);
+      return any.type === 'unable' ? result : any;
+    }
+  }
+  return resolveVia(index, taxi, start, arrived, wayIn);
+}
+
+/** The route, its start and destination checked, to the destination's way in `wayIn`. */
+function resolveVia(index: AirportIndex, taxi: Taxi, start: RouteStart, arrived: Edge | null, wayIn: WayIn): RouteResult {
   const first = taxi.via[0];
   if (!first) throw new Error('checkRoute passed an empty route');
   // The taxiway it's on: the name of the edge it arrived along. A ramp lane's name counts: the
@@ -207,7 +227,7 @@ export function resolveRoute(index: AirportIndex, taxi: Taxi, start: RouteStart)
   }
   // On the first item already, it carries on along it; otherwise it makes its way out to it.
   const outcome =
-    first.taxiway === current ? walkItem(ctx, 0, start.node, arrived, [], true, null) : leadOut(ctx, start.node, arrived, []);
+    first.taxiway === current ? walkItem(ctx, 0, start.node, arrived, [], true, null, null) : leadOut(ctx, start.node, arrived, []);
   switch (outcome.kind) {
     case 'failed':
       return { type: 'unable', reason: outcome.reason };
@@ -239,12 +259,13 @@ function checkRoute(index: AirportIndex, via: RouteItem[]): string | null {
 
 /** Why an aircraft on taxiway `a` didn't get to taxiway `b`. */
 function notReachedReason(index: AirportIndex, a: string, b: string): string {
+  const names = (nodes: NodeId[]) => [...new Set(nodes.map((n) => junctionName(index, n)))].join(', ');
   const meet = meetingNodes(index, a, b);
   const connectors = connectorStarts(index, a, b);
   if (meet.length === 0 && connectors.length === 0) return `taxiways ${a} and ${b} don't meet`;
   const where = [
-    meet.length > 0 ? `at ${meet.join(', ')}` : null,
-    connectors.length > 0 ? `through unnamed connectors from ${connectors.join(', ')}` : null,
+    meet.length > 0 ? `at ${names(meet)}` : null,
+    connectors.length > 0 ? `through unnamed connectors from ${names(connectors)}` : null,
   ].filter((w) => w !== null);
   return `taxiway ${a} doesn't reach ${b} in the direction of travel (they meet only ${where.join(' and ')})`;
 }
@@ -329,7 +350,7 @@ function leadOut(ctx: Context, node: NodeId, arrived: Edge | null, used: EdgeId[
   if (forward.length === 0) {
     const reason =
       ctx.current === null
-        ? `taxiway ${first.taxiway} can't be reached from ${ctx.start}`
+        ? `taxiway ${first.taxiway} can't be reached from ${junctionName(ctx.index, ctx.start)}`
         : notReachedReason(ctx.index, ctx.current, first.taxiway);
     return failed(-1, used, reason);
   }
@@ -339,10 +360,10 @@ function leadOut(ctx: Context, node: NodeId, arrived: Edge | null, used: EdgeId[
     forward.map((edge) => {
       const runway = runwayAt(ctx.index, otherEnd(edge, node));
       if (runway !== null) {
-        const where = ctx.current === null ? `from ${ctx.start}` : `on ${ctx.current}`;
+        const where = ctx.current === null ? `from ${junctionName(ctx.index, ctx.start)}` : `on ${ctx.current}`;
         return [edge, failed(-1, used, `reaching ${first.taxiway} means crossing runway ${runway} ${where}, which the route doesn't name`)];
       }
-      return travel(node, edge, used, -1, (to, now) => leadOut(ctx, to, edge, now));
+      return travel(ctx.index, node, edge, used, -1, (to, now) => leadOut(ctx, to, edge, now));
     }),
   );
 }
@@ -356,22 +377,50 @@ function runwayAt(index: AirportIndex, node: NodeId): RunwayId | null {
  * At `node`, turns onto route item `j`'s taxiway, either way it goes from here: directly, or
  * through an unnamed connector (see `waysOnto`).
  */
-function turnOnto(ctx: Context, j: number, node: NodeId, arrived: Edge | null, used: EdgeId[]): Outcome {
+function turnOnto(ctx: Context, j: number, node: NodeId, arrived: Edge | null, used: EdgeId[], fork: Fork | null = null): Outcome {
   const item = ctx.via[j];
   if (!item) throw new Error(`route item ${j} doesn't exist`);
-  let ways = waysOnto(ctx.index, node, arrived, used, item.taxiway);
+  const sided = sidedWays(ctx.index, node, arrived, used, item.taxiway, fork);
+  let ways = sided.map((s) => s.way);
+  const side = (way: Way) => sided.find((s) => s.way === way)?.side ?? null;
   if (item.turn !== null) {
     const turn = item.turn;
     // Left and right are relative to a heading. With none, the turn can't be followed, and
     // guessing would be a silent fallback.
-    if (arrived === null) return failed(j, used, `can't turn ${turn} onto ${item.taxiway} at ${node} with no heading`);
-    ways = ways.filter((way) => waySide(ctx.index, node, arrived, way) === turn);
-    if (ways.length === 0) return failed(j, used, `taxiway ${item.taxiway} doesn't go ${turn} from ${node}`);
+    if (arrived === null) return failed(j, used, `can't turn ${turn} onto ${item.taxiway} at ${junctionName(ctx.index, node)} with no heading`);
+    ways = ways.filter((way) => side(way) === turn);
+    if (ways.length === 0) return failed(j, used, `taxiway ${item.taxiway} doesn't go ${turn} from ${junctionName(ctx.index, node)}`);
+  } else if (arrived !== null) {
+    // No turn said: straight on, if that completes the route, over any turn.
+    const straight = ways.filter((way) => way.steps.length === 0 && side(way) === null);
+    if (straight.length > 0 && straight.length < ways.length) {
+      const ahead = turnOntoWays(ctx, j, node, straight, used);
+      if (ahead.kind !== 'failed') return ahead;
+    }
   }
+  return turnOntoWays(ctx, j, node, ways, used);
+}
+
+/**
+ * The ways onto taxiway `name` at `node` (`waysOnto`), each with the side it turns (null: straight
+ * on, or no heading). After a fork (`Fork`), sides are from the heading at the fork, and a direct
+ * turn sharper than CONNECTOR_MAX_TURN_DEG is no way on.
+ */
+function sidedWays(index: AirportIndex, node: NodeId, arrived: Edge | null, used: EdgeId[], name: string, fork: Fork | null): { way: Way; side: Turn | null }[] {
+  let ways = waysOnto(index, node, arrived, used, name);
+  if (arrived === null) return ways.map((way) => ({ way, side: null }));
+  if (fork !== null) ways = ways.filter((way) => way.steps.length > 0 || Math.abs(turnAngle(index, node, arrived, way.onto)) <= CONNECTOR_MAX_TURN_DEG);
+  return ways.map((way) => ({ way, side: fork === null ? waySide(index, node, arrived, way) : forkSide(index, fork, way) }));
+}
+
+/** Onto route item `j`'s taxiway at `node`, by any of `ways` that completes the route. */
+function turnOntoWays(ctx: Context, j: number, node: NodeId, ways: Way[], used: EdgeId[]): Outcome {
+  const item = ctx.via[j];
+  if (!item) throw new Error(`route item ${j} doesn't exist`);
   // Each item covers at least one edge, so the next junction is looked for from the far end of
   // its first edge on.
   const follow = (way: Way): Outcome =>
-    travelSteps(node, way.steps, used, j, (at, now) => travel(at, way.onto, now, j, (to, after) => walkItem(ctx, j, to, way.onto, after, true, null))[1]);
+    travelSteps(ctx.index, node, way.steps, used, j, (at, now) => travel(ctx.index, at, way.onto, now, j, (to, after) => walkItem(ctx, j, to, way.onto, after, true, null, null))[1]);
   // Ways that share their first edge (one connector, both ways along the taxiway at its end)
   // are one option here; where they part, at the connector's end, is where the pilot would ask.
   const groups = new Map<EdgeId, Way[]>();
@@ -392,11 +441,41 @@ function turnOnto(ctx: Context, j: number, node: NodeId, arrived: Edge | null, u
   );
 }
 
+/**
+ * How each way onto taxiway `name` from `node` is picked, for an aircraft that arrived along
+ * `arrivedVia`: by a turn, or straight on (no turn said). The ways and sides `turnOnto` uses
+ * (`sidedWays`); `fork`, where the route item forked, with the edge it arrived there by. Two
+ * ways with the same pick can't be told apart by any route.
+ */
+export function turnPicks(
+  index: AirportIndex,
+  node: NodeId,
+  arrivedVia: EdgeId,
+  name: string,
+  fork: { node: NodeId; arrivedVia: EdgeId } | null = null,
+): { pick: Turn | 'straight'; edges: EdgeId[]; turnsDeg: number[] }[] {
+  const edge = (id: EdgeId) => {
+    const found = index.edges.get(id);
+    if (!found) throw new Error(`unknown edge "${id}"`);
+    return found;
+  };
+  const arrived = edge(arrivedVia);
+  return sidedWays(index, node, arrived, [], name, fork && { node: fork.node, arrived: edge(fork.arrivedVia) }).map(({ way, side }) => {
+    const turnsDeg: number[] = [];
+    let [at, last] = [node, arrived];
+    for (const step of [...way.steps.map((s) => s.edge), way.onto]) {
+      turnsDeg.push(Math.round(turnAngle(index, at, last, step)));
+      [at, last] = [otherEnd(step, at), step];
+    }
+    return { pick: side ?? 'straight', edges: [...way.steps.map((s) => s.edge.id), way.onto.id], turnsDeg };
+  });
+}
+
 /** Travels `steps` in order from `node`, then the rest of the route from where they end. */
-function travelSteps(node: NodeId, steps: Step[], used: EdgeId[], item: number, then: (at: NodeId, used: EdgeId[]) => Outcome): Outcome {
+function travelSteps(index: AirportIndex, node: NodeId, steps: Step[], used: EdgeId[], item: number, then: (at: NodeId, used: EdgeId[]) => Outcome): Outcome {
   const [step, ...rest] = steps;
   if (!step) return then(node, used);
-  return travel(node, step.edge, used, item, (to, now) => travelSteps(to, rest, now, item, then))[1];
+  return travel(index, node, step.edge, used, item, (to, now) => travelSteps(index, to, rest, now, item, then))[1];
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -496,6 +575,7 @@ function waySide(index: AirportIndex, node: NodeId, arrived: Edge, way: Way): Tu
  * ids of the edges travelled so far. With `checkHere`, `node` itself may be where the aircraft
  * turns onto the next item (or enters the destination's way in, after the last item).
  * `closedWayIn`: on the last item, why a way in passed earlier on this taxiway was closed.
+ * `fork`: where this item last forked into branches of its own name, if it has (`Fork`).
  */
 function walkItem(
   ctx: Context,
@@ -505,6 +585,7 @@ function walkItem(
   used: EdgeId[],
   checkHere: boolean,
   closedWayIn: string | null,
+  fork: Fork | null,
 ): Outcome {
   const item = ctx.via[i];
   if (!item) throw new Error(`route item ${i} doesn't exist`);
@@ -512,7 +593,7 @@ function walkItem(
   if (checkHere) {
     if (next) {
       // The first junction with the next taxiway is where it turns. It never skips one.
-      if (waysOnto(ctx.index, node, arrived, used, next.taxiway).length > 0) return turnOnto(ctx, i + 1, node, arrived, used);
+      if (waysOnto(ctx.index, node, arrived, used, next.taxiway).length > 0) return turnOnto(ctx, i + 1, node, arrived, used, fork);
     } else {
       // A closed way in doesn't end the walk: another one may come further on.
       const entered = tryWayIn(ctx, node, arrived, used);
@@ -527,11 +608,31 @@ function walkItem(
       : (closedWayIn ?? `taxiway ${item.taxiway} doesn't lead to ${ctx.wayIn.describe} in the direction of travel`);
     return failed(i, used, reason);
   }
-  return choose(
+  // More than one way on along the same name: a fork (a Y onto another taxiway, say). The turn
+  // off a branch onto the next item is then judged from here (`Fork`).
+  const here = forward.length > 1 && arrived !== null ? { node, arrived } : fork;
+  const outcome = choose(
     node,
     item.taxiway,
-    forward.map((edge) => travel(node, edge, used, i, (to, now) => walkItem(ctx, i, to, edge, now, true, closedWayIn))),
+    forward.map((edge) => travel(ctx.index, node, edge, used, i, (to, now) => walkItem(ctx, i, to, edge, now, true, closedWayIn, here))),
   );
+  // Ambiguous at a fork with a next item: the turn onto that is what settles it, so ask about it.
+  if (outcome.kind === 'ambiguous' && outcome.node === node && forward.length > 1 && next) return { ...outcome, taxiway: next.taxiway };
+  return outcome;
+}
+
+/**
+ * Where a route item forked into branches of its own name, and the edge it arrived there by.
+ * A pilot at a Y picks the branch for the turn ahead (Q's run: U forks into two branches onto
+ * A, one built for each way along A). So after a fork, the turn onto the next item:
+ * - takes its side from the heading at the fork, not at the branch's end, where the branch
+ *   built for that way along the next taxiway meets it almost straight on;
+ * - is no way on when sharper than CONNECTOR_MAX_TURN_DEG at the branch's end: that's the
+ *   branch built for the other way, as for unnamed connectors.
+ */
+interface Fork {
+  node: NodeId;
+  arrived: Edge;
 }
 
 /**
@@ -559,14 +660,22 @@ function failed(item: number, used: EdgeId[], reason: string): Failed {
 }
 
 /**
+ * A direct turn within this of straight ahead (degrees) is straight on: neither left nor right.
+ * [Builder], mine, from KJFK (investigations/route-retries-q-run.md): of the junctions where two
+ * ways onto a taxiway turned the same side, the straighter way was always within 3° and the
+ * other at least 18° off; 10 separates every one, a three-way DB junction (+1°, +18°) included.
+ */
+export const STRAIGHT_ON_DEG = 10;
+
+/**
  * Which way `edge` turns off at `node`, for an aircraft that arrived along `arrived`: by the
  * last stretch of `arrived` into the node and the first stretch of `edge` out of it. null:
- * straight ahead or straight back.
+ * straight on (within STRAIGHT_ON_DEG) or straight back.
  */
 function turnSide(index: AirportIndex, node: NodeId, arrived: Edge, edge: Edge): Turn | null {
   const relative = turnAngle(index, node, arrived, edge);
   const epsilon = 1e-6;
-  if (Math.abs(relative) < epsilon || Math.abs(relative) > 180 - epsilon) return null;
+  if (Math.abs(relative) < STRAIGHT_ON_DEG || Math.abs(relative) > 180 - epsilon) return null;
   return relative > 0 ? 'right' : 'left';
 }
 
@@ -576,15 +685,41 @@ function turnSide(index: AirportIndex, node: NodeId, arrived: Edge, edge: Edge):
  * `edge` out of it.
  */
 function turnAngle(index: AirportIndex, node: NodeId, arrived: Edge, edge: Edge): number {
-  const inward = edgePolyline(index, arrived);
-  if (arrived.to !== node) inward.reverse();
+  return relativeDeg(headingInto(index, node, arrived), headingOutOf(index, node, edge));
+}
+
+/** The heading arriving at `node` along `edge`: its last stretch, degrees from north. */
+function headingInto(index: AirportIndex, node: NodeId, edge: Edge): number {
+  const inward = edgePolyline(index, edge);
+  if (edge.to !== node) inward.reverse();
+  const [a, b] = [inward.at(-2), inward.at(-1)];
+  if (!a || !b) throw new Error(`edge "${edge.id}" has no length`);
+  return bearing(a, b);
+}
+
+/** The heading leaving `node` along `edge`: its first stretch, degrees from north. */
+function headingOutOf(index: AirportIndex, node: NodeId, edge: Edge): number {
   const outward = edgePolyline(index, edge);
   if (edge.from !== node) outward.reverse();
-  const [a, b] = [inward.at(-2), inward.at(-1)];
   const [c, d] = [outward[0], outward[1]];
-  if (!a || !b || !c || !d) throw new Error(`edge "${arrived.id}" or "${edge.id}" has no length`);
-  const delta = bearing(c, d) - bearing(a, b);
-  return (((delta % 360) + 540) % 360) - 180;
+  if (!c || !d) throw new Error(`edge "${edge.id}" has no length`);
+  return bearing(c, d);
+}
+
+/** `to` relative to `from`, degrees in [-180, 180): clockwise (right) is positive. */
+function relativeDeg(from: number, to: number): number {
+  return ((((to - from) % 360) + 540) % 360) - 180;
+}
+
+/**
+ * The side of a way onto the next item after a fork (`Fork`): from the heading arriving at the
+ * fork to the heading leaving along the next taxiway. null: straight on (within
+ * STRAIGHT_ON_DEG) or straight back.
+ */
+function forkSide(index: AirportIndex, fork: Fork, way: Way): Turn | null {
+  const relative = relativeDeg(headingInto(index, fork.node, fork.arrived), headingOutOf(index, way.node, way.onto));
+  if (Math.abs(relative) < STRAIGHT_ON_DEG || Math.abs(relative) > 180 - 1e-6) return null;
+  return relative > 0 ? 'right' : 'left';
 }
 
 /** Degrees clockwise from north (the local frame's +y), from `a` toward `b`. */
@@ -605,20 +740,21 @@ function taxiwayEdgesAt(index: AirportIndex, node: NodeId, name: string, arrived
  * a failure naming the closure. `item` is the route item being travelled (-1 before the first).
  */
 function travel(
+  index: AirportIndex,
   node: NodeId,
   edge: Edge,
   used: EdgeId[],
   item: number,
   then: (to: NodeId, used: EdgeId[]) => Outcome,
 ): [Edge, Outcome] {
-  if (edge.closed) return [edge, failed(item, used, closedReason(node, edge, edge.closed))];
+  if (edge.closed) return [edge, failed(item, used, closedReason(index, node, edge, edge.closed))];
   const to = otherEnd(edge, node);
   return [edge, prefix({ edge, to }, then(to, [...used, edge.id]))];
 }
 
-function closedReason(node: NodeId, edge: Edge, closure: Closure): string {
+function closedReason(index: AirportIndex, node: NodeId, edge: Edge, closure: Closure): string {
   const what = edge.name === undefined ? 'the taxiway' : `taxiway ${edge.name}`;
-  return `${what} is closed between ${node} and ${otherEnd(edge, node)} (${closure.reason})`;
+  return `${what} is closed between ${junctionName(index, node)} and ${junctionName(index, otherEnd(edge, node))} (${closure.reason})`;
 }
 
 function prefix(step: Step, outcome: Outcome): Outcome {
@@ -675,9 +811,9 @@ function resolveWayIn(index: AirportIndex, taxi: Taxi, start: RouteStart): WayIn
       // ("Terminal 4"). Command names are uppercase, so case is ignored.
       const terminal = index.airport.terminals.find((t) => t.id.toUpperCase() === name.toUpperCase());
       if (!terminal) return { type: 'unable', reason: `no terminal ${name} at ${index.airport.id}` };
-      const handoffs = index.airport.rampHandoffs.filter(
-        (h) => h.use !== 'departures' && (h.terminals === undefined || h.terminals.includes(terminal.id)),
-      );
+      // Any ramp handoff serving the terminal takes arrivals, whatever its `use` (Q, 2026-11-16:
+      // "they all need to be accessible by all"); resolveRoute tries the arrival-marked ones first.
+      const handoffs = index.airport.rampHandoffs.filter((h) => h.terminals === undefined || h.terminals.includes(terminal.id));
       if (handoffs.length === 0) return { type: 'unable', reason: `no ramp entrance serves ${terminal.id} at ${index.airport.id}` };
       return { kind: 'ramp', describe: `a ramp entrance for ${terminal.id}`, terminal: terminal.id, handoffs };
     }
@@ -733,7 +869,7 @@ function tryWayIn(ctx: Context, node: NodeId, arrived: Edge | null, used: EdgeId
       if (steps[0] && steps[0].edge.id === arrived?.id) continue;
       const closed = steps.find((s) => s.edge.closed);
       if (closed?.edge.closed) {
-        return failed(ctx.via.length, used, closedReason(otherEnd(closed.edge, closed.to), closed.edge, closed.edge.closed));
+        return failed(ctx.via.length, used, closedReason(ctx.index, otherEnd(closed.edge, closed.to), closed.edge, closed.edge.closed));
       }
       const destination = { kind: 'runway' as const, runwayEnd: wayIn.runwayEnd, departureLine: line.id, holdShort: line.holdShort };
       return { kind: 'done', steps, destination };
@@ -815,7 +951,7 @@ function leadIn(
   if (!any) return null;
   let from = start;
   for (const step of any) {
-    if (step.edge.closed) return { kind: 'closed', reason: closedReason(from, step.edge, step.edge.closed) };
+    if (step.edge.closed) return { kind: 'closed', reason: closedReason(index, from, step.edge, step.edge.closed) };
     from = step.to;
   }
   throw new Error(`a way from "${start}" was found only with closed edges allowed, but has none`);

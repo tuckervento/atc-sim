@@ -82,7 +82,7 @@ function describe(event: SimEvent, held: ReadonlySet<string>, context: LogContex
     case 'ambiguous':
       return {
         kind: 'unable',
-        text: `${event.callsign} unable (${event.instruction.type}): which way on ${event.taxiway}? Give the turn, L:${event.taxiway} or R:${event.taxiway}`,
+        text: `${event.callsign} unable (${event.instruction.type}): which way on ${event.taxiway} at ${event.at}? Give the turn, L:${event.taxiway} or R:${event.taxiway}`,
       };
     case 'not-on-frequency':
       return { kind: 'unable', text: `${event.callsign} is on ${event.controller}'s frequency, not yours: no reply` };

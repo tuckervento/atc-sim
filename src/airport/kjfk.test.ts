@@ -185,7 +185,7 @@ describe('KJFK', () => {
     ]);
     expect(path.destination).toEqual({ kind: 'pad', holdingArea: 'kilo', spot: 'xkS3' });
     // KE only branches off to the right here.
-    expect(resolveRoute(INDEX, taxiOf('taxi pad KILO via A L:KE K4 K'), start)).toEqual({ type: 'unable', reason: "taxiway KE doesn't go left from n1743798183" });
+    expect(resolveRoute(INDEX, taxiOf('taxi pad KILO via A L:KE K4 K'), start)).toEqual({ type: 'unable', reason: "taxiway KE doesn't go left from A/KE" });
   });
 
   it('resolves a taxi to the South Hardstand to a connected path, by each of its entrances (Q9)', () => {
@@ -233,7 +233,7 @@ describe('KJFK', () => {
     expect(namesAlong(path.edges)).toEqual(['(connector)', 'B', 'F']);
     expect(path.destination).toEqual({ kind: 'ramp', terminal: 'T5', rampHandoff: 'rhF' });
     expect(pathOf(resolveRoute(INDEX, taxiOf('taxi ramp T5 via A R:B F'), onA)).edges).toEqual(path.edges);
-    expect(resolveRoute(INDEX, taxiOf('taxi ramp T5 via A L:B F'), onA)).toEqual({ type: 'unable', reason: "taxiway B doesn't go left from n4057398094" });
+    expect(resolveRoute(INDEX, taxiOf('taxi ramp T5 via A L:B F'), onA)).toEqual({ type: 'unable', reason: "taxiway B doesn't go left from A/HB" });
   });
 
   it('has the Kilo and Zulu pads and the penalty box by their spoken names (Q3–Q5)', () => {

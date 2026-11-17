@@ -10,6 +10,18 @@ import { parseTerse } from './terse.ts';
 import eLoop from './__fixtures__/e-loop.overrides.json' with { type: 'json' };
 
 const TEST = indexAirport(loadAirport(testAirport));
+
+/**
+ * One tick of a wait for something to happen, failing at `WAIT_LIMIT_TICKS` instead of hanging
+ * when it never does (a route that no longer goes there).
+ */
+function stepWaiting(sim: Sim): void {
+  if (sim.world.tick >= WAIT_LIMIT_TICKS) throw new Error(`still waiting at tick ${sim.world.tick}`);
+  step(sim, 1);
+}
+
+/** An hour of sim time: every wait here ends within a few minutes. */
+const WAIT_LIMIT_TICKS = 36_000;
 /** TEST with E1 and E2 renamed E, so B then E is ambiguous from D (see the fixture's description). */
 const E_LOOP = indexAirport(loadAirport(testAirport, eLoop));
 /** Meters per second in one knot. */
@@ -80,7 +92,7 @@ describe('commands applied through route resolution', () => {
     transmit(sim, 'DAL4 taxi 27 via A');
     let before = getAircraft(sim, 'DAL4');
     while (!(before.location.kind === 'edge' && before.location.edge === 'aD-aTB' && before.location.distanceM > 150)) {
-      step(sim, 1);
+      stepWaiting(sim);
       before = getAircraft(sim, 'DAL4');
     }
     transmit(sim, 'DAL4 taxi ramp T2 via A');
@@ -148,6 +160,7 @@ describe('commands applied through route resolution', () => {
           holdShort: [],
         },
         node: 'bD',
+        at: 'B/D',
         taxiway: 'B',
         edges: ['bE1-bD', 'bD-bC'],
       },
@@ -228,7 +241,7 @@ describe('corrections', () => {
     transmit(sim, 'DAL4 taxi penalty via D R:B E');
     let onB = getAircraft(sim, 'DAL4');
     while (!(onB.location.kind === 'edge' && onB.location.edge === 'bE1-bD' && onB.location.distanceM > 100)) {
-      step(sim, 1);
+      stepWaiting(sim);
       onB = getAircraft(sim, 'DAL4');
     }
     drainEvents(sim);
@@ -250,7 +263,7 @@ describe('corrections', () => {
     transmit(sim, 'DAL4 taxi penalty via D R:B E');
     let onB = getAircraft(sim, 'DAL4');
     while (!(onB.location.kind === 'edge' && onB.location.edge === 'bE1-bD' && onB.location.distanceM > 100)) {
-      step(sim, 1);
+      stepWaiting(sim);
       onB = getAircraft(sim, 'DAL4');
     }
     drainEvents(sim);
@@ -262,7 +275,7 @@ describe('corrections', () => {
         tick: expect.any(Number),
         callsign: 'DAL4',
         instruction: { type: 'correction', to: null, via: null, turns: [{ taxiway: 'B', turn: 'left' }], holdShort: null, cross: null },
-        reason: 'too late: the corrected route leaves the route taxied at bD',
+        reason: 'too late: the corrected route leaves the route taxied at B/D',
       },
     ]);
     expect(getAircraft(sim, 'DAL4').clearance).toEqual(onB.clearance);
@@ -492,7 +505,7 @@ describe("the clearance's hold-shorts", () => {
     // dHN to dI is 60 m. Step until the nose is within 5 m of dI.
     let near = getAircraft(sim, 'DAL4');
     while (!(near.location.kind === 'edge' && near.location.from === 'dHN' && near.location.distanceM >= 55)) {
-      step(sim, 1);
+      stepWaiting(sim);
       near = getAircraft(sim, 'DAL4');
     }
     expect((near.speedMps * near.speedMps) / (2 * MAX_DECEL_MPS2)).toBeGreaterThan(5);
@@ -504,7 +517,7 @@ describe("the clearance's hold-shorts", () => {
         tick: expect.any(Number),
         callsign: 'DAL4',
         instruction: { type: 'hold-short', target: { kind: 'taxiway', name: 'A' } },
-        reason: 'too close to stop short of A at dI',
+        reason: 'too close to stop short of A at D near A',
       },
     ]);
     expect(getAircraft(sim, 'DAL4').clearance?.taxi.holdShort).toEqual([]);
@@ -582,13 +595,13 @@ describe('runway hold-shorts', () => {
     // aJ to aH1 (hAW) is 110 m. Step until the nose is 5 m short of it.
     let near = getAircraft(sim, 'DAL4');
     while (!(near.location.kind === 'edge' && near.location.edge === 'aJ-aH1' && near.location.distanceM >= 105)) {
-      step(sim, 1);
+      stepWaiting(sim);
       near = getAircraft(sim, 'DAL4');
     }
     drainEvents(sim);
     transmit(sim, 'DAL4 taxi 27 via A hs 36');
     expect(drainEvents(sim)).toEqual([
-      expect.objectContaining({ type: 'unable', callsign: 'DAL4', reason: 'too close to stop at hold line hAW at aH1' }),
+      expect.objectContaining({ type: 'unable', callsign: 'DAL4', reason: 'too close to stop at the hold line for runway 18/36 at A near runway 18/36' }),
     ]);
     expect(getAircraft(sim, 'DAL4').crossings).toEqual([{ runways: ['18/36'], at: null }]);
     step(sim, 100);
@@ -612,7 +625,7 @@ describe('runway hold-shorts', () => {
         tick: expect.any(Number),
         callsign: 'DAL4',
         instruction: { type: 'continue' },
-        reason: 'holding short of runway 18/36 at aH1: crossing it takes a crossing clearance',
+        reason: 'holding short of runway 18/36 at A near runway 18/36: crossing it takes a crossing clearance',
       },
     ]);
     step(sim, 600);
