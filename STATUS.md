@@ -1,10 +1,10 @@
 # STATUS
 
-_Last updated: 2026-11-16 (1.13 done: Q's manual run passed)_
+_Last updated: 2026-11-16 (1.13b done: fixes from Q's run)_
 
 ## Snapshot
 
-19 of 20 tasks done: all of Phase 0 (0.1–0.6) and 1.1–1.13. **LGA imports as a format check** (1.6), and **the map renders any airport** (1.7, Q checked it against the FAA diagram). **The simulated tower** (1.10, about 37 takeoffs an hour on 31L alongside 15 landings), **the reworked ramp** (1.11, with granular locks) and **the rule checks and score** (1.12) run. **The browser app (1.13) plays KJFK live with typed commands**: Q's manual run ended at Departures 5, Arrivals 3.
+20 of 21 tasks done: all of Phase 0 (0.1–0.6), 1.1–1.13 and 1.13b. Left: 1.14. **LGA imports as a format check** (1.6), and **the map renders any airport** (1.7, Q checked it against the FAA diagram). **The simulated tower** (1.10, about 37 takeoffs an hour on 31L alongside 15 landings), **the reworked ramp** (1.11, with granular locks) and **the rule checks and score** (1.12) run. **The browser app (1.13) plays KJFK live with typed commands**: Q's manual run ended at Departures 5, Arrivals 3.
 
 **Phase 0's picks (Q signed off 2026-11-14):**
 - speech-to-text: Deepgram Nova-3
@@ -13,10 +13,18 @@ _Last updated: 2026-11-16 (1.13 done: Q's manual run passed)_
 
 **Live loop:** 2.2 s median end to end. The PRD's v1 target is now ≤ 2.0 s, with 1.0 s long-term.
 
-Next: 1.14, the last Phase 1 task. Three friction items from Q's run are open (Deviations, 2026-11-16, "Q's manual run").
+Next: 1.14, the last Phase 1 task. Open from 1.13b: two T7 stands can't take a B777-300ER until their data is fixed by hand (Deviations, 2026-11-16, "1.13b").
 
 ## Completed
 
+- [x] 1.13b — Fixes from Q's run — done 2026-11-16 (me, inline on main). Verified by me:
+  - typecheck exit 0, **475 of 475** (54 files, 51.5 s), the manual-test twin included.
+  - **Routes** (`route-kjfk.test.ts`, each with a killed mutation): AMX4220's two junctions route (`B`/`A` straight on, `L:` the sharp turn, `R:` unable); ICE6492's U fork takes the east branch for `L:A`, the west for `R:A`, and plain `U A A1` asks about A; WJA7466's `taxi ramp via G` resolves to G. KJFK sweeps: same-pick junctions 7 → 0 (3 connector-only nodes named as exceptions, Q), fork clashes 9 → 0.
+  - **Messages:** no node, edge or hold-short id in any of more than 1,000 KJFK route reasons (a test; killed by putting one back); "which way on X at B/MB/P?".
+  - **Pushback:** no departure plan at any KJFK gate, for the A320, B77W or B789, touches anything but ramp lanes, and each ends at a ramp handoff (`ramp-pushback.test.ts`: 36 off-ramp plans before). The wide KJFK sweep (20 seeds × 60 min, app traffic): pushbacks with the body on a taxiway 21 on HEAD, 0 now; collisions 0.
+  - **Stands:** usable KJFK gates per type after the data fix: A320 148 (147 before 1.13b, 139 with no stubs), B77W 71 (73; 67), every other type at or above its count before. KJFK validates (0 errors, the same 3 warnings).
+  - **2 h TEST runs, seeds 1–5:** session running on all; takeoffs and gate arrivals 23/12, 23/12, 22/8, 22/9, 22/8, identical to before.
+  - Key and personal-info scan of the 25 changed and new files: clean, with a positive control.
 - [x] 1.13 — Playable in the browser with typed commands; Q tests — done 2026-11-16.
   - **Q's run (the acceptance):** Q ran `docs/phase1-manual-test.md` on seed 5 in Chrome, typed commands and T only, to 20:39 sim time. Counters: **Departures 5, Arrivals 3, Total 8**, rate 23.0/h, peak 15 min 32.0/h (Q's paste). No session-over banner (Q). Q directed all the traffic, not just the doc's two aircraft. The log Q pasted agrees: 5 `took off`, 3 `arrived at … gate`, and all 6 runway crossings requested with T and approved before `cross`. Friction from the log: Deviations, 2026-11-16, "Q's manual run".
   - **Built and merged** (subagent, own worktree): the real-time loop, the terse console, click to select with T for crossings, the event log, pause and 1×/2×/4× speed, and traffic streams from deterministic seeds.
@@ -1034,7 +1042,19 @@ Next: 1.14, the last Phase 1 task. Three friction items from Q's run are open (D
   3. **Turn ambiguity:** 3 `which way on X?` unables (JBU6330 on A, DLH4707 on B and on A). As designed (1.8), but frequent.
   - Also seen, as designed: `DLH4707 taxi ramp via L:B N, contact ramp` at 15:09 left it on ground until the ramp entrance (19:38), since a handoff takes effect at the facility's handoff point (`apply.ts`). And Q's `EVA5194 taxi ramp via N hs Q` held short of Q, and a later `taxi ramp via N` released it.
 
+- 2026-11-16 — **1.13b, fixes from Q's run** (PLAN 1.13b; investigations/route-retries-q-run.md, "Resolution"):
+  - **Routes:** `STRAIGHT_ON_DEG` 10 (mine, from the KJFK sweep: straighter ways were within 3°, the others 18° or more); after a same-name fork, sides from the heading at the fork and no hairpin off a branch (the connector rule's CONNECTOR_MAX_TURN_DEG, applied to named fillets). Three connector-only same-pick nodes (onto G, C6, DB, met only before a route's first taxiway) left as they are (Q); no rule tried told them apart without breaking natural phrasing.
+  - **Messages:** `junctionName` in `graph.ts` replaces node ids in route and apply reasons; the `ambiguous` event carries `at`.
+  - **Ramp entrances (deviation from PLAN's text, Q's decision):** PLAN said every KJFK entrance becomes `use: both`. Doing that sent T4's departures out by KG, head-on with arrivals, and the T4 alley test deadlocked. Q chose instead: every entrance takes both, the marked ones first. A taxi to the ramp uses an arrival-marked entrance when one completes the route, any other only when none does (`resolveRoute`); the ramp's departures leave by departure-marked exits, any other only with no way out by those (`departurePlansFor`); the validator needs just one handoff reaching each gate. KJFK's 14 markings are unchanged.
+  - **Pushback never on a taxiway (Q):** taxiway plans, a lane plan's tail run onto a taxiway, the clearance wait and whole-push reservation for them, `TAXIWAY_PUSH_CLEAR_M` and `MAX_TAXIWAY_PUSH_M` removed. Lane plans, then swings into a neighbouring stand, remain: Q's "back up and turn the tail away from the exit". ANA8115 (seed 5, VA) was a B789 at T7 g1011144695, whose only plan pushed out past VA.
+  - **The stands' data (Q approved from rendered maps):** 9 stands lost their only way out. A search placed straight ramp-lane stubs (on the apron, crossing nothing, ends 15 m clear, giving the planner an in-ramp plan): one shared T1 stub for g632238189/190/191/193; at T7, stubs for g1011144698 and g1011144701, and for g1011144697 and g1011144695 after splitting their stand lanes 4 m and 10 m inside VV and VA. Two T1 gates (g608357741, g632238187) now swing their tail onto the T1 stub, same exit NA (Q: fine). g1011116768's stub was dropped (Q): every other type there would have left by W instead of W2, head-on with arrivals (it failed the seed-6 test).
+  - **Open, needs data work by hand (Q):** T7 g1011144695 and g1011116768 can't take a B777-300ER, arriving or departing; T7 still takes one at g1011144698 and g1011144701. Details in docs/airports/KJFK-notes.md, "Stands with room to push back inside the ramp".
+  - **Tests changed, each for the new rule:** 18 expected reasons in `route.test.ts`, `sim.test.ts` and `kjfk.test.ts` reworded (junction names for ids); `event-log.test.ts` and one `sim.test.ts` event gain `at`; `route.test.ts`'s "no ramp entrance serves T2" now patches the entrances' terminals (a departure-marked one takes arrivals now); `ramp.test.ts`'s plan test forbids taxiways, its T1-3 taxiway-push test became "can't take a departure while both swing stands are taken", and KJFK's B77W floor is 71 (was 73). New: `route-kjfk.test.ts`, `ramp-pushback.test.ts`, `graph.test.ts`, the arrival-entrance and departure-exit tests, a per-tick pushback check in the 2 h ramp-safety run.
+  - **Test waits bounded:** a route change left `sim.test.ts` waiting forever for an aircraft that never moved, and the suite hung (the cause took me a while: I first blamed a closed pipe, wrongly). The open-ended waits in `sim.test.ts` and `rules.test.ts` now fail at an hour of sim time ("still waiting at tick N"), checked with a 10-tick limit.
+  - **KJFK sweep gridlocks 2 → 3**, all two of the sweep's own player-routed arrivals head-on on a taxiway (A/SA twice, MD/P), none at an entrance or with a departure. The route fixes let more of its routes through (refused 171 → 108), so more of its uncoordinated arrivals meet. A finding about the sweep's player, not a sim deadlock, as far as I can tell.
+  - **Another session** (seed 666, Q's second run) added notes and `investigations/ramp-stuck-arrivals-seed666.md` against this working tree; their theories (10–14 in the route note) are open and not part of 1.13b.
+
 ## Next Up
 
-- 1.14 — Scoring-path and soak tests (needs 1.12, done, and the arrival turnaround or despawn).
-- Open for Q, none blocking: the three friction items from Q's 1.13 run (Deviations, 2026-11-16); 1.6's questions 4–6 and 8; 1.10's 3–7 (5 matters for 1.14); the follow-ups' 2–6; 1.11's 5–9; 1.7's 2–5; 1.9's three; 1.5's five. All are in their Deviations entries.
+- 1.14 — Scoring-path and soak tests (needs 1.12, done, and the arrival turnaround or despawn; 1.13b done).
+- Open for Q, none blocking: two T7 stands that can't take a B777-300ER (data work by hand; Deviations, 2026-11-16, "1.13b"); from Q's 1.13 run, "doesn't lead to a ramp entrance" still doesn't say which do (node ids and turn ambiguity are fixed); the seed-666 theories; 1.6's questions 4–6 and 8; 1.10's 3–7 (5 matters for 1.14); the follow-ups' 2–6; 1.11's 5–9; 1.7's 2–5; 1.9's three; 1.5's five. All are in their Deviations entries.

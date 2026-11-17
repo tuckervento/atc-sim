@@ -324,6 +324,43 @@ Phase 1's scoring-path, rule-check and soak tests pass.
   - Acceptance: Q completes the manual test in Chrome using only typed commands and the T key,
     and the counters show 1 departure and 1 arrival. Q's result is recorded in STATUS.
 
+- [ ] **1.13b — Fixes from Q's run** (added 2026-11-16, after 1.13; Q: one cycle before 1.14)
+  - Scope, from Q's manual run (`investigations/route-retries-q-run.md`) and Q's decisions:
+    - **Route resolution** (`src/sim/route.ts`):
+      - **"Straight on" (F3, F4):** a turn of only a few degrees counts as straight on, not
+        left or right. Today, at the P/B/MB and Q/MB/A junctions both ways along B (and A)
+        count as "left", so no route through them can be written.
+      - **A taxiway that forks into same-named branches (F6):** U's Y onto A. A turn onto the
+        next taxiway (`U L:A`) settles which branch.
+      - For both: a sweep of KJFK for every junction of each shape, before and after.
+    - **Messages name junctions by their taxiways, never node IDs** (F5; e.g. `route.ts`
+      `doesn't go <turn> from <node>`, `apply.ts` `too close to stop short of … at <node>`).
+      The "which way on X?" question says where.
+    - **Every ramp entrance works both ways** (Q: "they all need to be accessible by all"):
+      every KJFK `rampHandoffs` entry becomes `use: both` (today T1 M, T4 KG/KF/HB/A10/G, T5
+      DA/A4 and others are one-way, from Q's Q7 list in 1.5).
+    - **Pushback is a three-point turn, at every stand** (Q: "back up and turn the tail away
+      from the exit until the nose is pointing the right way"): reverse out of the stand,
+      tail swinging away from the way out, until the nose points toward it; then taxi forward
+      to a ramp entrance. It never reverses onto a taxiway, and replaces both the taxiway push
+      and the swing into a neighbouring stand. Departures always leave the ramp nose first.
+    - **Clearance (Q):** the turn reserves everything it sweeps and waits until neighbours are
+      clear. Where it can never fit inside the ramp, the stand is unusable for that type
+      (the plan settles this, or a true multi-point turn; report the count either way).
+    - **ANA8115** (seed 5, ~40:28: "left backwards on VA"): explained, and gone after the change.
+  - Depends on: 1.13
+  - Acceptance:
+    - each fix has a test that fails before it and passes after;
+    - the KJFK sweeps show no junction where a turn can't pick a way, and no fork a turn onto
+      the next taxiway can't settle;
+    - no unable or ramp message names a node ID;
+    - every KJFK ramp entrance is `use: both`, and the validator passes;
+    - no aircraft ever moves backward on a taxiway edge (a check over long runs), and every
+      departure leaves the ramp nose first;
+    - the full suite and the 2 h runs pass with sessions running; `docs/phase1-manual-test.md`
+      and its twin updated if check-in points change; usable-gate counts before and after are
+      reported.
+
 - [ ] **1.14 — Scoring-path and soak tests**
   - Scope: A test-only "perfect player" bot in `src/sim/test/bot.ts` issues correct terse
     commands from sim state: routes via 1.8, requests crossings, and hands off. A simple
@@ -351,3 +388,5 @@ Phase 1's scoring-path, rule-check and soak tests pass.
   - After 1.4, the airport line (1.5 → 1.6 / 1.7) and the sim line (1.8 → 1.9) run
     independently.
   - 1.10 and 1.11 can be built in parallel.
+  - 1.13b (fixes from Q's run) comes before 1.14: the soak tests should run on the fixed
+    router and ramp.
