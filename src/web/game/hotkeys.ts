@@ -2,8 +2,10 @@
 // - T: request a runway crossing for the selected aircraft (PRD §4.5).
 // - P: pause and resume. Not Space: that's the PRD's push-to-talk placeholder.
 // - Escape: deselect.
+// - Enter: back to the console (Q: "pressing enter should switch to the text box if it doesn't
+//   have focus"). In the console, Enter applies the command; the console handles that itself.
 
-export type Hotkey = 'request-crossing' | 'toggle-pause' | 'deselect';
+export type Hotkey = 'request-crossing' | 'toggle-pause' | 'deselect' | 'focus-console';
 
 /** The parts of a KeyboardEvent this reads. */
 export interface KeyPress {
@@ -28,6 +30,8 @@ export function hotkeyFor(press: KeyPress): Hotkey | null {
       return 'toggle-pause';
     case 'Escape':
       return 'deselect';
+    case 'Enter':
+      return 'focus-console';
     default:
       return null;
   }

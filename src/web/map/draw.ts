@@ -39,6 +39,8 @@ export function drawMap(
   labels: LabelLayer,
   /** The selected aircraft's callsign, highlighted. */
   selected: string | null = null,
+  /** Gates to highlight: those the selected arrival can be given (sim.ts gatesFor). */
+  highlightGates: ReadonlySet<string> = new Set(),
 ): void {
   ctx.fillStyle = PALETTE.background;
   ctx.fillRect(0, 0, view.widthPx, view.heightPx);
@@ -89,6 +91,22 @@ export function drawMap(
       ctx.beginPath();
       ctx.arc(x, y, 2, 0, 2 * Math.PI);
       ctx.fill();
+    }
+  }
+  // The gates the selected arrival can be given: at any zoom, larger, in the arrival color.
+  if (highlightGates.size > 0) {
+    ctx.fillStyle = roleColor('arrival');
+    ctx.strokeStyle = roleColor('arrival');
+    ctx.lineWidth = 1.5;
+    for (const gate of scene.gates) {
+      if (!highlightGates.has(gate.id)) continue;
+      const [x, y] = px(gate.at);
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y, 7, 0, 2 * Math.PI);
+      ctx.stroke();
     }
   }
 

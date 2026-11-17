@@ -19,6 +19,8 @@ describe('buildScene', () => {
     expect(byKind('terminal')).toEqual(['Terminal 1', 'Terminal 2']);
     expect(byKind('building')).toEqual(['Tower']);
     expect(byKind('gate')).toEqual([...new Set(TEST.gates.map((g) => g.name))].sort());
+    // Each gate keeps its id, for highlighting the gates an arrival can take (1.13c).
+    expect(scene.gates.map((g) => g.id)).toEqual(TEST.gates.map((g) => g.id));
 
     // One candidate per named edge, sized by its length.
     const taxiwayEdges = TEST.edges.filter((e) => e.kind === 'taxiway' && e.name);

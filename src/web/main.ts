@@ -16,7 +16,7 @@ import { AIRPORT_IDS, loadMapAirport, parseAirportParam } from './map/airports.t
 import { mountMap, type MapHandle } from './map/map-view.ts';
 import { buildScene } from './map/scene.ts';
 import { DELAYED_COLOR, RUNWAY_USE_COLOR } from './map/style.ts';
-import { TICK_HZ } from '../sim/sim.ts';
+import { gatesFor, TICK_HZ } from '../sim/sim.ts';
 
 const app = document.querySelector<HTMLDivElement>('#app');
 if (!app) throw new Error('index.html is missing the #app element');
@@ -73,7 +73,15 @@ function play(airport: Airport, seed: number): void {
   function select(callsign: string | null): void {
     selected = callsign;
     map.setSelected(callsign);
+    highlightGates();
     if (callsign) panel.setInput(withCallsign(panel.getInput(), callsign));
+  }
+
+  /** The gates the selected arrival can be given (Q, BACKLOG: from any entrance serving its terminal). */
+  let gatesShownAt = 0;
+  function highlightGates(): void {
+    gatesShownAt = performance.now();
+    map.setHighlightedGates(selected === null ? [] : gatesFor(session.sim, selected));
   }
 
   function togglePause(): void {
@@ -89,6 +97,7 @@ function play(airport: Airport, seed: number): void {
     ev.preventDefault();
     if (key === 'toggle-pause') togglePause();
     else if (key === 'deselect') select(null);
+    else if (key === 'focus-console') panel.focusInput();
     else if (selected) panel.appendLines(requestCrossing(session, selected));
   });
 
@@ -108,6 +117,8 @@ function play(airport: Airport, seed: number): void {
     }
     const aircraft = drawnAircraft(session);
     if (selected !== null && !aircraft.some((a) => a.callsign === selected)) select(null);
+    // Gates come and go as aircraft park and leave: kept up to date about once a second.
+    if (selected !== null && now - gatesShownAt >= 1000) highlightGates();
     map.setAircraft(aircraft);
     refreshClock(session, panel);
     panel.setCounters(counterRows(session.counters.read()));

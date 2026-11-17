@@ -447,6 +447,17 @@ describe("gates an arrival can be given (gatesFor, the ramp's own test)", () => 
     expect(drainEvents(sim).filter((e) => e.type === 'ramp-waiting').map((e) => e.callsign)).toEqual(['BAW1']);
   });
 
+  it("offers an arrival every gate the ramp would give it, then only the one it's given; a departure none (TEST T2)", () => {
+    const sim = createSim(TEST, { seed: 1 });
+    addAircraft(sim, { callsign: 'BAW1', type: 'A320', role: 'arrival', airline: 'BAW', terminal: 'T2', at: { kind: 'node', node: 'aTC', arrivedVia: 'aTC-aJ' } });
+    addAircraft(sim, { callsign: 'DAL4', type: 'A320', at: { kind: 'gate', gate: 'T1-1' } });
+    expect(gatesFor(sim, 'BAW1')).toEqual(['T2-B1', 'T2-B2']);
+    expect(gatesFor(sim, 'DAL4')).toEqual([]);
+    transmit(sim, 'BAW1 taxi ramp via TC, monitor ramp');
+    runUntil(sim, (e) => e.type === 'ramp-accepted', 10 * 60 * 10);
+    expect(gatesFor(sim, 'BAW1')).toEqual(['T2-B1']);
+  });
+
   it("gives back a gate whose way in something has since parked across, and isn't given it again (TEST T2)", () => {
     const sim = createSim(TEST, { seed: 1 });
     addAircraft(sim, { callsign: 'BAW1', type: 'A320', role: 'arrival', airline: 'BAW', terminal: 'T2', at: { kind: 'node', node: 'aTC', arrivedVia: 'aTC-aJ' } });

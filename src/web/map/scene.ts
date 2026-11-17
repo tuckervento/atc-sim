@@ -43,7 +43,7 @@ export interface Scene {
   edges: SceneEdge[];
   runways: SceneRunway[];
   places: ScenePlace[];
-  gates: { name: string; at: Point }[];
+  gates: { id: string; name: string; at: Point }[];
   labels: LabelCandidate[];
 }
 
@@ -126,7 +126,7 @@ export function buildScene(airport: Airport): Scene {
     labels.push({ text, kind: area.kind === 'terminalBuilding' ? 'terminal' : 'building', at: centroid(area.outline), sizeM: span(area.outline) });
   }
 
-  const gates = airport.gates.map((g) => ({ name: g.name, at: nodeAt(g.node) }));
+  const gates = airport.gates.map((g) => ({ id: g.id, name: g.name, at: nodeAt(g.node) }));
   for (const gate of gates) labels.push({ text: gate.name, kind: 'gate', at: gate.at, sizeM: 0 });
 
   return {

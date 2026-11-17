@@ -21,6 +21,8 @@ export interface MapHandle {
   setAircraft(aircraft: MapAircraft[]): void;
   /** Highlights an aircraft, or none. */
   setSelected(callsign: string | null): void;
+  /** Highlights these gates (the selected arrival's, sim.ts gatesFor), or none. */
+  setHighlightedGates(ids: readonly string[]): void;
   /** Back to the whole-airport view. */
   fit(): void;
   getView(): Viewport;
@@ -42,6 +44,7 @@ export function mountMap(container: HTMLElement, scene: Scene, initialAircraft: 
 
   let aircraft = initialAircraft;
   let selected: string | null = null;
+  let highlighted: ReadonlySet<string> = new Set();
   let view: Viewport = fitView(scene.bounds, container.clientWidth, container.clientHeight, FIT_PADDING_PX);
   let fitted = true;
   let frame = 0;
@@ -52,7 +55,7 @@ export function mountMap(container: HTMLElement, scene: Scene, initialAircraft: 
       frame = 0;
       const dpr = window.devicePixelRatio || 1;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawMap(ctx, scene, view, aircraft, labels, selected);
+      drawMap(ctx, scene, view, aircraft, labels, selected, highlighted);
     });
   };
 
@@ -124,6 +127,10 @@ export function mountMap(container: HTMLElement, scene: Scene, initialAircraft: 
     },
     setSelected(callsign) {
       selected = callsign;
+      redraw();
+    },
+    setHighlightedGates(ids) {
+      highlighted = new Set(ids);
       redraw();
     },
     fit() {

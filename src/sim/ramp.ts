@@ -900,10 +900,10 @@ function acceptableGates(sim: Sim, ac: Aircraft, terminal: TerminalId, trail: { 
  * terminal.
  */
 export function gatesFor(sim: Sim, callsign: string): GateId[] {
-  const own = sim.world.ramp.aircraft.find((r) => r.callsign === callsign);
-  if (own) return [own.gate];
   const ac = aircraftOf(sim, callsign);
   if (ac.role !== 'arrival') return [];
+  const own = sim.world.ramp.aircraft.find((r) => r.callsign === callsign);
+  if (own) return [own.gate];
   const terminal = terminalOf(sim, ac);
   if (!terminal) return [];
   const found = new Set<GateId>();

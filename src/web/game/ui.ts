@@ -27,6 +27,8 @@ export interface SidePanel {
   /** The console's text (for pre-filling a callsign); setting it keeps focus where it is. */
   getInput(): string;
   setInput(text: string): void;
+  /** Puts the cursor in the console, at the end of its text. */
+  focusInput(): void;
   /** A banner over the log: the sim stopped on an error. */
   showFatal(message: string): void;
 }
@@ -67,7 +69,7 @@ export function buildSidePanel(title: string, handlers: SidePanelHandlers): Side
   input.setAttribute('aria-label', 'Dev console: terse command');
   const error = el('p', 'error');
   error.hidden = true;
-  const hint = el('p', 'hint', 'Enter applies · ↑/↓ history · Esc leaves the console. On the map: click an aircraft, T asks tower for its crossing, P pauses.');
+  const hint = el('p', 'hint', 'Enter applies · ↑/↓ history · Esc leaves the console, Enter comes back. On the map: click an aircraft, T asks tower for its crossing, P pauses.');
   form.append(input, error, hint);
 
   let history: History = emptyHistory();
@@ -140,6 +142,10 @@ export function buildSidePanel(title: string, handlers: SidePanelHandlers): Side
       if (atBottom) log.scrollTop = log.scrollHeight;
     },
     getInput: () => input.value,
+    focusInput() {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    },
     setInput(text) {
       input.value = text;
       error.hidden = true;
