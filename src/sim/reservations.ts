@@ -10,8 +10,14 @@
 // arrival parking) also has a zero-length last segment: exactly where it stops.
 //
 // What a segment covers (derived, cached by what it depends on; not state):
-// - its swept shape: the convex hull of the rigid footprints (footprint.ts) at nose positions
-//   at most SAMPLE_M apart across the segment, each corner grown by MARGIN_M each way;
+// - its swept shape: for each part of the rigid footprint's cross (footprint.ts: fuselage, wing,
+//   tailplane), the convex hull of that part at nose positions at most SAMPLE_M apart across the
+//   segment, each corner grown by MARGIN_M all round (an octagon around a circle of that radius).
+//   Part by part, not one hull of the whole cross, which filled in between wingtip, nose and
+//   tailplane: seed 666's EVA1126 was refused a way past a neighbour its cross cleared by 3.38 m,
+//   its hull by 1.69 m (Q, 2026-11-17: relax the ramp's tolerances; investigations/
+//   ramp-stuck-arrivals-seed666.md). Round, not square: 3.0 m apart in every direction, where
+//   corner squares made it up to 4.24 m on a diagonal (the octagon adds at most 8%);
 // - for a leg that movement.ts moves (`seeAndAvoid`), what see-and-avoid (traffic.ts) looks at:
 //   its track ahead of the nose for SPACING_M (in-line), and the nodes ahead it would have to
 //   stop short of if a body were near them.
@@ -101,13 +107,13 @@
 // - A movement can't change its path once admitted, except by being dropped and admitted anew.
 //
 // Values [Builder], mine: SEGMENT_M 10 (fine enough for one aircraft to follow another closely,
-// coarse enough to keep the tables small); MARGIN_M 1.5 (shapes 3 m apart at least); SAMPLE_M
+// coarse enough to keep the tables small); MARGIN_M 1.5 (shapes 3 m apart at least, up to 3.25); SAMPLE_M
 // 2.5 (on a straight, the hull of the samples is exactly what the body sweeps; through a bend
 // the footprint turns a little between samples, which the margin is meant to cover: not
 // measured).
 
 import type { EdgeId, NodeId, Point } from '../airport/types.ts';
-import { footprintOf, polygonsOverlap } from './footprint.ts';
+import { footprintOf, polygonsOverlap, type FootprintShape } from './footprint.ts';
 import { buildTrack, type Track } from './track.ts';
 import { SPACING_M } from './traffic.ts';
 import type { Aircraft, Sim } from './world.ts';
@@ -118,6 +124,12 @@ export const SEGMENT_M = 10;
 export const MARGIN_M = 1.5;
 /** Footprints are sampled at least this often along a segment's nose travel. */
 const SAMPLE_M = 2.5;
+/** MARGIN_M all round, as an octagon around its circle: added to every corner of a reserved shape. */
+const MARGIN_OCTAGON: readonly Point[] = Array.from({ length: 8 }, (_, k) => {
+  const angle = Math.PI / 8 + (k * Math.PI) / 4;
+  const r = MARGIN_M / Math.cos(Math.PI / 8);
+  return [r * Math.cos(angle), r * Math.sin(angle)] as Point;
+});
 /** The widest half-span of any type, for how far ahead a node's see-and-avoid rule can reach. */
 const MAX_HALF_SPAN_M = 40;
 
@@ -199,7 +211,8 @@ interface NodeAhead {
 }
 
 interface Segment {
-  hull: Point[];
+  /** The swept, grown cross (the header): a hull per part, as `parts`. */
+  shape: FootprintShape;
   box: [number, number, number, number];
   body: Interval[];
   ahead: Interval[];
@@ -310,16 +323,18 @@ function segmentsOf(sim: Sim, rec: MovementRecord): Segment[] {
     const end = a.leg === b.leg ? b.s : leg.to;
     const [sLo, sHi] = [Math.min(a.s, end), Math.max(a.s, end)];
     const n = Math.max(1, Math.ceil((sHi - sLo) / SAMPLE_M));
-    const points: Point[] = [];
+    const partPoints: Point[][] = [];
     for (let i = 0; i <= n; i++) {
       const s = sLo + ((sHi - sLo) * i) / n;
-      for (const [x, y] of footprintAt(track, s, rec.lengthM, rec.wingspanM)) {
-        points.push([x - MARGIN_M, y - MARGIN_M], [x + MARGIN_M, y - MARGIN_M], [x + MARGIN_M, y + MARGIN_M], [x - MARGIN_M, y + MARGIN_M]);
-      }
+      footprintAt(track, s, rec.lengthM, rec.wingspanM).parts.forEach((part, j) => {
+        const into = (partPoints[j] ??= []);
+        for (const [x, y] of part) for (const [dx, dy] of MARGIN_OCTAGON) into.push([x + dx, y + dy]);
+      });
     }
-    const hull = convexHull(points);
-    const xs = hull.map((p) => p[0]);
-    const ys = hull.map((p) => p[1]);
+    const parts = partPoints.map(convexHull);
+    const shape: FootprintShape = Object.assign(parts.flat(), { parts });
+    const xs = shape.map((p) => p[0]);
+    const ys = shape.map((p) => p[1]);
     const forward = leg.to >= leg.from;
     const ahead: Interval[] = leg.seeAndAvoid && forward ? intervals(sim, track, sHi, sHi + SPACING_M + MARGIN_M) : [];
     const nodes: NodeAhead[] = [];
@@ -331,7 +346,7 @@ function segmentsOf(sim: Sim, rec: MovementRecord): Segment[] {
       });
     }
     segs.push({
-      hull,
+      shape,
       box: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)],
       body: intervals(sim, track, Math.max(0, sLo - rec.lengthM), sHi),
       ahead,
@@ -343,7 +358,7 @@ function segmentsOf(sim: Sim, rec: MovementRecord): Segment[] {
 }
 
 /** The rigid footprint (footprint.ts) of a body of this size with its nose at `s` on `track`. */
-function footprintAt(track: Track, s: number, lengthM: number, wingspanM: number): Point[] {
+function footprintAt(track: Track, s: number, lengthM: number, wingspanM: number): FootprintShape {
   // footprintOf reads only the track, s, length and wingspan.
   return footprintOf({ track, s, lengthM, wingspanM } as Aircraft);
 }
@@ -408,7 +423,7 @@ function seeAndAvoidStops(x: Segment, y: Segment, halfY: number): boolean {
 }
 
 function segmentsConflict(x: Segment, halfX: number, y: Segment, halfY: number): boolean {
-  if (boxesOverlap(x.box, y.box) && polygonsOverlap(x.hull, y.hull)) return true;
+  if (boxesOverlap(x.box, y.box) && polygonsOverlap(x.shape, y.shape)) return true;
   return seeAndAvoidStops(x, y, halfY) || seeAndAvoidStops(y, x, halfX);
 }
 
@@ -463,7 +478,21 @@ function boundsOf(legs: Leg[], stays: boolean): number[] {
  */
 export function admit(sim: Sim, spec: MovementSpec, atLeast = 0, yieldTo: readonly string[] = []): string | null {
   const state = sim.world.reservations;
-  const rec: MovementRecord = {
+  const rec = newRecord(spec);
+  const others = state.movements.filter((m) => m.id !== spec.id);
+  for (const o of others) if (yieldTo.includes(o.id) && yieldsTo(sim, rec, o)) return o.id;
+  const outsiders = outsidersOf(sim).filter((o) => o.id !== spec.id);
+  do {
+    const blocker = grantNext(sim, rec, others, outsiders);
+    if (blocker !== null) return blocker;
+  } while (rec.hi + 1 < rec.bounds.length && (rec.bounds[rec.hi] ?? Infinity) < atLeast);
+  state.movements = [...others, rec];
+  return null;
+}
+
+/** A movement's record before anything is granted. */
+function newRecord(spec: MovementSpec): MovementRecord {
+  return {
     id: spec.id,
     lengthM: spec.lengthM,
     wingspanM: spec.wingspanM,
@@ -476,14 +505,19 @@ export function admit(sim: Sim, spec: MovementSpec, atLeast = 0, yieldTo: readon
     done: false,
     waitingFor: null,
   };
-  const others = state.movements.filter((m) => m.id !== spec.id);
-  for (const o of others) if (yieldTo.includes(o.id) && yieldsTo(sim, rec, o)) return o.id;
-  const outsiders = outsidersOf(sim).filter((o) => o.id !== spec.id);
-  do {
-    const blocker = grantNext(sim, rec, others, outsiders);
-    if (blocker !== null) return blocker;
-  } while (rec.hi + 1 < rec.bounds.length && (rec.bounds[rec.hi] ?? Infinity) < atLeast);
-  state.movements = [...others, rec];
+}
+
+/**
+ * Whatever's parked for good (a record that's done and stays: an aircraft at its gate, or a gate
+ * held for one coming) that any of `spec`'s way would conflict with, other than those in `ignore`:
+ * the movement could never get past it, however long it waited. null: nothing. It changes nothing.
+ */
+export function parkedInTheWay(sim: Sim, spec: MovementSpec, ignore: readonly string[] = []): string | null {
+  const rec = newRecord(spec);
+  for (const o of sim.world.reservations.movements) {
+    if (!o.done || !o.stays || o.id === spec.id || ignore.includes(o.id)) continue;
+    if (pairTable(sim, rec, o).conflicts.some((js) => js.some((b) => b >= o.lo && b < o.hi))) return o.id;
+  }
   return null;
 }
 
@@ -538,7 +572,7 @@ function grantNext(sim: Sim, rec: MovementRecord, others: MovementRecord[], outs
   }
   const seg = segmentsOf(sim, rec)[x];
   if (!seg) throw new Error(`${rec.id}: no segment ${x}`);
-  for (const o of outsiders) if (o.id !== rec.id && boxesOverlap(seg.box, o.box) && polygonsOverlap(seg.hull, o.footprint)) return o.id;
+  for (const o of outsiders) if (o.id !== rec.id && boxesOverlap(seg.box, o.box) && polygonsOverlap(seg.shape, o.footprint)) return o.id;
   rec.hi += 1;
   const all = [...others, rec];
   if (isSafe(sim, all)) return null;
@@ -732,7 +766,7 @@ export function updateReservations(sim: Sim): void {
     const footprint = footprintOf(ac);
     return segmentsOf(sim, rec)
       .slice(rec.lo, rec.hi)
-      .some((seg) => polygonsOverlap(seg.hull, footprint));
+      .some((seg) => polygonsOverlap(seg.shape, footprint));
   });
   const outsiders = outsidersOf(sim);
   for (const rec of state.movements) {

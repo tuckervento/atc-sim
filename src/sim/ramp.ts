@@ -143,7 +143,7 @@ import { edgeLength, edgePolyline, edgesAt, otherEnd, type AirportIndex } from '
 import type { Edge, EdgeId, Gate, GateId, NodeId, Point, RampHandoff, RampHandoffId, TerminalId } from '../airport/types.ts';
 import { AIRCRAFT_TYPES, isAircraftType, type AircraftTypeCode } from './aircraft-types.ts';
 import { DECEL_MPS2, KNOT_MPS, safeSpeed, STOP_SNAP_M, TICK_HZ, TICK_S } from './movement.ts';
-import { admit, dropMovement, finishMovement, holdsEnd, parkedConflict, reserveParked, reservedStop, SEGMENT_M, setLeg, type Leg, type ParkedSpec } from './reservations.ts';
+import { admit, dropMovement, finishMovement, holdsEnd, parkedConflict, parkedInTheWay, reserveParked, reservedStop, SEGMENT_M, setLeg, type Leg, type ParkedSpec } from './reservations.ts';
 import { createRng, nextFloat, nextInRange } from './rng.ts';
 import { nodeAt } from './stops.ts';
 import { buildTrack, placeOf, type Track } from './track.ts';
@@ -327,6 +327,7 @@ export function initialRampState(setup: RampSetup, seed: number): RampState {
     streams: setup.streams.map((s) => ({ nextTick: Math.round((s.firstAtS ?? 0) * TICK_HZ), count: 0 })),
     aircraft: [],
     turnarounds: { rng: createRng((seed ^ TURNAROUND_SEED_MIX) | 0), turned: 0 },
+    waiting: [],
   };
 }
 
@@ -809,16 +810,25 @@ function callArrivals(sim: Sim): void {
     return false;
   });
   const known = new Set(ramp.aircraft.map((r) => r.callsign));
+  const stillWaiting: RampState['waiting'] = [];
   for (const ac of sim.world.aircraft) {
     if (known.has(ac.callsign)) continue;
     const handoff = entranceOf(sim, ac);
     if (handoff === null) continue;
     const gate = assignGate(sim, ac, handoff);
-    if (gate === null) continue;
+    if (gate === null) {
+      // Ramp says so: when it first waits, and again for each new handoff to ramp while it does.
+      const asked = ac.advisories.handoff?.tick ?? -1;
+      const told = ramp.waiting.find((w) => w.callsign === ac.callsign);
+      if (told?.answered !== asked) emit(sim, { type: 'ramp-waiting', tick: sim.world.tick, callsign: ac.callsign, rampHandoff: handoff.id, terminal: terminalOf(sim, ac)?.id ?? null });
+      stillWaiting.push({ callsign: ac.callsign, answered: asked });
+      continue;
+    }
     const blocker = reserveParked(sim, parkedAt(sim, gateHoldId(ac.callsign), gate, ac.type));
     if (blocker !== null) throw new Error(`${ac.callsign}: gate ${gate} was free, but holding it is in the way of ${blocker}`);
     ramp.aircraft.push({ callsign: ac.callsign, phase: 'called', gate, since: sim.world.tick, readyTick: null, rampHandoff: handoff.id, pushTo: null, plan: null, swingInto: null, pilotCruiseMps: null, turnaround: null });
   }
+  ramp.waiting = stillWaiting;
 }
 
 /**
@@ -845,20 +855,68 @@ function entranceOf(sim: Sim, ac: Aircraft): RampHandoff | null {
  * of those at random (seeded). null: none free.
  */
 function assignGate(sim: Sim, ac: Aircraft, handoff: RampHandoff): GateId | null {
+  const terminal = terminalOf(sim, ac);
+  if (!terminal) return null;
+  const place = placeOf(ac.track, ac.s);
+  if (place.kind !== 'node' || nodeOf(ac.track, place.i) !== handoff.node) throw new Error(`${ac.callsign}: given a gate away from its entrance ${handoff.id}`);
+  const free = acceptableGates(sim, ac, terminal.id, trailOf(ac, place.i), arrivedEdge(sim, ac));
+  return pickGate(sim, free, terminal.airlines, ac.airline);
+}
+
+/** The terminal an arrival is for: its own, else the ramp its clearance goes to. */
+function terminalOf(sim: Sim, ac: Aircraft) {
   const destination = ac.clearance?.path.destination;
   const terminalId = ac.terminal ?? (destination?.kind === 'ramp' ? destination.terminal : null);
-  const terminal = sim.index.airport.terminals.find((t) => t.id === terminalId);
-  if (!terminal) return null;
-  const arrived = arrivedEdge(sim, ac);
-  const free = sim.index.airport.gates.filter(
-    (g) =>
-      g.terminal === terminal.id &&
-      gateOccupant(sim, g.id) === null &&
-      !('unable' in departurePlansFor(sim, g.id, ac.type)) &&
-      arrivalWay(sim, handoff.node, arrived, g.id) !== null &&
-      parkedConflict(sim, parkedAt(sim, gateHoldId(ac.callsign), g.id, ac.type)) === null,
-  );
-  return pickGate(sim, free, terminal.airlines, ac.airline);
+  return sim.index.airport.terminals.find((t) => t.id === terminalId);
+}
+
+/** The edges holding an aircraft's body, up to the node its nose is on (track index `i`). */
+function trailOf(ac: Aircraft, i: number): { nodes: NodeId[]; edges: EdgeId[] } {
+  const t0 = Math.min(placeOf(ac.track, Math.max(0, ac.s - ac.lengthM)).i, i);
+  return { nodes: ac.track.nodes.slice(t0, i + 1), edges: ac.track.edges.slice(t0, i) };
+}
+
+/**
+ * The gates `ac` could be given at `terminal`, coming in with its body along `trail` (which ends
+ * at the entrance, arrived along `arrived`): free, it fits and can leave again, reachable over ramp
+ * lanes, its way in clear of everything parked for good (it could never get past that; seed 666,
+ * EVA1126), and its parked footprint clear. The ramp's own test, for assignGate and gatesFor.
+ */
+function acceptableGates(sim: Sim, ac: Aircraft, terminal: TerminalId, trail: { nodes: NodeId[]; edges: EdgeId[] }, arrived: Edge): Gate[] {
+  return sim.index.airport.gates.filter((g) => {
+    if (g.terminal !== terminal || gateOccupant(sim, g.id) !== null || 'unable' in departurePlansFor(sim, g.id, ac.type)) return false;
+    const wayIn = wayInTrack(sim, trail, arrived, g.id);
+    if (wayIn === null) return false;
+    const leg: Leg = { nodes: wayIn.track.nodes, edges: wayIn.track.edges, from: wayIn.s, to: wayIn.track.lengthM, seeAndAvoid: true, lookaheadM: taxiLookahead(ac.cruiseMps) };
+    if (parkedInTheWay(sim, { id: ac.callsign, lengthM: ac.lengthM, wingspanM: ac.wingspanM, legs: [leg], stays: true }, [gateHoldId(ac.callsign)]) !== null) return false;
+    return parkedConflict(sim, parkedAt(sim, gateHoldId(ac.callsign), g.id, ac.type)) === null;
+  });
+}
+
+/**
+ * The gates the ramp could give arrival `callsign` now, from any ramp entrance serving its
+ * terminal (Q, 2026-11-16: "any entrance serving the terminal is fine"), by the ramp's own test
+ * (acceptableGates); or, once it has one, that gate. Sorted. Empty for a departure, or with no
+ * terminal.
+ */
+export function gatesFor(sim: Sim, callsign: string): GateId[] {
+  const own = sim.world.ramp.aircraft.find((r) => r.callsign === callsign);
+  if (own) return [own.gate];
+  const ac = aircraftOf(sim, callsign);
+  if (ac.role !== 'arrival') return [];
+  const terminal = terminalOf(sim, ac);
+  if (!terminal) return [];
+  const found = new Set<GateId>();
+  for (const h of sim.index.airport.rampHandoffs) {
+    if (h.terminals !== undefined && !h.terminals.includes(terminal.id)) continue;
+    // Arriving from the taxiway side, along the entrance's stub.
+    for (const stub of edgesAt(sim.index, h.node)) {
+      if (stub.kind !== 'taxiway') continue;
+      const trail = { nodes: [otherEnd(stub, h.node), h.node], edges: [stub.id] };
+      for (const g of acceptableGates(sim, ac, terminal.id, trail, stub)) found.add(g.id);
+    }
+  }
+  return [...found].sort();
 }
 
 /** The edge `ac` arrived along at the node its nose is on. Throws if it's mid-edge or has no heading. */
@@ -895,13 +953,20 @@ function wayInFor(sim: Sim, r: RampAircraft, ac: Aircraft): { track: Track; s: n
   if (cached) return cached;
   const place = placeOf(ac.track, ac.s);
   if (place.kind !== 'node') throw new Error(`${ac.callsign}: waiting at a ramp entrance, but not on a node`);
-  const way = arrivalWay(sim, nodeOf(ac.track, place.i), arrivedEdge(sim, ac), r.gate);
-  if (way === null) throw new Error(`${ac.callsign}: assigned gate ${r.gate} with no way to it`);
-  const t0 = Math.min(placeOf(ac.track, Math.max(0, ac.s - ac.lengthM)).i, place.i);
-  const track = buildTrack(sim.index, [...ac.track.nodes.slice(t0, place.i + 1), ...way.nodes.slice(1)], [...ac.track.edges.slice(t0, place.i), ...way.edges]);
-  const wayIn = { track, s: nodeAt(track, place.i - t0) };
+  const wayIn = wayInTrack(sim, trailOf(ac, place.i), arrivedEdge(sim, ac), r.gate);
+  if (wayIn === null) throw new Error(`${ac.callsign}: assigned gate ${r.gate} with no way to it`);
   sim.ramp.waysIn.set(r, wayIn);
   return wayIn;
+}
+
+/** A way in to `gateId`: `trail` (ending at the entrance, arrived along `arrived`), then on to the gate; the nose at the entrance. null: no way. */
+function wayInTrack(sim: Sim, trail: { nodes: NodeId[]; edges: EdgeId[] }, arrived: Edge, gateId: GateId): { track: Track; s: number } | null {
+  const from = trail.nodes.at(-1);
+  if (from === undefined) throw new Error('an empty trail');
+  const way = arrivalWay(sim, from, arrived, gateId);
+  if (way === null) return null;
+  const track = buildTrack(sim.index, [...trail.nodes, ...way.nodes.slice(1)], [...trail.edges, ...way.edges]);
+  return { track, s: nodeAt(track, trail.nodes.length - 1) };
 }
 
 /**
@@ -911,9 +976,17 @@ function wayInFor(sim: Sim, r: RampAircraft, ac: Aircraft): { track: Track; s: n
 function startTaxiIn(sim: Sim, r: RampAircraft, ac: Aircraft): void {
   const { track, s } = wayInFor(sim, r, ac);
   const leg: Leg = { nodes: track.nodes, edges: track.edges, from: s, to: track.lengthM, seeAndAvoid: true, lookaheadM: taxiLookahead(ac.cruiseMps) };
+  const spec = { id: ac.callsign, lengthM: ac.lengthM, wingspanM: ac.wingspanM, legs: [leg], stays: true };
   // Its own gate hold gives way to the movement that ends there.
   dropMovement(sim, gateHoldId(r.callsign));
-  if (admit(sim, { id: ac.callsign, lengthM: ac.lengthM, wingspanM: ac.wingspanM, legs: [leg], stays: true }, Math.min(ac.lengthM, track.lengthM - s)) !== null) {
+  if (admit(sim, spec, Math.min(ac.lengthM, track.lengthM - s)) !== null) {
+    // Something has since parked for good across its way in: it would wait forever. It gives the
+    // gate back (its hold stays dropped) and is given another (or none) next time (callArrivals).
+    if (parkedInTheWay(sim, spec, [gateHoldId(r.callsign)]) !== null) {
+      sim.world.ramp.aircraft = sim.world.ramp.aircraft.filter((x) => x !== r);
+      sim.ramp.waysIn.delete(r);
+      return;
+    }
     const blocker = reserveParked(sim, parkedAt(sim, gateHoldId(r.callsign), r.gate, ac.type));
     if (blocker !== null) throw new Error(`${ac.callsign}: its gate hold at ${r.gate} came back in the way of ${blocker}`);
     return;

@@ -187,7 +187,7 @@ describe('instructions with no movement effect yet, and requests', () => {
       'handoff',
     ]);
     expect(getAircraft(sim, 'DAL4').advisories).toEqual({
-      handoff: { mode: 'monitor', facility: 'tower', frequency: '119.1' },
+      handoff: { mode: 'monitor', facility: 'tower', frequency: '119.1', tick: expect.any(Number) },
       atis: { letter: 'P', altimeter: '2992' },
       groundStop: 'ATL',
       releaseTime: '14:52',

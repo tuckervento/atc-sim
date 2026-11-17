@@ -14,7 +14,26 @@ import { parseTerse } from './terse.ts';
 
 const KJFK = indexAirport(loadAirport(kjfkBase, kjfkOverrides));
 
-/** T7's twin W ramp edges, the fork on W they share, and the W edge before the fork. */
+/**
+ * KJFK with T7's twin W ramp edges as seed 6 found them: rhW2's node 2.4 m from rhW, its own stub
+ * off W's fork and its lane, joined to rhW by nothing. 1.13c merged the twins in the data (Q);
+ * the footprint rule's regression tests keep the real geometry that broke the graph-only rules.
+ */
+const KJFK_TWINS = indexAirport(
+  loadAirport(kjfkBase, {
+    ...kjfkOverrides,
+    nodes: { ...kjfkOverrides.nodes, remove: kjfkOverrides.nodes.remove.filter((n) => n !== 'n9328526607') },
+    edges: {
+      ...kjfkOverrides.edges,
+      patch: [...kjfkOverrides.edges.patch, { id: 'w1011116770-n9328549521-n9328526607', name: 'W' }],
+      add: kjfkOverrides.edges.add.filter((e) => e.id !== 'x13c-W2-lane'),
+      remove: kjfkOverrides.edges.remove.filter((id) => !['w1011116770-n9328549521-n9328526607', 'w1011116770-n9328526607-n9328549519'].includes(id)),
+    },
+    rampHandoffs: { ...kjfkOverrides.rampHandoffs, add: [...kjfkOverrides.rampHandoffs.add, { id: 'rhW2', name: 'W', node: 'n9328526607', use: 'both', terminals: ['T7'] }] },
+  }),
+);
+
+/** T7's twin W ramp edges (KJFK_TWINS), the fork on W they share, and the W edge before the fork. */
 const RH_W = 'n9328534916';
 const RH_W2 = 'n9328526607';
 const RH_W2_LANE = 'w1011116770-n9328526607-n9328549519';
@@ -44,7 +63,7 @@ function stepClear(sim: Sim, ticks: number, pairs: [string, string][]): void {
 
 describe('see-and-avoid at nodes close in the plane but not joined in the graph', () => {
   it('KJFK T7 twin W ramp edges (seed-6 head-on): an arrival taxiing in to rhW stops short of a departure idle at rhW2, 2.4 m away', () => {
-    const sim = createSim(KJFK, { seed: 1 });
+    const sim = createSim(KJFK_TWINS, { seed: 1 });
     // The departure, checked in and left idle: ground's, nose on rhW2, its body back along the lane.
     addAircraft(sim, { callsign: 'DEP1', type: 'B738', terminal: 'T7', at: { kind: 'node', node: RH_W2, arrivedVia: RH_W2_LANE } });
     // The arrival on W, past 31R, heading for the fork.
@@ -86,7 +105,7 @@ describe('see-and-avoid at nodes close in the plane but not joined in the graph'
   // of the other's track. Before the footprint rule, every one of these timings collided.
   for (const leadTicks of [0, 60, 120]) {
     it(`KJFK T7 twin W ramp edges, both moving head-on (the arrival starts ${leadTicks / 10} s before the departure taxis out): whoever gets there first stops at its end, the other stops short, blocked by it; they never overlap`, () => {
-      const sim = createSim(KJFK, { seed: 1 });
+      const sim = createSim(KJFK_TWINS, { seed: 1 });
       addAircraft(sim, { callsign: 'DEP2', type: 'B738', at: { kind: 'gate', gate: 'g1011116768' } });
       const record = () => sim.world.ramp.aircraft.find((r) => r.callsign === 'DEP2');
       for (let t = 0; record()?.phase !== 'pushed'; t++) {

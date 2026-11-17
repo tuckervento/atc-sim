@@ -79,6 +79,8 @@ function describe(event: SimEvent, held: ReadonlySet<string>, context: LogContex
       return { kind: 'tower', text: `TWR: ${event.callsign} crossing ${runways(event.designators)} cancelled: ${event.reason}` };
     case 'unable':
       return { kind: 'unable', text: `${event.callsign} unable (${event.instruction.type}): ${event.reason}` };
+    case 'ramp-waiting':
+      return { kind: 'tower', text: `RAMP: ${event.callsign} waiting for a gate${event.terminal === null ? '' : ` at ${event.terminal}`}` };
     case 'ambiguous':
       return {
         kind: 'unable',

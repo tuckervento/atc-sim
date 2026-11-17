@@ -14,7 +14,8 @@
 //   by the graph: a body on an edge it will use, or at a node it will pass, measured along the
 //   track. The plane can disagree:
 //   - Two nodes close in the plane with no edge between them (KJFK's twin ramp edges, e.g. T7's
-//     rhW and rhW2, 2.4 m apart): a body at one is on neither, so only this rule sees it.
+//     rhW and rhW2, 2.4 m apart, until 1.13c merged them; traffic.test.ts keeps that geometry): a
+//     body at one is on neither, so only this rule sees it.
 //   - A body past a sharp bend (KJFK's NA stub, doubling back off A): along the track it's far
 //     ahead, but its wing is beside the track before the bend.
 //   For a body the graph's rules found, it counts only if the contact comes at or before their

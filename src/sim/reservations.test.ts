@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import testAirport from '../../data/airports/TEST.json' with { type: 'json' };
 import { indexAirport } from '../airport/graph.ts';
 import { loadAirport } from '../airport/load.ts';
-import { admit, dropMovement, finishMovement, reserveParked, reservedStop, SEGMENT_M, setLeg, updateReservations, type Leg, type MovementSpec } from './reservations.ts';
+import { admit, dropMovement, finishMovement, parkedInTheWay, reserveParked, reservedStop, SEGMENT_M, setLeg, updateReservations, type Leg, type MovementSpec } from './reservations.ts';
 import { addAircraft, createSim, footprintsOverlap, removeAircraft, type Sim } from './sim.ts';
 import { buildTrack } from './track.ts';
 import { occupancyOf, trafficStop } from './traffic.ts';
@@ -317,6 +317,40 @@ describe('a wide body past a short stand (1.11\'s question 4)', () => {
     const narrow = passer('A320', 37.6, 35.8);
     expect([...drive(narrow.sim, [narrow.spec], 5, 3000).keys()]).toEqual(['WIDE']);
     expect(footprintsOverlap(narrow.sim, 'WIDE', 'PRK1')).toBe(false);
+  });
+});
+
+describe('how close reserved shapes may come (the margin)', () => {
+  it('nose to tail on a straight: 3.2 m apart is admitted, 2.8 m is not (MARGIN_M 1.5 each way) (TEST A)', () => {
+    // An A320 parked on A, heading east, its nose at s 400 on a7-aD-aTB; one coming east behind it.
+    const nodes = ['a7', 'aD', 'aTB'];
+    const edges = ['a7-aD', 'aD-aTB'];
+    const parkedNose = 400;
+    const gapFor = (gapM: number) => {
+      const sim = createSim(TEST, { seed: 1 });
+      expect(reserveParked(sim, { id: 'PRK1', nodes, edges, s: parkedNose, lengthM: 37.6, wingspanM: 35.8 })).toBeNull();
+      const stopAt = parkedNose - 37.6 - gapM;
+      return parkedInTheWay(sim, { id: 'MOV1', lengthM: 37.6, wingspanM: 35.8, stays: true, legs: [{ nodes, edges, from: 40, to: stopAt, seeAndAvoid: false, lookaheadM: 30 }] });
+    };
+    expect(gapFor(3.2)).toBeNull();
+    expect(gapFor(2.8)).toBe('PRK1');
+  });
+});
+
+describe("what's parked for good in a movement's way (parkedInTheWay)", () => {
+  it("names a parked aircraft the movement could never get past, ignores those it's told to, and grants nothing (TEST lane 7 past T1-1)", () => {
+    // As above: an E175 at T1-1, its tail inside an A388's half-span of lane 7, not an A320's.
+    const nodes = ['a7', 'rb7', 'l7A', 'l7B'];
+    const edges = ['rb7-a7', 'rb7-l7A', 'l7A-l7B'];
+    const end = buildTrack(TEST, nodes, edges).lengthM;
+    const sim = createSim(TEST, { seed: 1 });
+    addAircraft(sim, { callsign: 'PRK1', type: 'E175', role: 'arrival', at: { kind: 'gate', gate: 'T1-1' } });
+    const spec = (lengthM: number, wingspanM: number): MovementSpec => ({ id: 'WIDE', lengthM, wingspanM, stays: true, legs: [{ nodes, edges, from: lengthM + 1, to: end, seeAndAvoid: true, lookaheadM: 30 }] });
+    const before = sim.world.reservations.movements.map((m) => m.id);
+    expect(parkedInTheWay(sim, spec(72.7, 79.8))).toBe('PRK1');
+    expect(parkedInTheWay(sim, spec(72.7, 79.8), ['PRK1'])).toBeNull();
+    expect(parkedInTheWay(sim, spec(37.6, 35.8))).toBeNull();
+    expect(sim.world.reservations.movements.map((m) => m.id)).toEqual(before);
   });
 });
 

@@ -9,7 +9,8 @@ import { indexAirport } from '../airport/graph.ts';
 import { loadAirport } from '../airport/load.ts';
 import { AIRCRAFT_TYPES } from './aircraft-types.ts';
 import { departurePlanFor, departurePlansFor } from './ramp.ts';
-import { addAircraft, applyCommand, createSim, drainEvents, footprintsOverlap, getAircraft, getGate, removeAircraft, step, type Sim, type SimEvent } from './sim.ts';
+import { reserveParked } from './reservations.ts';
+import { addAircraft, applyCommand, createSim, drainEvents, footprintsOverlap, gatesFor, getAircraft, getGate, removeAircraft, step, type Sim, type SimEvent } from './sim.ts';
 import { parseTerse } from './terse.ts';
 
 const TEST = indexAirport(loadAirport(testAirport));
@@ -264,10 +265,11 @@ describe('arrivals waiting', () => {
     step(sim, 10);
     expect(getAircraft(sim, 'BAW1')).toMatchObject({ controller: 'ground', status: 'arrived' });
     expect(getGate(sim, 'T2-B2').occupant).toBe('UAE5');
-    // Still ground's: the player can talk to it.
+    // Still ground's: the player can talk to it. Ramp said it's waiting (1.13c), once: hold and
+    // continue aren't handoffs, so it doesn't say it again.
     transmit(sim, 'BAW1 hold');
     transmit(sim, 'BAW1 continue');
-    expect(drainEvents(sim).map((e) => e.type)).toEqual(['command-applied', 'command-applied']);
+    expect(drainEvents(sim).map((e) => e.type)).toEqual(['ramp-waiting', 'command-applied', 'command-applied']);
     // UAE5 pushes, leaves by TB and checks in; then B2 is free, and BAW1 goes in.
     const later = runUntil(sim, (e) => e.type === 'arrived-at-gate', 15 * 60 * 10);
     const order = later.filter((e) => ['pushback', 'check-in', 'ramp-accepted', 'arrived-at-gate'].includes(e.type)).map((e) => `${e.type} ${e.callsign}`);
@@ -418,6 +420,59 @@ describe('removing an aircraft', () => {
     expect(sim.world.reservations.movements.map((m) => m.id)).toEqual(['BAW1']);
     step(sim, 50);
     expect(getAircraft(sim, 'BAW1').speedMps).toBeGreaterThan(0);
+  });
+});
+
+describe("gates an arrival can be given (gatesFor, the ramp's own test)", () => {
+  // A B77W arrival for T1. g632238190's way in from NA passes g632238191 (seed 666, EVA1126).
+  const arrival = (parkedType: string | null) => {
+    const sim = createSim(KJFK, { seed: 1 });
+    if (parkedType !== null) addAircraft(sim, { callsign: 'PRK1', type: parkedType, role: 'arrival', at: { kind: 'gate', gate: 'g632238191' } });
+    addAircraft(sim, { callsign: 'EVA1', type: 'B77W', role: 'arrival', terminal: 'T1', at: { kind: 'node', node: 'n45349123', arrivedVia: null } });
+    return sim;
+  };
+
+  it("says an arrival is waiting for a gate when it has none it can reach: once at the entrance, again each time it's handed to ramp again (TEST T2, both gates taken)", () => {
+    const sim = createSim(TEST, { seed: 1 });
+    addAircraft(sim, { callsign: 'UAE1', type: 'A320', role: 'arrival', at: { kind: 'gate', gate: 'T2-B1' } });
+    addAircraft(sim, { callsign: 'UAE2', type: 'A320', role: 'arrival', at: { kind: 'gate', gate: 'T2-B2' } });
+    addAircraft(sim, { callsign: 'BAW1', type: 'A320', role: 'arrival', airline: 'BAW', terminal: 'T2', at: { kind: 'node', node: 'aTC', arrivedVia: 'aTC-aJ' } });
+    transmit(sim, 'BAW1 taxi ramp via TC, monitor ramp');
+    const events = runUntil(sim, (e) => e.type === 'ramp-waiting', 10 * 60 * 10);
+    expect(events.at(-1)).toEqual({ type: 'ramp-waiting', tick: sim.world.tick, callsign: 'BAW1', rampHandoff: 'rhTC', terminal: 'T2' });
+    step(sim, 600);
+    expect(drainEvents(sim).filter((e) => e.type === 'ramp-waiting')).toEqual([]);
+    transmit(sim, 'BAW1 contact ramp');
+    step(sim, 2);
+    expect(drainEvents(sim).filter((e) => e.type === 'ramp-waiting').map((e) => e.callsign)).toEqual(['BAW1']);
+  });
+
+  it("gives back a gate whose way in something has since parked across, and isn't given it again (TEST T2)", () => {
+    const sim = createSim(TEST, { seed: 1 });
+    addAircraft(sim, { callsign: 'BAW1', type: 'A320', role: 'arrival', airline: 'BAW', terminal: 'T2', at: { kind: 'node', node: 'aTC', arrivedVia: 'aTC-aJ' } });
+    // The player's aircraft on lane TC, facing out, its nose 40 m inside the entrance: clear of it
+    // (BAW1 gets there), but in the first stretch BAW1 must hold to be taken in, so it waits, assigned B1.
+    addAircraft(sim, { callsign: 'GND1', type: 'A320', at: { kind: 'edge', edge: 'tdE-rbTC', from: 'tdE', distanceM: 140 } });
+    transmit(sim, 'BAW1 taxi ramp via TC, monitor ramp');
+    runUntil(sim, (e) => e.type === 'arrived', 10 * 60 * 10);
+    step(sim, 10);
+    expect(sim.world.ramp.aircraft.find((r) => r.callsign === 'BAW1')).toMatchObject({ phase: 'called', gate: 'T2-B1' });
+    // Something parks on TD between tdA and tdB, across B1's way in; GND1 leaves.
+    expect(reserveParked(sim, { id: 'PRK1', nodes: ['tdA', 'tdB'], edges: ['tdA-tdB'], s: 100, lengthM: 37.57, wingspanM: 35.8 })).toBeNull();
+    removeAircraft(sim, 'GND1');
+    step(sim, 20);
+    expect(sim.world.ramp.aircraft.find((r) => r.callsign === 'BAW1')?.gate).not.toBe('T2-B1');
+    expect(sim.world.reservations.movements.map((m) => m.id)).not.toContain('BAW1 gate');
+    expect(gatesFor(sim, 'BAW1')).not.toContain('T2-B1');
+  });
+
+  it("offers g632238190 to a B77W past an A359 parked at g632238191: their crosses pass 3.38 m apart, more than the margin's 3.0, though the old single hulls came within 1.69 m (seed 666, EVA1126) (KJFK)", () => {
+    expect(gatesFor(arrival(null), 'EVA1')).toContain('g632238190');
+    expect(gatesFor(arrival('A359'), 'EVA1')).toContain('g632238190');
+  });
+
+  it("leaves out a gate whose way in can't get past an aircraft parked for good: an A388 at g632238191 (KJFK)", () => {
+    expect(gatesFor(arrival('A388'), 'EVA1')).not.toContain('g632238190');
   });
 });
 

@@ -56,7 +56,7 @@ export { footprintOf, footprintsOverlap, polygonsOverlap } from './footprint.ts'
 export { GRIDLOCK_S } from './rules.ts';
 export { PEAK_WINDOW_S, type Rates, type ScoreView } from './score.ts';
 export { TICK_HZ, TICK_S } from './movement.ts';
-export { canDepartFrom } from './ramp.ts';
+export { canDepartFrom, gatesFor } from './ramp.ts';
 export type { DepartureFlight, DepartureStream, RampOptions, TurnaroundInbound, TurnaroundOptions } from './ramp.ts';
 export type { ArrivalFlight, ArrivalStream, TowerOptions } from './tower.ts';
 export type { Advisories, AircraftStatus, Controller, CrossingClearance, Motion, Role, RuleOrigin, RuleParty, Session, SessionEndCause, Sim, SimEvent, UnauthorizedCrossing } from './world.ts';

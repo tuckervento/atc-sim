@@ -46,8 +46,9 @@ describe('KJFK', () => {
     expect(KJFK.defaultConfiguration).toBe('31s');
     // The Z and VA closures were temporary (Q1, Q11), so nothing is closed.
     expect(KJFK.edges.filter((e) => e.closed).length).toBe(0);
-    // Q7's check-in points (VA and W at two nodes each); Q16's remote stands as T4 gates.
-    expect(KJFK.rampHandoffs.map((h) => h.name)).toEqual(['NA', 'MA', 'M', 'KG', 'KF', 'HB', 'A10', 'G', 'DA', 'A4', 'D', 'F', 'VV', 'VA', 'VA', 'A1', 'W', 'W', 'TA', 'NB', 'NC', 'S', 'SA', 'T']);
+    // Q7's check-in points, the twins merged (Q, 1.13c: VA, W and S/SA were two nodes a few metres
+    // apart each; one node each now, S keeping SA's lane); Q16's remote stands as T4 gates.
+    expect(KJFK.rampHandoffs.map((h) => h.name)).toEqual(['NA', 'MA', 'M', 'KG', 'KF', 'HB', 'A10', 'G', 'DA', 'A4', 'D', 'F', 'VV', 'VA', 'A1', 'W', 'TA', 'NB', 'NC', 'S', 'T']);
     expect(KJFK.gates.length).toBe(161 + 23);
     expect(KJFK.gates.filter((g) => /^(7[2-9]|H\d)/.test(g.name)).every((g) => g.terminal === 'T4')).toBe(true);
     expect(KJFK.hangars.map((h) => [h.id, h.airlines])).toEqual([

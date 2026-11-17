@@ -64,7 +64,7 @@ function applyInstruction(sim: Sim, ac: Aircraft, instruction: Instruction): voi
     // effect at the facility's handoff point (STATUS, provisional): tower (1.10), ramp (1.11).
     case 'handoff': {
       const { mode, facility, frequency } = instruction;
-      ac.advisories.handoff = { mode, facility, frequency };
+      ac.advisories.handoff = { mode, facility, frequency, tick: sim.world.tick };
       return applied(sim, ac, instruction);
     }
     case 'atis':

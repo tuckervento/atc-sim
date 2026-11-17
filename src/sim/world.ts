@@ -304,6 +304,11 @@ export interface RampState {
    * many arrivals have turned into departures so far (the next one's number, for its callsign).
    */
   turnarounds: { rng: Rng; turned: number };
+  /**
+   * Arrivals at an entrance ramp has no gate for, told so (`ramp-waiting`): with the tick of the
+   * handoff it last answered, so it answers each new one once.
+   */
+  waiting: { callsign: string; answered: number }[];
 }
 
 export interface DepartureStreamState {
@@ -433,7 +438,8 @@ export interface CrossingClearance {
 
 /** Instructions with no effect on movement yet, recorded for the tasks that act on them. */
 export interface Advisories {
-  handoff: { mode: 'monitor' | 'contact'; facility: 'tower' | 'ramp'; frequency: string | null } | null;
+  /** `tick`: when it was given, so a repeat is told apart (ramp answers each, ramp.ts). */
+  handoff: { mode: 'monitor' | 'contact'; facility: 'tower' | 'ramp'; frequency: string | null; tick: number } | null;
   atis: { letter: string; altimeter: string | null } | null;
   groundStop: string | null;
   releaseTime: string | null;
@@ -525,6 +531,8 @@ export type SimEvent =
    * is clear, and taxis it to `gate`, assigned when it stopped there.
    */
   | (AircraftEvent & { type: 'ramp-accepted'; rampHandoff: RampHandoffId; gate: GateId })
+  /** Ramp has no gate it can reach for this arrival at its entrance (yet): it waits there, ground's. */
+  | (AircraftEvent & { type: 'ramp-waiting'; rampHandoff: RampHandoffId; terminal: TerminalId | null })
   /** Stopped at its gate, parked: an arrival's scoring point (PRD §4.3). */
   | (AircraftEvent & { type: 'arrived-at-gate'; gate: GateId })
   /**
