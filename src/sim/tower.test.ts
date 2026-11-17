@@ -281,6 +281,23 @@ describe('crossing requests', () => {
     expect(sim.world.tower.approvals).toEqual([]);
   });
 
+  it("are held while there's no room beyond the runway for the aircraft, with the callback once there is (1.10's question 5) (TEST, 27 on D)", () => {
+    const sim = createSim(TEST, { seed: 1 });
+    addAircraft(sim, { callsign: 'DAL4', type: 'A320', at: { kind: 'node', node: 'dI', arrivedVia: 'aD-dI' } });
+    transmit(sim, 'DAL4 taxi hardstand via D B G');
+    runUntil(sim, (e) => e.type === 'holding-short', 600);
+    // South of 27 on D, where DAL4 comes off: an aircraft stopped there, its tail 7 m past dHS.
+    addAircraft(sim, { callsign: 'GND1', type: 'A320', at: { kind: 'edge', edge: 'dHS-bD', from: 'dHS', distanceM: 45 } });
+    transmit(sim, 'DAL4 request-crossing');
+    drainEvents(sim);
+    const asked = sim.world.tick;
+    expect(runUntil(sim, (e) => e.type === 'crossing-held', 100)).toContainEqual({ type: 'crossing-held', tick: asked + 30, callsign: 'DAL4', runways: ['9/27'], designators: ['27'], reason: 'no room beyond the runway' });
+    step(sim, 300);
+    expect(drainEvents(sim).filter((e) => e.type === 'crossing-approved')).toEqual([]);
+    removeAircraft(sim, 'GND1');
+    expect(runUntil(sim, (e) => e.type === 'crossing-approved', 100).at(-1)).toMatchObject({ type: 'crossing-approved', callsign: 'DAL4', holdShort: 'hDN' });
+  });
+
   it('acceptance: are held while an arrival is inside the window, with the callback once it is clear (TEST, 27 on D)', () => {
     const sim = createSim(TEST, { seed: 1 });
     addAircraft(sim, { callsign: 'DAL4', type: 'A320', at: { kind: 'node', node: 'dI', arrivedVia: 'aD-dI' } });

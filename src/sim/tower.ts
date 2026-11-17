@@ -107,7 +107,7 @@ import { bodySpans } from './occupancy.ts';
 import { nextFloat, nextInRange } from './rng.ts';
 import { nodeAt } from './stops.ts';
 import { buildTrack, placeOf, type Track } from './track.ts';
-import { trafficStop, type Occupancy } from './traffic.ts';
+import { occupancyOf, SPACING_M, trafficStop, type Occupancy } from './traffic.ts';
 import {
   emit,
   type Aircraft,
@@ -728,7 +728,44 @@ function crossingBlocked(sim: Sim, target: CrossingTarget, callsign: string): st
     if (target.areas.includes(setupOf(sim, a.runwayEnd).runway) && toThreshold(sim, a) / APPROACH_MPS <= CROSSING_WINDOW_S) return 'traffic on final';
   }
   if (sim.world.tower.approvals.some((a) => a.callsign !== callsign && a.runwayNode === target.runwayNode && a.holdShort !== target.holdShort)) return 'crossing traffic';
+  if (!roomBeyond(sim, target, callsign)) return 'no room beyond the runway';
   return null;
+}
+
+/**
+ * Whether the crossing aircraft has somewhere to stop once across (1.10's question 5): on its
+ * route past the runways' protected areas, for its length plus SPACING_M, no other aircraft's
+ * body. Otherwise it could cross and stop on the runway, which jams it (safe, but stuck). With no
+ * route there's nothing to look along, so it's true.
+ */
+function roomBeyond(sim: Sim, target: CrossingTarget, callsign: string): boolean {
+  const ac = sim.world.aircraft.find((a) => a.callsign === callsign);
+  const path = ac?.clearance?.path;
+  const hold = path?.holdShorts.find((h) => h.id === target.holdShort);
+  if (!ac || !path || !hold) return true;
+  // Past the protected areas: on from the hold, through the area, to the first edge out of it.
+  let j = hold.index;
+  let inside = false;
+  for (; j < path.edges.length; j++) {
+    const inArea = sim.runwayAreas.has(path.edges[j] ?? '');
+    if (inArea) inside = true;
+    else if (inside) break;
+  }
+  if (!inside) return true;
+  const occupancy = occupancyOf(sim);
+  let need = ac.lengthM + SPACING_M;
+  for (; j < path.edges.length && need > 0; j++) {
+    const [id, from] = [path.edges[j], path.nodes[j]];
+    const edge = id === undefined ? undefined : sim.index.edges.get(id);
+    if (!edge || from === undefined) throw new Error(`${callsign}: route edge ${j} is missing`);
+    const len = edgeLength(sim.index, edge);
+    const take = Math.min(len, need);
+    const [lo, hi] = edge.from === from ? [0, take] : [len - take, len];
+    if ((occupancy.byEdge.get(edge.id) ?? []).some((o) => o.callsign !== callsign && o.u0 < hi && lo < o.u1)) return false;
+    if ((occupancy.byNode.get(from) ?? []).some((o) => o.callsign !== callsign)) return false;
+    need -= take;
+  }
+  return true;
 }
 
 /** Where the request is for: the next runway hold line on the route, or straight ahead. */
