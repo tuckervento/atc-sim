@@ -245,3 +245,10 @@ changing behaviour:
     39.7 m apart, each blocked by the other. That's the header's "converging on a free
     junction" case, made by the player's routing. rules.ts counts it as a gridlock by its own
     definition.
+
+## Later (PLAN 1.13c, 2026-11-17)
+
+KJFK's twin ramp handoffs (W/W2, VA/VA2, S/SA) were merged into one each at Q's decision, which
+settles the open questions 2 (merge them) and 4 (the near-reversal through the 2.4 m pair onto
+rhW) in STATUS's seed-6 entry (Deviations, 2026-11-16). The footprint rule stays: it covers any body close in the plane but far in
+the graph, and `traffic.test.ts` keeps the W/W2 geometry as a fixture (`KJFK_TWINS`).

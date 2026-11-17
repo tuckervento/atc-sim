@@ -100,3 +100,22 @@ From the most to the least slack, as measured here:
 3. A reply to a repeated handoff to ramp from an arrival waiting at an entrance (e.g. "waiting
    for a gate"), so the player sees why it hasn't gone.
 4. Relax the ramp's tolerances: see above for which.
+
+## Resolution (PLAN 1.13c, 2026-11-17)
+
+- **Fix 1, done:** the ramp gives an arrival only a gate whose way in can get past what's parked
+  for good (`parkedInTheWay` in reservations.ts, `acceptableGates` in ramp.ts), and gives a gate
+  back when something parks across its way in later, to be given another.
+- **Fix 3, done:** ramp answers an arrival waiting at an entrance with no gate it can reach:
+  "RAMP: AAL3885 waiting for a gate at T8", once, and again for each new handoff to ramp.
+- **Tolerances (Q: swept cross, round margin):** reservations sweep the cross's three parts, each
+  grown by MARGIN_M as an octagon around its circle (3.0–3.25 m apart in every direction), not one
+  hull with square corners. EVA1126's case is offered again: g632238190 past the A359 at
+  g632238191, whose crosses pass 3.38 m apart (theories 3 and 5).
+- **Theory 1:** S reaches only the 11 stands on the north face of T8's north pier. The pier lies
+  between that lane and NC's; it's the real layout, not a missing lane. With S and SA merged, S
+  reaches 8 gates an A321 can use (2 + SA's 6).
+- **Theory 2:** S and SA merged into one handoff, S (Q: merge the twins).
+- **Theory 4:** not swept; fix 1 means such a gate is never offered, whatever the count.
+- **Q's other ask, the gates an arrival can take, shown on the map:** done (selecting an arrival
+  rings them; `gatesFor`, from any entrance serving its terminal).

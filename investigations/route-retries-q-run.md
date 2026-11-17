@@ -331,3 +331,20 @@ The seed-666 section above was written by another session against the working tr
   taxiway now; stands that needed one got ramp-lane stubs (docs/airports/KJFK-notes.md).
 - **Theory 3 (EVA5194, `via P` for T1) and theory 7 (map layout):** not pursued; no evidence of a
   layout problem turned up.
+
+## Resolution of seed 666's findings (PLAN 1.13c, 2026-11-17)
+
+- **Theory 10 (F10, JBU639 to F): not a router bug.** Replayed on the committed code: from the
+  south along MB at B/MB/P, `R:B F` and `R:B L:F` reach F, as they did before 1.13b. The replay's
+  results (`R:B R:F`: "doesn't go right from B near F") match only arriving along MB from the
+  north, where right onto B is west, away from F; there `L:B F` works. So JBU639 was heading
+  south. The identical names hid it (theory 11).
+- **Theory 11, fixed:** a node on one taxiway is named by its compass side of the nearest
+  junction: "F west of B", "F east of B" (`junctionName`).
+- **Theory 12, fixed:** a route that misses every entrance for its terminal lists them: "(T5's
+  ramp entrances: A4, D, DA, F)".
+- **Theory 14:** B/Z (108 m apart), C/U1 (105 m) and V/U (56 m) don't meet, as said. C3 and U3
+  meet runway 13L/31R at two nodes 7 m apart: right by the route rule (a runway is crossed at a
+  node, never travelled along), but a data question for Q (STATUS).
+- **Seed 5's theory 3 (EVA5194, `via P` for T1):** right: none of T1's entrances (NA, MA, M) is on
+  P; `via P B` reaches MA. The reason now lists them.

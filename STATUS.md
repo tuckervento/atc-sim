@@ -1,10 +1,10 @@
 # STATUS
 
-_Last updated: 2026-11-16 (1.13b done: fixes from Q's run)_
+_Last updated: 2026-11-17 (1.13c done: before the soak tests)_
 
 ## Snapshot
 
-20 of 21 tasks done: all of Phase 0 (0.1–0.6), 1.1–1.13 and 1.13b. Left: 1.14. **LGA imports as a format check** (1.6), and **the map renders any airport** (1.7, Q checked it against the FAA diagram). **The simulated tower** (1.10, about 37 takeoffs an hour on 31L alongside 15 landings), **the reworked ramp** (1.11, with granular locks) and **the rule checks and score** (1.12) run. **The browser app (1.13) plays KJFK live with typed commands**: Q's manual run ended at Departures 5, Arrivals 3.
+21 of 22 tasks done: all of Phase 0 (0.1–0.6), 1.1–1.13, 1.13b and 1.13c. Left: 1.14. **LGA imports as a format check** (1.6), and **the map renders any airport** (1.7, Q checked it against the FAA diagram). **The simulated tower** (1.10, about 37 takeoffs an hour on 31L alongside 15 landings), **the reworked ramp** (1.11, with granular locks) and **the rule checks and score** (1.12) run. **The browser app (1.13) plays KJFK live with typed commands**: Q's manual run ended at Departures 5, Arrivals 3.
 
 **Phase 0's picks (Q signed off 2026-11-14):**
 - speech-to-text: Deepgram Nova-3
@@ -17,6 +17,16 @@ Next: 1.14, the last Phase 1 task. Open from 1.13b: two T7 stands can't take a B
 
 ## Completed
 
+- [x] 1.13c — Before the soak tests: the ramp (seed 666), routes, crossings, two UI fixes — done 2026-11-17 (me, inline on main; commits 6eba2b2, 6398ae7, f93b5e6, 9c3665c). Verified by me:
+  - typecheck exit 0, **486 of 486** (54 files, 55 s), the manual-test twin included.
+  - **Ramp** (`ramp.test.ts`, `reservations.test.ts`, each with a killed mutation): EVA1126's case (B77W to T1 g632238190 past an A359 at g632238191) is offered again; an A388 there closes it; a gate something has since parked across is given back and not offered again; ramp says "RAMP: … waiting for a gate at T2" once, and again for each new handoff. Two heavy files (ramp-safety, tower-capacity) run about 12% slower alone (51.0 s against 45.6 s), from testing part against part.
+  - **Twins merged** (W/W2, VA/VA2, S/SA): KJFK validates (0 errors, the same 3 warnings); every gate keeps the types it takes (all 11 types' counts unchanged); the seed-6 tests keep the twin geometry as a fixture.
+  - **Routes:** distinct junction names ("F west of B", "F east of B"); a route that misses names the terminal's entrances.
+  - **Crossings:** held while there's no room beyond the runway, called back when there is (`tower.test.ts`). Tower capacity counts unchanged (KJFK 37/35/38 and 15/14/14; TEST 36/35/36 and 15/15/15); tower-safety unchanged but one crossing approval fewer on TEST (637 of 638).
+  - **UI**, checked in Chrome on KJFK seed 5: Enter from the map puts the cursor back in the console (text kept, nothing sent); selecting ANA7953 (B789, T7) rings six T7 gates, and deselecting clears them; no console errors.
+  - **2 h TEST runs, seeds 1–5:** session running on all; 23/12, 23/12, 22/8, 22/9, 22/8, identical.
+  - **Wide KJFK sweep** (20 seeds × 60 min): collisions 0, pushbacks off the ramp 0, the same 3 player-made gridlocks as 1.13b at the same ticks, refused routes 107 (108). Its player never hands arrivals to ramp, so it doesn't exercise A2/A3; their tests do.
+  - Key and personal-info scan of each part's files before its commit: clean, with a positive control.
 - [x] 1.13b — Fixes from Q's run — done 2026-11-16 (me, inline on main). Verified by me:
   - typecheck exit 0, **475 of 475** (54 files, 51.5 s), the manual-test twin included.
   - **Routes** (`route-kjfk.test.ts`, each with a killed mutation): AMX4220's two junctions route (`B`/`A` straight on, `L:` the sharp turn, `R:` unable); ICE6492's U fork takes the east branch for `L:A`, the west for `R:A`, and plain `U A A1` asks about A; WJA7466's `taxi ramp via G` resolves to G. KJFK sweeps: same-pick junctions 7 → 0 (3 connector-only nodes named as exceptions, Q), fork clashes 9 → 0.
@@ -1054,7 +1064,16 @@ Next: 1.14, the last Phase 1 task. Open from 1.13b: two T7 stands can't take a B
   - **KJFK sweep gridlocks 2 → 3**, all two of the sweep's own player-routed arrivals head-on on a taxiway (A/SA twice, MD/P), none at an entrance or with a departure. The route fixes let more of its routes through (refused 171 → 108), so more of its uncoordinated arrivals meet. A finding about the sweep's player, not a sim deadlock, as far as I can tell.
   - **Another session** (seed 666, Q's second run) added notes and `investigations/ramp-stuck-arrivals-seed666.md` against this working tree; their theories (10–14 in the route note) are open and not part of 1.13b.
 
+- 2026-11-17 — **1.13c, before the soak tests** (PLAN 1.13c; Q's decisions: the cross's parts with a round margin; crossings with room beyond in this cycle; merge the twins):
+  - **Ramp:** reservations sweep the cross's three parts, each grown by MARGIN_M round (an octagon around the circle), not one hull with square corners; two shapes keep 3.0–3.25 m apart in every direction. A gate is given only if its way in can get past what's parked for good (`parkedInTheWay`), and given back when something parks across it later. `gatesFor` answers which gates the ramp would give an arrival, from any entrance serving its terminal (Q). Ramp's `ramp-waiting` reply needs the handoff advisory's `tick`.
+  - **Twins merged:** each pair keeps one node (rhW, rhVA, rhS: S, not SA, my default; Q may prefer SA's name), with the other's ramp lane re-pointed to it and its stub, node and handoff removed (`x13c-` lanes in KJFK.overrides.json). This resolves seed-6's open questions 2 (merge the twins) and 4 (the near-reversal through the W/W2 pair).
+  - **T8's S** reaches only the 11 stands on the north face of the north pier (8 an A321 can use): the real layout, the pier between it and NC's lane; not a data gap. AAL3885 (seed 666) waited because both of that pocket's usable gates were taken or blocked; NC would have worked; ramp now says it's waiting.
+  - **Routes:** no fillet rule was needed. JBU639 (seed 666, F10) was heading south on MB, so `R:B` turned it west, away from F (`L:B F` works, before 1.13b too); the identical names "B near F" for two nodes hid that, fixed by compass-side names. EVA5194's `via P` (seed 5) can't reach T1: none of T1's entrances is on P; the reason now lists them.
+  - **Open for Q (data):** C3 and U3 meet runway 13L/31R at two nodes 7 m apart, so "C3 and U3 don't meet" is right by the route rule (a route crosses a runway at a node, never along it). Should they be one crossing point?
+  - **Tests changed:** 12 expected reasons reworded again ("near" → a compass side); `ramp.test.ts`'s no-gate-free test expects the new `ramp-waiting`; `sim.test.ts`'s handoff advisory has a `tick`; `kjfk.test.ts`'s handoff names list the merged set; `traffic.test.ts`'s twin tests use `KJFK_TWINS`.
+  - **A stalled verification, explained:** for a while every heavy test timed out (1,000 s files, 932 s wall against 17 s CPU). The laptop had been closed (Q): starved, not slow. Rerun with it open, everything took its usual time.
+
 ## Next Up
 
-- 1.14 — Scoring-path and soak tests (needs 1.12, done, and the arrival turnaround or despawn; 1.13b done).
-- Open for Q, none blocking: two T7 stands that can't take a B777-300ER (data work by hand; Deviations, 2026-11-16, "1.13b"); from Q's 1.13 run, "doesn't lead to a ramp entrance" still doesn't say which do (node ids and turn ambiguity are fixed); the seed-666 theories; 1.6's questions 4–6 and 8; 1.10's 3–7 (5 matters for 1.14); the follow-ups' 2–6; 1.11's 5–9; 1.7's 2–5; 1.9's three; 1.5's five. All are in their Deviations entries.
+- 1.14 — Scoring-path and soak tests (needs 1.12, done, and the arrival turnaround or despawn; 1.13b and 1.13c done). 1.10's question 2 (mixed-runway throughput against 1.14's peak rate) is for its planning.
+- Open for Q, none blocking: two T7 stands that can't take a B777-300ER (data work by hand; Deviations, 2026-11-16, "1.13b"); C3/U3's crossing points (Deviations, 2026-11-17, "1.13c"); 1.6's questions 4–6 and 8; 1.10's 3–7 (5 matters for 1.14); the follow-ups' 2–6; 1.11's 5–9; 1.7's 2–5; 1.9's three; 1.5's five. All are in their Deviations entries.

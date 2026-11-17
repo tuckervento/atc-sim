@@ -211,6 +211,23 @@ mine, not sourced.
 - **A10/H** is named A10: the movement-area stub to it is A10; H is the ramp lane behind it.
 - **31L line exits** take the branch away from the 31L end (H west, J west).
 
+### Twin ramp handoffs merged (PLAN 1.13c, 2026-11-17)
+
+Three check-in points were two nodes a few metres apart, joined by nothing: W/W2 (2.4 m, T7), VA's
+two marks (4.2 m, T7) and S/SA (2.0 m, T8). They caused odd behaviour: seed 6's head-on between W
+and W2, a near-reversal through the W pair, and seed 666's `via B SA` ending at S. Q decided to
+merge them: each keeps one node (rhW, rhVA, rhS), the other's ramp lane is re-pointed to it
+(`x13c-W2-lane`, `x13c-VA2-lane`, `x13c-SA-lane`, same shape), and its stub, node and handoff are
+removed. S keeps its name; SA's taxiway stub is gone (my default: Q may prefer the name SA). No gate
+gains or loses a type. This supersedes "VA check-in" and "SA check-in" under Judgment calls.
+
+T8 from S: only the 11 stands on the north face of the north pier are reachable over lanes (the
+pier lies between S's lane and NC's): the real layout. An arrival for the stands between the piers
+comes in at NC (or TA's lane); for the south face, NB.
+
+Open (Q): C3 and U3 meet runway 13L/31R at two nodes 7 m apart, so no route can go from one to the
+other (a runway is crossed at a node, never travelled along). One crossing point, or as it is?
+
 ### Stands with room to push back inside the ramp (PLAN 1.13b, 2026-11-16)
 
 Pushback never puts any of the aircraft on a taxiway (Q, after the 1.13 run). Nine stands had

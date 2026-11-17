@@ -361,6 +361,15 @@ Phase 1's scoring-path, rule-check and soak tests pass.
       and its twin updated if check-in points change; usable-gate counts before and after are
       reported.
 
+- [ ] **1.13c — Before the soak tests: the ramp (seed 666), routes, crossings, two UI fixes** (added 2026-11-17; Q: everything unblocked before 1.14)
+  - Scope (investigations/ramp-stuck-arrivals-seed666.md, route-retries-q-run.md, seed6-head-on.md; BACKLOG.md; STATUS 1.10 question 5):
+    - **Ramp:** reservations sweep the cross's parts with a round margin (Q); a gate only if its way in can get past parked aircraft, re-picked if not; ramp answers an arrival waiting at an entrance; why T8's S reaches 2 of 32 gates; the twin handoffs (W/W2, VA/VA2, S/SA) merged (Q).
+    - **Routes:** a fillet just before a crossing no longer hides the crossing (JBU639, B → F); distinct junction names either side of a junction; "doesn't lead to a ramp entrance" names the terminal's entrances.
+    - **Tower:** a crossing is approved only with room beyond the runway for the aircraft (1.10 question 5).
+    - **UI:** Enter focuses the console; selecting an arrival highlights the gates that can take it, by the ramp's own test, from any entrance serving its terminal (Q, BACKLOG).
+  - Depends on: 1.13b
+  - Acceptance: each item has a test that fails before and passes after; full suite, 2 h runs (session running, counts reported), the wide KJFK sweep (0 collisions, 0 pushbacks off the ramp, gridlocks explained) and tower-capacity (counts reported) pass; the UI items checked in Chrome.
+
 - [ ] **1.14 — Scoring-path and soak tests**
   - Scope: A test-only "perfect player" bot in `src/sim/test/bot.ts` issues correct terse
     commands from sim state: routes via 1.8, requests crossings, and hands off. A simple
@@ -390,3 +399,4 @@ Phase 1's scoring-path, rule-check and soak tests pass.
   - 1.10 and 1.11 can be built in parallel.
   - 1.13b (fixes from Q's run) comes before 1.14: the soak tests should run on the fixed
     router and ramp.
+  - 1.13c (before the soak tests) follows 1.13b and comes before 1.14.
